@@ -5,7 +5,7 @@ import { PrimaryButton } from "@/components/primary-button";
 import { PrioritasSortable } from "@/components/prioritas-sortable";
 import { StepHeader } from "@/components/step-header";
 import { StickyBottomBar } from "@/components/sticky-bottom-bar";
-import { DEFAULT_URUTAN, buildHref } from "@/lib/query";
+import { DEFAULT_URUTAN, PARAM_OK, buildHref, hrefHome } from "@/lib/query";
 import type { Kriteria } from "@/lib/types";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
 import { useDesktopRedirect } from "@/lib/use-media";
@@ -14,8 +14,8 @@ export function PrioritasList() {
   const filter = useFilter();
   const [urutan, setUrutan] = useState<Kriteria[]>(filter.urutan);
   const sekarang = { ...filter, urutan };
-  // Di desktop, prioritas sudah ada di sidebar /hasil.
-  const keDesktop = useDesktopRedirect(buildHref("/hasil", sekarang));
+  // Di desktop, langkah prioritas ada di Home (/?langkah=prioritas).
+  const keDesktop = useDesktopRedirect(hrefHome(sekarang, "prioritas"));
 
   function terapkan(baru: Kriteria[]) {
     setUrutan(baru);
@@ -39,7 +39,7 @@ export function PrioritasList() {
             type="button"
             onClick={() => terapkan([...DEFAULT_URUTAN])}
             disabled={sudahDefault}
-            className="tekan min-h-11 rounded-[12px] px-2 text-[13px] font-semibold text-accent-ink hover:bg-white/60 disabled:opacity-50"
+            className="tekan tautan min-h-11 rounded-[12px] px-2 text-[13px] font-semibold text-accent-ink"
           >
             Reset
           </button>
@@ -56,7 +56,7 @@ export function PrioritasList() {
       <PrioritasSortable urutan={urutan} onChange={terapkan} className="px-4" />
 
       <StickyBottomBar>
-        <PrimaryButton href={buildHref("/hasil", sekarang)} block className="text-base">
+        <PrimaryButton href={buildHref("/hasil", sekarang, PARAM_OK)} block className="text-base">
           Tampilkan hasil
         </PrimaryButton>
       </StickyBottomBar>

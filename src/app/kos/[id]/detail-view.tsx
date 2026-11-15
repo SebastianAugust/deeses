@@ -18,7 +18,7 @@ import { ErrorCard, InfoCard } from "@/components/status-card";
 import { StickyBottomBar } from "@/components/sticky-bottom-bar";
 import { rankTopsis } from "@/lib/explain";
 import { formatJarak, formatRupiah } from "@/lib/format";
-import { buildHref } from "@/lib/query";
+import { PARAM_OK, buildHref } from "@/lib/query";
 import type { RankResult } from "@/lib/types";
 import { useFilter } from "@/lib/use-filter";
 import { useDesktopRedirect } from "@/lib/use-media";
@@ -32,7 +32,7 @@ function TombolKembali({ href, mengambang = false }: { href: string; mengambang?
       pakaiRiwayat
       aria-label="Kembali ke hasil"
       className={cn(
-        "tekan flex size-11 items-center justify-center rounded-full border border-white/90 bg-white/78 text-ink backdrop-blur-[14px] hover:bg-white",
+        "tekan tombol-kaca flex size-11 items-center justify-center rounded-full border-white/90 bg-white/78 text-ink backdrop-blur-[14px]",
         mengambang && "absolute top-3.5 left-3.5",
       )}
     >
@@ -44,9 +44,9 @@ function TombolKembali({ href, mengambang = false }: { href: string; mengambang?
 export function DetailView() {
   const { id } = useParams<{ id: string }>();
   const filter = useFilter();
-  const keHasil = buildHref("/hasil", filter);
+  const keHasil = buildHref("/hasil", filter, PARAM_OK);
   // Di desktop, detail tampil sebagai panel kanan di /hasil.
-  const keDesktop = useDesktopRedirect(buildHref("/hasil", filter, { pilih: id }));
+  const keDesktop = useDesktopRedirect(buildHref("/hasil", filter, { ...PARAM_OK, pilih: id }));
   const rank = useRank(filter);
 
   if (keDesktop) return null;

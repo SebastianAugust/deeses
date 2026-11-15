@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { AnimatedText } from "@/components/animated-text";
 import { KosPhoto } from "@/components/kos-photo";
 import { RankBadge } from "@/components/rank-badge";
 import { formatJarak, formatRupiah, formatSkor } from "@/lib/format";
@@ -78,7 +79,7 @@ export function KosListCard({
             <span className="truncate text-base font-extrabold">{kos.nama}</span>
             <span className="text-base font-extrabold text-accent-ink tabular-nums">
               <span className="sr-only">Skor </span>
-              {formatSkor(kos.skor_saw)}
+              <AnimatedText value={formatSkor(kos.skor_saw)} />
             </span>
           </div>
           <span className="truncate text-[13px] text-muted">

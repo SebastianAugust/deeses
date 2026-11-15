@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatedText } from "@/components/animated-text";
 import { ScoreBar } from "@/components/score-bar";
 import { infoKriteria, jelaskanPeringkat } from "@/lib/explain";
 import { formatSkor } from "@/lib/format";
@@ -50,15 +51,18 @@ export function SkorTiles({
     <dl className={cn("grid grid-cols-2", ringkas ? "gap-2" : "gap-2.5")}>
       <div className={tile}>
         <dt className="text-[11px] text-muted">Skor SAW</dt>
-        <dd className={cn(angka, "text-accent-ink")}>{formatSkor(kos.skor_saw)}</dd>
+        <dd className={cn(angka, "text-accent-ink")}>
+          <AnimatedText value={formatSkor(kos.skor_saw)} />
+        </dd>
       </div>
       <div className={tile}>
         <dt className="text-[11px] text-muted">{ringkas ? "TOPSIS" : "Pembanding TOPSIS"}</dt>
         <dd className={angka}>
-          <span className="sr-only">Peringkat </span>#{rankTopsis}{" "}
+          <span className="sr-only">Peringkat </span>
+          <AnimatedText value={`#${rankTopsis}`} />{" "}
           <span className="text-xs font-semibold text-muted">
             · <span className="sr-only">skor </span>
-            {formatSkor(kos.skor_topsis)}
+            <AnimatedText value={formatSkor(kos.skor_topsis)} />
           </span>
         </dd>
       </div>

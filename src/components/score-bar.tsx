@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { AnimatedText } from "@/components/animated-text";
 import { formatSkor } from "@/lib/format";
 import { STAGGER_DETIK, TRANSISI_LAMBAT } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -55,7 +56,7 @@ export function ScoreBar({ label, nilai, index = 0, ringkas = false, className }
           }
         />
       </div>
-      <span className="text-right font-bold tabular-nums">{formatSkor(v)}</span>
+      <AnimatedText value={formatSkor(v)} className="justify-end font-bold" />
     </div>
   );
 }

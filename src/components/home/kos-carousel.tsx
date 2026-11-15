@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Crossfade } from "@/components/crossfade";
+import { Spinner } from "@/components/indikator-muat";
+import { useSibukSingkat } from "@/lib/use-sibuk";
 import { KosPhoto } from "@/components/kos-photo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatRupiah } from "@/lib/format";
@@ -17,6 +19,7 @@ export function KosCarousel() {
   const rank = useRank(DEFAULT_FILTER);
   const query = buildQuery(DEFAULT_FILTER);
   const kunci = rank.status === "loading" ? "skeleton" : rank.status;
+  const [sibuk, jalankan] = useSibukSingkat();
 
   return (
     <section aria-labelledby="judul-carousel" className="flex flex-col gap-2 pt-[26px] lg:pt-12">
@@ -26,7 +29,7 @@ export function KosCarousel() {
         </h2>
         <Link
           href={buildHref("/hasil", DEFAULT_FILTER)}
-          className="tekan -my-2 inline-flex min-h-11 items-center rounded-lg px-1 text-[13px] font-semibold text-accent-ink hover:underline"
+          className="tekan tautan -my-2 inline-flex min-h-11 items-center rounded-lg px-1 text-[13px] font-semibold text-accent-ink"
         >
           Lihat semua
         </Link>
@@ -50,9 +53,12 @@ export function KosCarousel() {
             Daftar kos gagal dimuat.{" "}
             <button
               type="button"
-              onClick={rank.cobaLagi}
-              className="tekan min-h-11 rounded-lg font-bold text-accent-ink underline underline-offset-4"
+              onClick={() => jalankan(rank.cobaLagi)}
+              disabled={sibuk}
+              aria-busy={sibuk || undefined}
+              className="tekan tautan inline-flex min-h-11 items-center gap-1.5 rounded-lg font-bold text-accent-ink"
             >
+              {sibuk ? <Spinner size={14} /> : null}
               Coba lagi
             </button>
           </p>

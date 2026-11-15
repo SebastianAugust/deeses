@@ -14,13 +14,21 @@ type TipeSegmentedProps = {
   labelledBy: string;
   /** "md" = pill kaca 44px (mobile/Home), "sm" = kotak 36px (sidebar desktop). */
   size?: "md" | "sm";
+  /** Ukuran md, mulai lg tombol 48px & teks 16px (kartu Home desktop). */
+  besarDiDesktop?: boolean;
 };
 
 /**
  * Tombol segmented Putra / Putri / Campur. Indikator putih bergeser halus ke
  * opsi terpilih (layoutId motion; dengan reduced motion langsung pindah).
  */
-export function TipeSegmented({ value, onChange, labelledBy, size = "md" }: TipeSegmentedProps) {
+export function TipeSegmented({
+  value,
+  onChange,
+  labelledBy,
+  size = "md",
+  besarDiDesktop = false,
+}: TipeSegmentedProps) {
   const idIndikator = useId();
   const kecil = size === "sm";
 
@@ -44,9 +52,11 @@ export function TipeSegmented({ value, onChange, labelledBy, size = "md" }: Tipe
             aria-pressed={aktif}
             onClick={() => onChange(tipe)}
             className={cn(
-              "tekan relative",
+              // .pilihan: hover (teks ink + bg putih 50%) hanya untuk opsi yang belum terpilih.
+              "tekan pilihan relative",
               kecil ? "h-9 rounded-[9px] text-[13px]" : "h-11 rounded-full text-sm",
-              aktif ? "font-bold text-accent-ink" : "font-semibold text-muted hover:text-ink",
+              !kecil && besarDiDesktop && "lg:h-12 lg:text-base",
+              aktif ? "font-bold text-accent-ink" : "font-semibold text-muted",
             )}
           >
             {aktif ? (

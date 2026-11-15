@@ -1,5 +1,8 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { CircleAlert } from "lucide-react";
+import { useSibukSingkat } from "@/lib/use-sibuk";
 import { GlassCard } from "./glass-card";
 import { PrimaryButton } from "./primary-button";
 
@@ -8,8 +11,9 @@ type ErrorCardProps = {
   onCobaLagi: () => void;
 };
 
-/** Pesan galat singkat + tombol coba lagi. */
+/** Pesan galat singkat + tombol coba lagi (spinner + disabled sebentar, cegah klik ganda). */
 export function ErrorCard({ pesan, onCobaLagi }: ErrorCardProps) {
+  const [sibuk, jalankan] = useSibukSingkat();
   return (
     <GlassCard
       role="alert"
@@ -21,7 +25,7 @@ export function ErrorCard({ pesan, onCobaLagi }: ErrorCardProps) {
       </span>
       <h2 className="text-lg font-extrabold">Gagal memuat data</h2>
       <p className="text-sm leading-[1.55] text-muted">{pesan}</p>
-      <PrimaryButton block onClick={onCobaLagi} className="mt-1.5">
+      <PrimaryButton block memuat={sibuk} onClick={() => jalankan(onCobaLagi)} className="mt-1.5">
         Coba lagi
       </PrimaryButton>
     </GlassCard>

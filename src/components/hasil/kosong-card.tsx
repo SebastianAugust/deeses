@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { House } from "lucide-react";
+import { Spinner } from "@/components/indikator-muat";
+import { useSibukSingkat } from "@/lib/use-sibuk";
 import { GlassCard } from "@/components/glass-card";
 import { KELAS_TOMBOL_SEKUNDER, PrimaryButton } from "@/components/primary-button";
 import { useToast } from "@/components/toast";
@@ -25,10 +28,17 @@ export function KosongCard({ filter, terapkan }: KosongCardProps) {
   const bisaNaik = budgetBaru > filter.budget;
   const bisaCampur = filter.tipe !== "campur";
 
-  function ubah(patch: Partial<FilterState>, pesan: string) {
+  // Tombol yang memicu fetch: spinner + disabled sebentar (cegah klik ganda).
+  const [sibuk, jalankan] = useSibukSingkat();
+  const [aksiAktif, setAksiAktif] = useState<"budget" | "tipe" | null>(null);
+
+  function ubah(aksi: "budget" | "tipe", patch: Partial<FilterState>, pesan: string) {
     const sebelumnya = filter;
-    terapkan({ ...filter, ...patch });
-    toast({ pesan, aksi: { label: "Batalkan", onClick: () => terapkan(sebelumnya) } });
+    setAksiAktif(aksi);
+    void jalankan(() => {
+      terapkan({ ...filter, ...patch });
+      toast({ pesan, aksi: { label: "Batalkan", onClick: () => terapkan(sebelumnya) } });
+    });
   }
 
   return (
@@ -48,8 +58,10 @@ export function KosongCard({ filter, terapkan }: KosongCardProps) {
         {bisaNaik ? (
           <PrimaryButton
             block
+            memuat={sibuk && aksiAktif === "budget"}
+            disabled={sibuk}
             onClick={() =>
-              ubah({ budget: budgetBaru }, `Budget dinaikkan ke ${formatRupiah(budgetBaru)}`)
+              ubah("budget", { budget: budgetBaru }, `Budget dinaikkan ke ${formatRupiah(budgetBaru)}`)
             }
           >
             Naikkan budget ke {formatRupiah(budgetBaru)}
@@ -58,9 +70,12 @@ export function KosongCard({ filter, terapkan }: KosongCardProps) {
         {bisaCampur ? (
           <button
             type="button"
-            onClick={() => ubah({ tipe: "campur" }, "Tipe diganti ke Campur")}
+            disabled={sibuk}
+            aria-busy={(sibuk && aksiAktif === "tipe") || undefined}
+            onClick={() => ubah("tipe", { tipe: "campur" }, "Tipe diganti ke Campur")}
             className={KELAS_TOMBOL_SEKUNDER}
           >
+            {sibuk && aksiAktif === "tipe" ? <Spinner /> : null}
             Ganti tipe ke Campur
           </button>
         ) : null}

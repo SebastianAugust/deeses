@@ -14,6 +14,15 @@ export function useFilter(): FilterState {
 }
 
 /**
+ * Tambah entri riwayat baru tanpa navigasi route (history.pushState).
+ * Next menyinkronkan useSearchParams, halaman tidak dirender ulang/di-unmount,
+ * dan tombol Back browser kembali ke entri sebelumnya.
+ */
+export function dorongUrl(href: string) {
+  window.history.pushState(null, "", href);
+}
+
+/**
  * Tulis state ke URL tanpa navigasi (dipakai saat slider/drag berubah).
  * Next menyinkronkan history.replaceState dengan useSearchParams.
  */

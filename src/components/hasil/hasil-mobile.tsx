@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpDown } from "lucide-react";
 import { motion } from "motion/react";
+import { AnimatedText } from "@/components/animated-text";
 import { Crossfade } from "@/components/crossfade";
+import { IndikatorMuat } from "@/components/indikator-muat";
 import { KosPhoto } from "@/components/kos-photo";
 import { RankDeltaBadge } from "@/components/kos/rank-delta-badge";
 import { PhotoBadge, RankBadge } from "@/components/rank-badge";
 import { ErrorCard } from "@/components/status-card";
 import { formatJarak, formatRupiah, formatSkor } from "@/lib/format";
 import { TRANSISI, jedaStagger } from "@/lib/motion";
-import { buildHref, buildQuery, type FilterState } from "@/lib/query";
+import { PARAM_OK, buildHref, buildQuery, type FilterState } from "@/lib/query";
 import { labelTipe } from "@/lib/ringkasan";
 import type { RankResult } from "@/lib/types";
 import { useFilter } from "@/lib/use-filter";
@@ -52,10 +54,13 @@ function DaftarMobile({
   data,
   query,
   delta,
+  memuat,
 }: {
   data: RankResult[];
   query: string;
   delta: Record<string, number>;
+  /** Sedang memuat ulang: daftar lama tetap tampil + titik berdenyut di judul. */
+  memuat: boolean;
 }) {
   const [pertama, ...lainnya] = data;
   const duaTiga = lainnya.slice(0, 2);
@@ -65,7 +70,13 @@ function DaftarMobile({
   return (
     <div className="pb-24">
       <div className="flex items-baseline justify-between px-5 pt-4 pb-2.5">
-        <h1 className="text-lg font-extrabold">{data.length} kos cocok</h1>
+        <h1 className="flex items-center gap-2 text-lg font-extrabold">
+          <span className="inline-flex items-baseline">
+            <AnimatedText value={data.length} />
+            &nbsp;kos cocok
+          </span>
+          {memuat ? <IndikatorMuat label="Memperbarui peringkat" /> : null}
+        </h1>
         <span className="text-xs text-muted">Urut skor SAW</span>
       </div>
 
@@ -84,7 +95,7 @@ function DaftarMobile({
                 size="lg"
                 className="absolute right-3 bottom-3 px-[11px] py-1.5 text-[13px] tabular-nums"
               >
-                Skor {formatSkor(pertama.skor_saw)}
+                Skor&nbsp;<AnimatedText value={formatSkor(pertama.skor_saw)} />
               </PhotoBadge>
             </KosPhoto>
             <div className="flex items-baseline justify-between gap-2">
@@ -181,11 +192,14 @@ export function HasilMobile() {
   const router = useRouter();
   const rank = useRank(filter);
   const query = buildQuery(filter);
-  const daftar = rank.status === "success" ? rank.data : undefined;
+  // Saat memuat ulang (mis. setelah "Naikkan budget"), daftar lama tetap tampil
+  // dengan indikator kecil — skeleton penuh hanya untuk muatan pertama.
+  const daftar = rank.status === "success" ? rank.data : rank.dataTerakhir;
+  const memuat = rank.status === "loading";
   const delta = useRankDelta(daftar);
 
   function terapkan(baru: FilterState) {
-    router.replace(buildHref("/hasil", baru), { scroll: false });
+    router.replace(buildHref("/hasil", baru, PARAM_OK), { scroll: false });
   }
 
   let kunci = "skeleton";
@@ -213,14 +227,14 @@ export function HasilMobile() {
             </div>
           ) : null}
           {kunci === "isi" && daftar ? (
-            <DaftarMobile data={daftar} query={query} delta={delta} />
+            <DaftarMobile data={daftar} query={query} delta={delta} memuat={memuat} />
           ) : null}
         </Crossfade>
       </main>
 
       <Link
         href={`/prioritas?${query}`}
-        className="tekan glass-strong fixed bottom-[22px] left-1/2 z-20 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full px-5 text-sm font-bold whitespace-nowrap text-ink shadow-[0_10px_28px_rgba(30,45,90,.10)] hover:bg-white"
+        className="tekan glass-strong tombol-kaca fixed bottom-[22px] left-1/2 z-20 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full border-white/90 px-5 text-sm font-bold whitespace-nowrap text-ink shadow-[0_10px_28px_rgba(30,45,90,.10)]"
       >
         <ArrowUpDown size={16} className="text-accent-ink" aria-hidden />
         Ubah prioritas

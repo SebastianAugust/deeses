@@ -2,7 +2,8 @@ import { Slider as SliderPrimitive } from "@base-ui/react/slider"
 import { cn } from "cn"
 
 // Disesuaikan untuk Kosjati: track 6px warna line, isi accent, thumb 24px
-// dengan area sentuh 44px (after:-inset-2.5).
+// dengan area sentuh 44px (after:-inset-2.5). Track bisa diklik (pointer),
+// thumb grab/grabbing; focus-visible ring 2px accent (bukan outline-hidden).
 function Slider({
   className,
   defaultValue,
@@ -28,7 +29,7 @@ function Slider({
       thumbAlignment="edge"
       {...props}
     >
-      <SliderPrimitive.Control className="relative flex min-h-7 w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
+      <SliderPrimitive.Control className="relative flex min-h-7 w-full cursor-pointer touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
         <SliderPrimitive.Track
           data-slot="slider-track"
           className="relative grow overflow-hidden rounded-full bg-line select-none data-horizontal:h-1.5 data-horizontal:w-full data-vertical:h-full data-vertical:w-1.5"
@@ -42,7 +43,8 @@ function Slider({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
-            className="relative block size-6 shrink-0 rounded-full border-2 border-primary bg-white shadow-[0_2px_6px_rgba(30,45,90,.18)] ring-ring/30 transition-[color,box-shadow] select-none after:absolute after:-inset-2.5 hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden active:ring-4 has-focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50"
+            // Kursor grab/grabbing & focus ring (2px accent) diatur di globals.css.
+            className="relative block size-6 shrink-0 cursor-grab rounded-full border-2 border-primary bg-white shadow-[0_2px_6px_rgba(30,45,90,.18)] ring-ring/30 transition-[color,box-shadow] duration-150 ease-out select-none after:absolute after:-inset-2.5 hover:ring-4 active:cursor-grabbing active:ring-4 data-dragging:cursor-grabbing data-dragging:ring-4 disabled:cursor-not-allowed disabled:opacity-50"
           />
         ))}
       </SliderPrimitive.Control>

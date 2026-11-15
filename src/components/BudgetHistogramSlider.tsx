@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { AnimatedText } from "@/components/animated-text";
 import { Crossfade } from "@/components/crossfade";
+import { IndikatorMuat } from "@/components/indikator-muat";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { formatRupiah, formatRupiahSingkat } from "@/lib/format";
@@ -23,6 +24,10 @@ type BudgetHistogramSliderProps = {
   labelledBy?: string;
   /** Versi sidebar desktop: nominal 24px, grafik 48px, tanpa label ujung. */
   ringkas?: boolean;
+  /** Mulai lg: nominal 36px, grafik 72px (kartu Home desktop). */
+  besarDiDesktop?: boolean;
+  /** Sebaran baru sedang dimuat → titik berdenyut di samping hitungan (grafik lama tetap tampil). */
+  memuat?: boolean;
   className?: string;
 };
 
@@ -43,6 +48,8 @@ export function BudgetHistogramSlider({
   label = "Budget maksimal per bulan",
   labelledBy,
   ringkas = false,
+  besarDiDesktop = false,
+  memuat = false,
   className,
 }: BudgetHistogramSliderProps) {
   const idLabel = useId();
@@ -51,7 +58,7 @@ export function BudgetHistogramSlider({
   const puncak = bins && bins.length > 0 ? Math.max(1, ...bins) : 1;
   const total = bins?.reduce((s, n) => s + n, 0);
   const diBawah = bins ? jumlahDiBawah(bins, value, min, step) : undefined;
-  const tinggiGrafik = ringkas ? "h-12" : "h-16";
+  const tinggiGrafik = ringkas ? "h-12" : cn("h-16", besarDiDesktop && "lg:h-[72px]");
 
   return (
     <div className={cn("flex flex-col", ringkas ? "gap-2.5" : "gap-3", className)}>
@@ -66,6 +73,7 @@ export function BudgetHistogramSlider({
         className={cn(
           "self-start leading-tight font-extrabold tracking-[-0.02em]",
           ringkas ? "text-2xl" : "text-[28px]",
+          besarDiDesktop && "lg:text-4xl",
         )}
       />
 
@@ -110,23 +118,33 @@ export function BudgetHistogramSlider({
       </div>
 
       {ringkas ? null : (
-        <div className="-mt-1 flex justify-between text-xs text-muted" aria-hidden>
+        <div
+          className={cn(
+            "-mt-1 flex justify-between text-xs text-muted",
+            besarDiDesktop && "lg:text-[13px]",
+          )}
+          aria-hidden
+        >
           <span>{formatRupiahSingkat(min)}</span>
           <span>{formatRupiahSingkat(max)}</span>
         </div>
       )}
 
-      <p className={cn("text-muted", ringkas ? "text-xs" : "text-[13px]")} aria-live="polite">
+      <p
+        className={cn("flex items-center gap-2 text-muted", ringkas ? "text-xs" : "text-[13px]")}
+        aria-live="polite"
+      >
         {diBawah === undefined ? (
-          "Memuat sebaran harga…"
+          <span>Memuat sebaran harga…</span>
         ) : (
-          <>
+          <span>
             <b className="font-bold text-ink">
               <AnimatedText value={diBawah} /> kos
             </b>{" "}
             di bawah budget ini
-          </>
+          </span>
         )}
+        {memuat || diBawah === undefined ? <IndikatorMuat label="Memuat sebaran harga" /> : null}
       </p>
     </div>
   );

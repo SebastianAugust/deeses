@@ -13,7 +13,11 @@ type PhotoPlaceholderProps = {
   children?: ReactNode;
 };
 
-/** Pengganti foto saat `foto_url` null: gradasi abu + ikon gambar + "foto kos". */
+/**
+ * Pengganti foto saat `foto_url` null: gradasi abu + ikon gambar + "foto kos".
+ * Lapisan gambar (.foto-zoom) sedikit membesar saat kartu induknya di-hover;
+ * badge (children) tidak ikut membesar.
+ */
 export function PhotoPlaceholder({
   className,
   iconSize = 28,
@@ -21,16 +25,13 @@ export function PhotoPlaceholder({
   children,
 }: PhotoPlaceholderProps) {
   return (
-    <div
-      className={cn(
-        "relative flex flex-col items-center justify-center gap-1 rounded-[18px] bg-linear-135 from-[#E3E6EA] to-[#CDD3DA]",
-        className,
-      )}
-    >
-      {iconSize > 0 ? (
-        <ImageIcon size={iconSize} strokeWidth={1.8} className="text-[#7D8590]" aria-hidden />
-      ) : null}
-      {label ? <span className="text-[11px] text-[#5B6170]">{label}</span> : null}
+    <div className={cn("relative overflow-hidden rounded-[18px]", className)}>
+      <div className="foto-zoom absolute inset-0 flex flex-col items-center justify-center gap-1 bg-linear-135 from-[#E3E6EA] to-[#CDD3DA]">
+        {iconSize > 0 ? (
+          <ImageIcon size={iconSize} strokeWidth={1.8} className="text-[#7D8590]" aria-hidden />
+        ) : null}
+        {label ? <span className="text-[11px] text-[#5B6170]">{label}</span> : null}
+      </div>
       {children}
     </div>
   );

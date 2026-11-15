@@ -13,6 +13,7 @@ import {
   BUDGET_MIN,
   BUDGET_STEP,
   buildHref,
+  hrefHome,
   type FilterState,
 } from "@/lib/query";
 import type { TipePenghuni } from "@/lib/types";
@@ -39,10 +40,10 @@ export function FilterForm() {
   const dariUrl = useFilter();
   const [filter, setFilter] = useState<FilterState>(dariUrl);
   const rank = useRank(filter, { debounceMs: 300 });
-  const sebaran = useSebaranHarga(filter.tipe);
+  const { data: sebaran, memuat: memuatSebaran } = useSebaranHarga(filter.tipe);
 
-  // Di desktop, filter sudah ada di sidebar /hasil.
-  const keDesktop = useDesktopRedirect(buildHref("/hasil", filter));
+  // Di desktop, budget & tipe ada di Home (langsung ke langkah prioritas).
+  const keDesktop = useDesktopRedirect(hrefHome(filter, "prioritas"));
 
   function ubah(patch: Partial<FilterState>) {
     const baru = { ...filter, ...patch };
@@ -72,6 +73,7 @@ export function FilterForm() {
           value={filter.budget}
           onChange={(budget) => ubah({ budget })}
           bins={sebaran?.bins}
+          memuat={memuatSebaran}
           min={sebaran?.min ?? BUDGET_MIN}
           max={sebaran?.max ?? BUDGET_MAX}
           step={sebaran?.step ?? BUDGET_STEP}
@@ -86,10 +88,11 @@ export function FilterForm() {
                 aria-pressed={aktif}
                 onClick={() => ubah({ budget: chip.nilai })}
                 className={cn(
-                  "tekan h-11 rounded-full px-3.5 text-[13px]",
+                  // .pilihan: hover hanya untuk chip yang belum terpilih (terpilih tidak berubah).
+                  "tekan pilihan h-11 rounded-full px-3.5 text-[13px]",
                   aktif
                     ? "border-[1.5px] border-accent bg-soft font-bold text-accent-ink"
-                    : "border border-line bg-white/78 font-semibold text-ink hover:bg-white",
+                    : "border border-line bg-white/30 font-semibold text-muted",
                 )}
               >
                 {chip.label}
@@ -116,7 +119,7 @@ export function FilterForm() {
                   "tekan flex h-24 flex-col items-center justify-center gap-2 rounded-[20px] text-sm",
                   aktif
                     ? "border-2 border-accent bg-soft font-bold text-accent-ink"
-                    : "border border-white/90 bg-white/55 font-semibold text-ink backdrop-blur-[20px] hover:bg-white/78",
+                    : "tombol-kaca border-white/90 bg-white/55 font-semibold text-ink backdrop-blur-[20px]",
                 )}
               >
                 <Ikon size={24} strokeWidth={1.8} aria-hidden />

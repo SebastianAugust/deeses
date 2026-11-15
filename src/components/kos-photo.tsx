@@ -33,21 +33,24 @@ export function KosPhoto({ src, nama, className, iconSize, label, children }: Ko
     <div className={cn("relative overflow-hidden rounded-[18px] bg-linear-135 from-[#E3E6EA] to-[#CDD3DA]", className)}>
       {/* TODO: ganti ke next/image setelah host foto didaftarkan di
           images.remotePatterns (next.config.ts). */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        // Foto dari cache bisa selesai sebelum onLoad terpasang → cek `complete`.
-        ref={(el) => {
-          if (el?.complete && el.naturalWidth > 0) setDimuat(true);
-        }}
-        src={src}
-        alt={`Foto ${nama}`}
-        loading="lazy"
-        onLoad={() => setDimuat(true)}
-        className={cn(
-          "absolute inset-0 size-full object-cover transition-[opacity,filter] duration-250 ease-out",
-          dimuat ? "opacity-100 blur-0" : "opacity-0 blur-md",
-        )}
-      />
+      {/* .foto-zoom: membesar 1.03 saat kartu induk (.kartu-angkat) di-hover. */}
+      <div className="foto-zoom absolute inset-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          // Foto dari cache bisa selesai sebelum onLoad terpasang → cek `complete`.
+          ref={(el) => {
+            if (el?.complete && el.naturalWidth > 0) setDimuat(true);
+          }}
+          src={src}
+          alt={`Foto ${nama}`}
+          loading="lazy"
+          onLoad={() => setDimuat(true)}
+          className={cn(
+            "size-full object-cover transition-[opacity,filter] duration-250 ease-out",
+            dimuat ? "opacity-100 blur-0" : "opacity-0 blur-md",
+          )}
+        />
+      </div>
       {children}
     </div>
   );

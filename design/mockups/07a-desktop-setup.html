@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>Desktop atur kebutuhan</title>
+<title>Desktop satu halaman tiga langkah</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -12,83 +12,275 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>
 body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:#F3F6FB}
-button{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
+button,input{font-family:'Plus Jakarta Sans',sans-serif}
+button{cursor:pointer}
 a{color:#1A55BC}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #1D5FD1;outline-offset:2px}
 </style>
 </helmet>
-<div style="width:100%;min-height:900px;box-sizing:border-box;color:#1A1D24;display:flex;flex-direction:column;position:relative;background-color:#F3F6FB;background-image:radial-gradient(circle at 0% 0%,#B7D0FF 0,transparent 30%),radial-gradient(circle at 100% 30%,#C6EDFF 0,transparent 28%),radial-gradient(circle at 40% 100%,#DDE9FF 0,transparent 35%)">
-  <div style="background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-bottom:1px solid rgba(255,255,255,.9)">
-    <div style="max-width:1200px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
-      <span style="font-weight:800;font-size:22px;letter-spacing:-.02em">kosjati<span style="color:#1A55BC">.</span></span>
-      <span style="flex:1"></span>
-      <div style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600">
-        <span style="display:flex;align-items:center;gap:6px;color:#1A55BC"><span style="width:24px;height:24px;border-radius:12px;background:#1D5FD1;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">1</span>Atur kebutuhan</span>
-        <span style="width:32px;height:2px;background:#CBD5E3"></span>
-        <span style="display:flex;align-items:center;gap:6px;color:#4E5463"><span style="width:24px;height:24px;border-radius:12px;background:#E3E7EE;color:#4E5463;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">2</span>Rekomendasi</span>
-      </div>
-    </div>
+<div style="width:100%;min-height:1320px;box-sizing:border-box;color:#1A1D24;display:flex;flex-direction:column;background-color:#F3F6FB;background-image:radial-gradient(circle at 0% 0%,#B7D0FF 0,transparent 32%),radial-gradient(circle at 100% 22%,#C6EDFF 0,transparent 30%),radial-gradient(circle at 40% 100%,#DDE9FF 0,transparent 38%)">
+
+  <header style="max-width:1220px;width:100%;box-sizing:border-box;margin:0 auto;padding:22px 32px;display:flex;justify-content:space-between;align-items:center">
+    <button type="button" onClick="{{toAwal}}" style="border:0;background:transparent;padding:0;font-weight:800;font-size:24px;letter-spacing:-.02em;color:#1A1D24">kosjati<span style="color:#1A55BC">.</span></button>
+    <a href="#tentang" style="font-size:15px;font-weight:600;color:#1A1D24;text-decoration:none">Tentang</a>
+  </header>
+
+  <div style="max-width:1220px;width:100%;box-sizing:border-box;margin:0 auto;padding:20px 32px 56px;display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start">
+
+    <main style="flex:1 1 560px;min-width:0;display:flex;flex-direction:column;gap:28px">
+
+      <sc-if value="{{isAwal}}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:52px">
+          <h1 style="margin:0;font-weight:800;font-size:58px;line-height:1.04;letter-spacing:-.035em">Cari kos di Jatinangor yang paling pas buatmu</h1>
+          <p style="margin:0;font-size:18px;line-height:1.6;color:#4E5463;max-width:600px">Atur budget dan prioritasmu, lalu kami urutkan kos yang cocok dari skor tertinggi.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:48px">
+          <span style="font-weight:800;font-size:19px">Cara kerjanya</span>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:700px">
+            <div style="border-radius:20px;padding:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:14px"><span style="width:34px;height:34px;border-radius:11px;background:#E3ECFD;color:#1A55BC;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">1</span><span style="font-size:15px;font-weight:700">Pilih budget &amp; tipe</span></div>
+            <div style="border-radius:20px;padding:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:14px"><span style="width:34px;height:34px;border-radius:11px;background:#E3ECFD;color:#1A55BC;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">2</span><span style="font-size:15px;font-weight:700">Urutkan prioritas</span></div>
+            <div style="border-radius:20px;padding:18px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:14px"><span style="width:34px;height:34px;border-radius:11px;background:#E3ECFD;color:#1A55BC;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">3</span><span style="font-size:15px;font-weight:700">Lihat peringkat</span></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{notAwal}}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:700px">
+          <sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+            <button type="button" onClick="{{s.go}}" disabled="{{s.disabled}}" style="text-align:left;border-radius:20px;padding:14px 16px;background:{{s.bg}};border:{{s.border}};box-shadow:{{s.shadow}};display:flex;align-items:center;gap:12px;color:{{s.color}};cursor:{{s.cursor}}">
+              <span style="width:34px;height:34px;flex:none;border-radius:11px;background:{{s.badgeBg}};color:{{s.badgeColor}};font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">
+                <sc-if value="{{s.done}}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+                <sc-if value="{{s.notDone}}" hint-placeholder-val="{{ true }}">{{s.no}}</sc-if>
+              </span>
+              <span style="font-size:14px;font-weight:{{s.weight}}">{{s.label}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isPrio}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <h1 style="margin:0;font-weight:800;font-size:50px;line-height:1.05;letter-spacing:-.035em">Apa yang paling penting buatmu?</h1>
+          <p style="margin:0;font-size:17px;line-height:1.55;color:#4E5463;max-width:580px">Urutkan dari yang paling penting. Urutan ini jadi bobot penilaian, jadi kos yang unggul di prioritas teratasmu akan naik ke atas.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+            <div style="height:{{r.h}};box-sizing:border-box;border-radius:18px;padding:0 10px 0 16px;display:flex;align-items:center;gap:14px;background:{{r.bg}};backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.95);box-shadow:{{r.shadow}};transition:all .2s ease-out">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="#8A91A1" aria-hidden="true"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>
+              <span style="width:20px;font-size:14px;font-weight:800;color:{{r.noColor}}">{{r.no}}</span>
+              <span style="width:{{r.tile}};height:{{r.tile}};flex:none;border-radius:12px;background:{{r.tileBg}};display:flex;align-items:center;justify-content:center;transition:all .2s ease-out"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{r.iconColor}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.icon}}"/></svg></span>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:{{r.fs}};font-weight:700">{{r.name}}</span><span style="font-size:12px;color:#4E5463">{{r.hint}}</span></div>
+              <span style="font-size:15px;font-weight:800;color:{{r.wColor}};min-width:52px;text-align:right">{{r.w}}</span>
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <button type="button" aria-label="{{r.upLabel}}" disabled="{{r.isFirst}}" onClick="{{r.up}}" style="width:30px;height:22px;border:0;border-radius:7px;background:rgba(255,255,255,.7);color:{{r.upColor}};display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+                <button type="button" aria-label="{{r.downLabel}}" disabled="{{r.isLast}}" onClick="{{r.down}}" style="width:30px;height:22px;border:0;border-radius:7px;background:rgba(255,255,255,.7);color:{{r.downColor}};display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 6px;font-size:13px;color:#4E5463"><span>{{n}} kriteria · bobot dihitung otomatis</span><button type="button" onClick="{{reset}}" style="border:0;background:transparent;font-size:13px;font-weight:600;color:#1A55BC;padding:6px 4px">Reset urutan</button></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isHasil}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h1 style="margin:0;font-weight:800;font-size:46px;line-height:1.05;letter-spacing:-.035em">{{cocok}} kos cocok, ini peringkatnya</h1>
+          <p style="margin:0;font-size:16px;line-height:1.55;color:#4E5463">Diurutkan dengan SAW dari prioritasmu ({{top3}}). Klik kos untuk melihat rinciannya.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ranked}}" as="k" hint-placeholder-count="6">
+            <button type="button" onClick="{{k.pick}}" style="text-align:left;padding:10px;border-radius:20px;display:flex;gap:14px;align-items:center;background:{{k.bg}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:{{k.border}};box-shadow:{{k.shadow}};color:#1A1D24;transition:all .2s ease-out">
+              <div style="width:132px;height:92px;flex:none;border-radius:14px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative"><span style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.95);border-radius:9px;padding:2px 9px;font-size:13px;font-weight:800;color:{{k.rankColor}}">#{{k.rank}}</span></div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-weight:800;font-size:17px">{{k.name}}</span><span style="font-weight:800;font-size:17px;color:#1A55BC">{{k.score}}</span></div>
+                <span style="font-size:13px;color:#4E5463">{{k.dist}} ke kampus · {{k.tipe}}</span>
+                <span style="font-size:14px"><b>{{k.price}}</b> <span style="color:#4E5463">/ bulan</span></span>
+                <div style="height:5px;border-radius:3px;background:#E3E7EE;margin-top:2px"><div style="height:5px;border-radius:3px;width:{{k.bar}};background:#1D5FD1;transition:width .3s ease-out"></div></div>
+              </div>
+            </button>
+          </sc-for>
+          <span style="font-size:13px;color:#4E5463;padding:4px 6px">Menampilkan {{shown}} teratas dari {{cocok}} kos · data contoh</span>
+        </div>
+      </sc-if>
+    </main>
+
+    <aside style="flex:0 1 500px;min-width:340px;position:sticky;top:24px;padding:24px;border-radius:30px;background:rgba(255,255,255,.62);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.95);box-shadow:0 18px 44px rgba(30,45,90,.12);display:flex;flex-direction:column;gap:14px">
+
+      <sc-if value="{{notHasil}}" hint-placeholder-val="{{ true }}">
+        <label for="budget" style="font-size:16px;font-weight:700">Budget maks per bulan</label>
+        <span style="font-weight:800;font-size:38px;letter-spacing:-.02em;margin-top:-6px;font-variant-numeric:tabular-nums">{{budgetText}}</span>
+        <div role="img" aria-label="Sebaran harga kos di Jatinangor" style="display:flex;align-items:flex-end;gap:3px;height:76px;padding:0 2px">
+          <sc-for list="{{bars}}" as="bar" hint-placeholder-count="26"><div style="flex:1;height:{{bar.h}};border-radius:3px 3px 0 0;background:{{bar.c}};transition:background .15s ease-out"></div></sc-for>
+        </div>
+        <input id="budget" type="range" min="500000" max="3000000" step="100000" value="{{budget}}" onChange="{{setBudget}}" style="width:100%;accent-color:#1D5FD1;height:26px;margin:-8px 0 0">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#4E5463"><span>Rp 500 rb</span><span>Rp 3 jt</span></div>
+        <sc-if value="{{isAwal}}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:14px;color:#4E5463"><b style="color:#1A1D24">{{under}} kos</b> di bawah budget ini</span>
+        </sc-if>
+        <span style="font-size:16px;font-weight:700;margin-top:6px">Tipe penghuni</span>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:5px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid #E3E7EE">
+          <sc-for list="{{tipes}}" as="t" hint-placeholder-count="3">
+            <button type="button" aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="height:48px;border:0;border-radius:999px;background:{{t.bg}};color:{{t.color}};font-size:16px;font-weight:{{t.weight}};box-shadow:{{t.shadow}};transition:all .2s ease-out">{{t.label}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isAwal}}" hint-placeholder-val="{{ true }}">
+        <button type="button" onClick="{{toPrio}}" style="margin-top:10px;height:60px;border:0;border-radius:18px;background:#1D5FD1;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:700;box-shadow:0 12px 26px rgba(29,95,209,.30)">Lanjut atur prioritas <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+      </sc-if>
+
+      <sc-if value="{{isPrio}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.75);border:1px solid #E3E7EE">
+          <div style="display:flex">
+            <span style="width:40px;height:40px;border-radius:12px;border:2px solid #fff;background:linear-gradient(135deg,#DCE3EB,#C3CCD7)"></span>
+            <span style="width:40px;height:40px;border-radius:12px;border:2px solid #fff;margin-left:-12px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA)"></span>
+            <span style="width:40px;height:40px;border-radius:12px;border:2px solid #fff;margin-left:-12px;background:linear-gradient(135deg,#D6DEE8,#BFC9D6)"></span>
+            <span style="width:40px;height:40px;border-radius:12px;border:2px solid #fff;margin-left:-12px;background:#E3ECFD;color:#1A55BC;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">+{{more}}</span>
+          </div>
+          <div style="display:flex;flex-direction:column"><span style="font-weight:800;font-size:17px">{{cocok}} kos siap diurutkan</span><span style="font-size:13px;color:#4E5463">{{tipeLabel}} · maks {{budgetShort}}</span></div>
+        </div>
+        <button type="button" onClick="{{toHasil}}" style="height:60px;border:0;border-radius:18px;background:#1D5FD1;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:700;box-shadow:0 12px 26px rgba(29,95,209,.30)">Lihat peringkat <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+        <button type="button" onClick="{{toAwal}}" style="align-self:center;border:0;background:transparent;font-size:14px;font-weight:600;color:#4E5463;padding:6px 10px">← Kembali</button>
+      </sc-if>
+
+      <sc-if value="{{isHasil}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <button type="button" onClick="{{toAwal}}" style="height:36px;padding:0 12px;border-radius:999px;border:1px solid #E3E7EE;background:rgba(255,255,255,.75);font-size:13px;font-weight:600;color:#1A1D24">{{tipeLabel}} · maks {{budgetShort}} · Ubah</button>
+          <button type="button" onClick="{{toPrio}}" style="height:36px;padding:0 12px;border-radius:999px;border:1px solid #E3E7EE;background:rgba(255,255,255,.75);font-size:13px;font-weight:600;color:#1A55BC">Ubah prioritas</button>
+        </div>
+        <div style="height:190px;border-radius:20px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg><span style="font-size:12px;color:#5B6170">foto kos (galeri)</span><span style="position:absolute;top:12px;left:12px;background:#1D5FD1;color:#fff;border-radius:10px;padding:4px 10px;font-size:13px;font-weight:800">#{{sel.rank}} dari {{cocok}}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:800;font-size:26px;letter-spacing:-.02em">{{sel.name}}</span><span style="font-size:14px;color:#4E5463">{{sel.dist}} ke kampus · {{sel.price}} / bulan</span></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:11px;color:#4E5463">Skor SAW</span><span style="font-weight:800;font-size:26px;color:#1A55BC">{{sel.score}}</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <sc-for list="{{sel.crit}}" as="c" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:110px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:13px"><span>{{c.name}}</span><div style="height:8px;border-radius:4px;background:#E3E7EE"><div style="height:8px;border-radius:4px;width:{{c.w}};background:{{c.fill}};transition:width .3s ease-out"></div></div><span style="text-align:right;font-weight:700">{{c.v}}</span></div>
+          </sc-for>
+        </div>
+        <div style="padding:12px 14px;border-radius:16px;background:#E3ECFD;font-size:13px;line-height:1.5"><b>Kenapa peringkat {{sel.rank}}?</b> {{sel.why}}</div>
+        <a href="https://mamikos.com" style="height:54px;border-radius:16px;background:#1D5FD1;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 10px 22px rgba(29,95,209,.28)">Buka iklan asli ↗</a>
+      </sc-if>
+    </aside>
   </div>
 
-  <div style="max-width:1200px;width:100%;box-sizing:border-box;margin:0 auto;padding:28px 28px 120px;display:flex;flex-direction:column;gap:20px">
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <h1 style="margin:0;font-weight:800;font-size:30px;letter-spacing:-.02em">Atur kebutuhanmu dulu</h1>
-      <p style="margin:0;font-size:15px;color:#4E5463">Rekomendasi dihitung dari batas dan urutan prioritas ini. Kamu masih bisa mengubahnya nanti di halaman hasil.</p>
-    </div>
-
-    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
-      <div style="flex:1 1 360px;min-width:0;padding:20px;border-radius:24px;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(30,45,90,.10);display:flex;flex-direction:column;gap:12px">
-        <span style="font-size:12px;font-weight:700;color:#4E5463;letter-spacing:.04em">A · BATAS (FILTER)</span>
-        <span style="font-size:14px;font-weight:700">Budget maks per bulan</span>
-        <span style="font-weight:800;font-size:30px;letter-spacing:-.02em">Rp 1.200.000</span>
-        <div role="img" aria-label="Sebaran harga kos" style="display:flex;align-items:flex-end;gap:2px;height:72px">
-          <sc-for list="{{bars}}" as="bar" hint-placeholder-count="26"><div style="flex:1;height:{{bar.h}};border-radius:3px 3px 0 0;background:{{bar.c}}"></div></sc-for>
-        </div>
-        <div style="height:6px;border-radius:3px;background:#E3E7EE;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:28%;border-radius:3px;background:#1D5FD1"></div><div style="position:absolute;left:28%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:11px;background:#fff;border:2px solid #1D5FD1;box-shadow:0 2px 6px rgba(30,45,90,.2)"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#4E5463"><span>Rp 500 rb</span><span>30 kos di bawah budget ini</span><span>Rp 3 jt</span></div>
-        <span style="font-size:14px;font-weight:700;margin-top:8px">Tipe penghuni</span>
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:4px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid #E3E7EE">
-          <button type="button" style="height:44px;border:0;border-radius:10px;background:transparent;color:#4E5463;font-size:14px;font-weight:600">Putra</button>
-          <button type="button" aria-pressed="true" style="height:44px;border:0;border-radius:10px;background:#fff;color:#1A55BC;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(30,45,90,.12)">Putri</button>
-          <button type="button" style="height:44px;border:0;border-radius:10px;background:transparent;color:#4E5463;font-size:14px;font-weight:600">Campur</button>
-        </div>
-      </div>
-
-      <div style="flex:1.3 1 460px;min-width:0;padding:20px;border-radius:24px;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(30,45,90,.10);display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;font-weight:700;color:#4E5463;letter-spacing:.04em">B · URUTAN PRIORITAS (BOBOT SAW)</span><span style="font-size:13px;font-weight:600;color:#1A55BC">Reset</span></div>
-        <span style="font-size:14px;color:#4E5463">Seret dari yang paling penting ke yang paling tidak penting.</span>
-        <sc-for list="{{prio}}" as="p" hint-placeholder-count="8">
-          <div style="height:50px;box-sizing:border-box;border-radius:14px;padding:0 14px;display:flex;align-items:center;gap:12px;background:{{p.bg}};border:{{p.border}};box-shadow:{{p.shadow}};transform:{{p.tf}}">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="#8A91A1" aria-hidden="true"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>
-            <span style="font-size:13px;font-weight:800;color:#4E5463;width:16px">{{p.no}}</span>
-            <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:14px;font-weight:700">{{p.name}}</span><span style="font-size:11px;color:#4E5463">{{p.hint}}</span></div>
-            <div style="width:120px;height:6px;border-radius:3px;background:#E3E7EE"><div style="height:6px;border-radius:3px;width:{{p.bar}};background:#1D5FD1"></div></div>
-            <span style="font-size:13px;font-weight:800;color:#1A55BC;width:44px;text-align:right">{{p.w}}</span>
+  <sc-if value="{{notHasil}}" hint-placeholder-val="{{ true }}">
+    <section style="max-width:1220px;width:100%;box-sizing:border-box;margin:0 auto;padding:0 32px 64px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:800;font-size:21px">Kos di data kami</span><a href="#semua" style="font-size:15px;font-weight:600;text-decoration:none">Lihat semua</a></div>
+      <div style="display:flex;gap:16px;overflow:hidden">
+        <sc-for list="{{kos}}" as="k" hint-placeholder-count="6">
+          <div style="flex:none;width:250px;display:flex;flex-direction:column;gap:8px">
+            <div style="height:160px;border-radius:20px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg><span style="font-size:12px;color:#5B6170">foto kos</span></div>
+            <span style="font-weight:700;font-size:16px">{{k.name}}</span>
+            <span style="font-size:14px"><b>{{k.price}}</b> <span style="color:#4E5463">/ bulan · {{k.dist}}</span></span>
           </div>
         </sc-for>
       </div>
-    </div>
-  </div>
-
-  <div style="position:sticky;bottom:0;margin-top:auto;background:rgba(255,255,255,.78);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-top:1px solid rgba(255,255,255,.9)">
-    <div style="max-width:1200px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-      <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:13px;color:#4E5463">Putri · maks Rp 1.200.000 · prioritas: biaya, jarak, keamanan, +5</span><span style="font-weight:800;font-size:17px">± 14 kos akan diurutkan</span></div>
-      <a href="DesktopV2.dc.html" style="height:52px;padding:0 26px;border-radius:16px;background:#1D5FD1;color:#fff;text-decoration:none;display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;box-shadow:0 8px 20px rgba(29,95,209,.28)">Lihat rekomendasi <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
-    </div>
-  </div>
+    </section>
+  </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1320}}'>
 class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { langkah: 'awal', budget: 1200000, tipe: 'putri', order: [0,1,2,3,4,5,6,7], pilih: null };
+  }
   renderVals() {
+    const { langkah, budget, tipe, order, pilih } = this.state;
+    const go = (l) => () => this.setState({ langkah: l });
+    const fmt2 = (v) => v.toFixed(2).replace('.', ',');
+    const rp = (v) => 'Rp ' + Math.round(v).toLocaleString('id-ID');
+    const short = (v) => v >= 1000000 ? 'Rp ' + (v / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' jt' : 'Rp ' + (v / 1000) + ' rb';
     // DATA CONTOH
     const hist = [1,2,3,4,5,4,6,5,4,3,3,2,2,2,1,1,1,1,0,1,0,0,1,0,0,1];
-    const bars = hist.map((n, i) => ({ h: Math.max(6, Math.round(n / 6 * 100)) + '%', c: 500000 + i * 100000 <= 1200000 ? '#1D5FD1' : '#CBD5E3' }));
-    const P = [['Biaya sewa','Makin murah makin baik'],['Jarak ke kampus','Makin dekat makin baik'],['Keamanan','Sedang diseret…'],['Fasilitas','Makin lengkap makin baik'],['Akses layanan','Makin dekat makin baik'],['Luas kamar','Makin luas makin baik'],['Pengelolaan','Makin tertata makin baik'],['Lingkungan','Makin nyaman makin baik']];
-    const W = [22.2,19.4,16.7,13.9,11.1,8.3,5.6,2.8];
-    const prio = P.map((p, i) => ({ no: i + 1, name: p[0], hint: p[1], w: W[i].toFixed(1).replace('.', ',') + '%', bar: Math.round(W[i] / 22.2 * 100) + '%',
-      bg: i === 2 ? '#FFFFFF' : 'rgba(255,255,255,.6)', border: i === 2 ? '2px solid #1D5FD1' : '1px solid #E3E7EE',
-      shadow: i === 2 ? '0 12px 26px rgba(29,95,209,.25)' : 'none', tf: i === 2 ? 'scale(1.02)' : 'none' }));
-    return { bars, prio };
+    const under = hist.reduce((s, n, i) => s + (500000 + i * 100000 <= budget ? n : 0), 0);
+    const share = { putra: 0.4, putri: 0.4, campur: 0.2 };
+    const cocok = Math.round(under * share[tipe]);
+    const bars = hist.map((n, i) => ({ h: Math.max(6, Math.round(n / 6 * 100)) + '%', c: 500000 + i * 100000 <= budget ? '#1D5FD1' : '#CBD5E3' }));
+    const T = [['putra','Putra'],['putri','Putri'],['campur','Campur']];
+    const tipes = T.map(([v, label]) => { const on = v === tipe; return { label, pressed: on ? 'true' : 'false',
+      pick: () => this.setState({ tipe: v }), bg: on ? '#FFFFFF' : 'transparent', color: on ? '#1A55BC' : '#4E5463',
+      weight: on ? 700 : 600, shadow: on ? '0 2px 10px rgba(30,45,90,.12)' : 'none' }; });
+    const I = {
+      wallet:'M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM16 12.5h2',
+      pin:'M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11zM12 8.5v3',
+      shield:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+      star:'M12 3l2.6 5.6 6.1.7-4.5 4.1 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.3l6.1-.7z',
+      bag:'M5 8h14l-1 12H6zM9 8a3 3 0 0 1 6 0',
+      expand:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
+      user:'M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM4 21c1-4 4-6 8-6s7 2 8 6',
+      leaf:'M5 19c0-8 6-14 15-14 0 9-6 15-14 15M5 19l7-7'
+    };
+    const K = [['Biaya sewa','Makin murah makin baik','wallet'],['Jarak ke kampus','Makin dekat makin baik','pin'],['Akses layanan','Makin dekat makin baik','bag'],['Luas kamar','Makin luas makin baik','expand'],['Fasilitas','Makin lengkap makin baik','star'],['Keamanan','Makin tinggi makin baik','shield'],['Pengelolaan','Makin tertata makin baik','user'],['Lingkungan','Makin nyaman makin baik','leaf']];
+    const n = order.length;
+    const wOf = (pos) => 2 * (n - pos) / (n * (n + 1));
+    const weight = {}; order.forEach((k, pos) => { weight[k] = wOf(pos); });
+    const move = (i, d) => { const o = order.slice(); const j = i + d; if (j < 0 || j >= n) return; const t = o[i]; o[i] = o[j]; o[j] = t; this.setState({ order: o }); };
+    const rows = order.map((k, i) => {
+      const top = i < 3;
+      return { no: i + 1, name: K[k][0], hint: K[k][1], icon: I[K[k][2]], w: (wOf(i) * 100).toFixed(1).replace('.', ',') + '%',
+        h: top ? '68px' : '56px', fs: top ? '16px' : '15px', tile: top ? '42px' : '36px',
+        tileBg: top ? '#1D5FD1' : '#E3ECFD', iconColor: top ? '#FFFFFF' : '#1A55BC',
+        noColor: top ? '#1A55BC' : '#8A91A1', wColor: top ? '#1A55BC' : '#4E5463',
+        bg: top ? 'rgba(255,255,255,.75)' : 'rgba(255,255,255,.5)', shadow: top ? '0 8px 22px rgba(30,45,90,.08)' : 'none',
+        isFirst: i === 0, isLast: i === n - 1, upColor: i === 0 ? '#C7CDD6' : '#1A1D24', downColor: i === n - 1 ? '#C7CDD6' : '#1A1D24',
+        upLabel: 'Naikkan ' + K[k][0], downLabel: 'Turunkan ' + K[k][0], up: () => move(i, -1), down: () => move(i, 1) };
+    });
+    // DATA CONTOH: skor ternormalisasi per kriteria (urutan sesuai K)
+    const DATA = [
+      { id: 'melati', name: 'Kos Melati', price: 1050000, dist: '0,3 km', s: [.90,.80,.70,.50,.85,.90,.60,.55] },
+      { id: 'mawar', name: 'Kos Mawar', price: 900000, dist: '0,6 km', s: [.95,.70,.75,.60,.60,.70,.80,.50] },
+      { id: 'anggrek', name: 'Kos Anggrek', price: 1150000, dist: '1,1 km', s: [.60,.65,.60,.85,.75,.55,.70,.65] },
+      { id: 'kenanga', name: 'Kos Kenanga', price: 950000, dist: '0,9 km', s: [.85,.75,.55,.55,.65,.60,.60,.70] },
+      { id: 'dahlia', name: 'Kos Dahlia', price: 1000000, dist: '1,4 km', s: [.80,.55,.70,.65,.60,.65,.55,.75] },
+      { id: 'teratai', name: 'Kos Teratai', price: 800000, dist: '2,0 km', s: [1.0,.40,.50,.70,.50,.55,.60,.80] }
+    ];
+    const scored = DATA.filter((d) => d.price <= budget)
+      .map((d) => ({ ...d, saw: d.s.reduce((sum, v, k) => sum + v * weight[k], 0) }))
+      .sort((a, b) => b.saw - a.saw);
+    const best = scored.length ? scored[0].saw : 1;
+    const selId = scored.some((d) => d.id === pilih) ? pilih : (scored[0] ? scored[0].id : null);
+    const tipeLabel = tipe.charAt(0).toUpperCase() + tipe.slice(1);
+    const ranked = scored.map((d, i) => { const on = d.id === selId; return {
+      rank: i + 1, name: d.name, score: fmt2(d.saw), dist: d.dist, tipe: tipeLabel, price: rp(d.price), bar: Math.round(d.saw / best * 100) + '%',
+      pick: () => this.setState({ pilih: d.id }), rankColor: i === 0 ? '#1A55BC' : '#1A1D24',
+      bg: on ? 'rgba(255,255,255,.85)' : 'rgba(255,255,255,.55)', border: on ? '2px solid #1D5FD1' : '1px solid rgba(255,255,255,.95)',
+      shadow: on ? '0 12px 28px rgba(29,95,209,.18)' : '0 4px 14px rgba(30,45,90,.06)' }; });
+    let sel = { rank: '-', name: '-', dist: '', price: '', score: '-', crit: [], why: '' };
+    const si = scored.findIndex((d) => d.id === selId);
+    if (si >= 0) {
+      const d = scored[si];
+      const contrib = d.s.map((v, k) => ({ k, c: v * weight[k], v })).sort((a, b) => b.c - a.c);
+      const low = d.s.map((v, k) => ({ k, v })).sort((a, b) => a.v - b.v)[0];
+      sel = { rank: si + 1, name: d.name, dist: d.dist, price: rp(d.price), score: fmt2(d.saw),
+        crit: order.map((k) => ({ name: K[k][0], v: fmt2(d.s[k]), w: Math.round(d.s[k] * 100) + '%', fill: d.s[k] < 0.6 ? '#4E5463' : '#1D5FD1' })),
+        why: 'Paling kuat di ' + K[contrib[0].k][0].toLowerCase() + ' dan ' + K[contrib[1].k][0].toLowerCase() + '. Paling lemah di ' + K[low.k][0].toLowerCase() + ' (bobotnya ' + (weight[low.k] * 100).toFixed(1).replace('.', ',') + '%).' };
+    }
+    const top3 = order.slice(0, 3).map((k) => K[k][0].toLowerCase()).join(', ');
+    const steps = [
+      { no: 1, label: 'Budget & tipe', go: go('awal') },
+      { no: 2, label: 'Urutkan prioritas', go: go('prioritas') },
+      { no: 3, label: 'Lihat peringkat', go: go('peringkat') }
+    ].map((s) => {
+      const cur = langkah === 'prioritas' ? 2 : 3;
+      const done = s.no < cur, active = s.no === cur, locked = s.no > cur;
+      return { ...s, done, notDone: !done, disabled: locked,
+        bg: active ? '#FFFFFF' : (done ? 'rgba(255,255,255,.45)' : 'rgba(255,255,255,.3)'),
+        border: active ? '1.5px solid #1D5FD1' : '1px solid rgba(255,255,255,.95)',
+        shadow: active ? '0 10px 24px rgba(29,95,209,.14)' : 'none',
+        color: active ? '#1A1D24' : '#4E5463', weight: active ? 700 : 600, cursor: locked ? 'default' : 'pointer',
+        badgeBg: done ? '#1D5FD1' : (active ? '#E3ECFD' : '#E3E7EE'), badgeColor: active ? '#1A55BC' : '#4E5463' };
+    });
+    const kos = DATA.map((d) => ({ name: d.name, price: rp(d.price), dist: d.dist }));
+    return {
+      isAwal: langkah === 'awal', notAwal: langkah !== 'awal', isPrio: langkah === 'prioritas',
+      isHasil: langkah === 'peringkat', notHasil: langkah !== 'peringkat',
+      toAwal: go('awal'), toPrio: go('prioritas'), toHasil: go('peringkat'),
+      budget, budgetText: rp(budget), budgetShort: short(budget), setBudget: (e) => this.setState({ budget: +e.target.value }),
+      bars, under, cocok, more: Math.max(0, cocok - 3), tipes, tipeLabel,
+      rows, n, reset: () => this.setState({ order: [0,1,2,3,4,5,6,7] }),
+      steps, ranked, shown: ranked.length, sel, top3, kos
+    };
   }
 }
 </script>

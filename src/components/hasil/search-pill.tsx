@@ -10,7 +10,7 @@ export function SearchPill({ filter }: { filter: FilterState }) {
     <Link
       href={buildHref("/filter", filter)}
       aria-label="Ubah filter pencarian"
-      className="tekan glass flex h-[52px] items-center gap-3 rounded-full pr-2 pl-[18px] text-ink hover:bg-white/70"
+      className="tekan glass tombol-kaca flex h-[52px] items-center gap-3 rounded-full border-white/90 pr-2 pl-[18px] text-ink"
     >
       <Search size={18} strokeWidth={2.2} className="flex-none" aria-hidden />
       <span className="flex min-w-0 flex-1 flex-col">

@@ -29,7 +29,7 @@ export function StepHeader({
           href={backHref}
           pakaiRiwayat={backPakaiRiwayat}
           aria-label={backLabel}
-          className="flex size-11 flex-none items-center justify-center rounded-full text-ink transition-colors hover:bg-white/60"
+          className="tekan tombol-kaca flex size-11 flex-none items-center justify-center rounded-full border-transparent text-ink"
         >
           <ChevronLeft size={20} strokeWidth={2.2} aria-hidden />
         </BackLink>

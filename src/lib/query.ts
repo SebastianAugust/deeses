@@ -94,6 +94,29 @@ export function buildHref(pathname: string, state: FilterState, tambahan?: Param
   return `${pathname}?${buildQuery(state, tambahan)}`;
 }
 
+/**
+ * Penanda alur desktop: /hasil hanya boleh dibuka lewat tombol "Lihat
+ * rekomendasi" di langkah prioritas (atau dari dalam /hasil sendiri).
+ * Tanpa `ok=1`, /hasil desktop dialihkan ke /?langkah=prioritas.
+ */
+export const PARAM_OK = { ok: "1" } as const;
+
+export function adaPenandaOk(params: { get(name: string): string | null }): boolean {
+  return params.get("ok") === "1";
+}
+
+/** Langkah Home desktop: / = "awal", /?langkah=prioritas = "prioritas". */
+export type LangkahHome = "awal" | "prioritas";
+
+export function parseLangkah(params: { get(name: string): string | null }): LangkahHome {
+  return params.get("langkah") === "prioritas" ? "prioritas" : "awal";
+}
+
+/** URL Home untuk langkah tertentu (langkah awal tidak menulis param). */
+export function hrefHome(state: FilterState, langkah: LangkahHome): string {
+  return buildHref("/", state, { langkah: langkah === "prioritas" ? "prioritas" : undefined });
+}
+
 /** FilterState → body untuk POST /api/rank. */
 export function toRankRequest(state: FilterState): RankRequest {
   return { budget: state.budget, tipe: state.tipe, urutan_kriteria: state.urutan };

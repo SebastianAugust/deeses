@@ -122,6 +122,51 @@
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+
+  /* Kursor. Tailwind v4 (preflight) membuat <button> ber-cursor default. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  summary,
+  select,
+  input[type="range"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  /* Slider: thumb bisa "dipegang", track bisa diklik. */
+  input[type="range"]::-webkit-slider-thumb {
+    cursor: grab;
+  }
+  input[type="range"]:active::-webkit-slider-thumb {
+    cursor: grabbing;
+  }
+  input[type="range"]::-moz-range-thumb {
+    cursor: grab;
+  }
+  [data-slot="slider-thumb"] {
+    cursor: grab;
+  }
+  [data-slot="slider-thumb"]:has(:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  [data-slot="slider-thumb"]:active,
+  [data-slot="slider"][data-dragging],
+  [data-slot="slider"][data-dragging] * {
+    cursor: grabbing;
+  }
+  /* Selama baris prioritas diseret (kelas dipasang oleh PrioritasSortable). */
+  body.sedang-menyeret,
+  body.sedang-menyeret * {
+    cursor: grabbing !important;
+  }
   body {
     @apply text-foreground;
     background-color: #f3f6fb;
@@ -150,14 +195,56 @@
      bentrok dengan utilitas translate Tailwind atau transform dari motion. */
   .tekan {
     transition-property: scale, translate, background-color, color, border-color, box-shadow,
-      filter, opacity;
+      filter, opacity, text-decoration-color;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
   }
-  .tekan:active {
+  .tekan:active:not(:disabled):not([aria-disabled="true"]) {
     scale: 0.98;
   }
-  /* Kartu kos: hover naik 2px. Bayangan diatur per kartu (hover:shadow-…). */
+
+  /* Tombol utama (accent): hover sedikit lebih gelap + bayangan lebih besar. */
+  .tombol-utama:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--color-accent-ink);
+    box-shadow: 0 12px 28px rgba(29, 95, 209, 0.34);
+  }
+
+  /* Tombol sekunder/kaca & pill: hover lebih putih + border accent tipis. */
+  .tombol-kaca {
+    border: 1px solid var(--color-line);
+  }
+  .tombol-kaca:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  }
+
+  /* Segmented & chip: hover pada opsi yang BELUM terpilih saja. */
+  .pilihan:not([aria-pressed="true"]):not(:disabled):hover {
+    color: var(--color-ink);
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Link teks: hover underline (offset 3px) + warna accent-ink. */
+  .tautan {
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+  }
+  .tautan:hover:not(:disabled):not([aria-disabled="true"]) {
+    color: var(--color-accent-ink);
+    text-decoration-color: currentColor;
+  }
+
+  /* Logo: hover opacity .8. */
+  .logo {
+    transition: opacity 150ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  .logo:hover {
+    opacity: 0.8;
+  }
+
+  /* Kartu kos: hover naik 2px (+ foto zoom 1.03), ditekan kembali turun.
+     Bayangan lebih tebal diatur per kartu (hover:shadow-… / group-hover). */
   .kartu-angkat {
     transition-property: translate, box-shadow, background-color, border-color;
     transition-duration: 200ms;
@@ -166,16 +253,40 @@
   .kartu-angkat:hover {
     translate: 0 -2px;
   }
+  .kartu-angkat:active {
+    translate: 0 0;
+    transition-duration: 100ms;
+  }
+  .foto-zoom {
+    transition: scale 200ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  .kartu-angkat:hover .foto-zoom {
+    scale: 1.03;
+  }
+
+  /* Indikator loading kecil: titik berdenyut. */
+  .titik-denyut {
+    animation: titik-denyut 900ms ease-in-out infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .tekan:active {
+    .tekan:active:not(:disabled):not([aria-disabled="true"]) {
       scale: none;
     }
-    .kartu-angkat:hover {
+    .kartu-angkat:hover,
+    .kartu-angkat:active {
       translate: none;
+    }
+    .kartu-angkat:hover .foto-zoom {
+      scale: none;
     }
     .tekan,
     .kartu-angkat {
-      transition-property: background-color, color, border-color, box-shadow, filter, opacity;
+      transition-property: background-color, color, border-color, box-shadow, filter, opacity,
+        text-decoration-color;
+    }
+    .titik-denyut {
+      animation-name: titik-pudar;
     }
   }
 
@@ -209,6 +320,26 @@
 @media (min-width: 1024px), (prefers-reduced-motion: reduce) {
   ::view-transition-new(.halaman-masuk) {
     animation: 200ms cubic-bezier(0, 0, 0.2, 1) both halaman-pudar;
+  }
+}
+@keyframes titik-denyut {
+  0%,
+  100% {
+    opacity: 0.3;
+    scale: 0.7;
+  }
+  50% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes titik-pudar {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
   }
 }
 @keyframes halaman-pudar {

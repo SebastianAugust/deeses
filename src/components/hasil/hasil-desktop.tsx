@@ -11,7 +11,7 @@ import { KosDetailPanel } from "@/components/kos/kos-detail-panel";
 import { KosListCard } from "@/components/kos/kos-list-card";
 import { ErrorCard } from "@/components/status-card";
 import { jelaskanPeringkat } from "@/lib/explain";
-import { buildHref, type FilterState } from "@/lib/query";
+import { PARAM_OK, buildHref, type FilterState } from "@/lib/query";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
 import { useRank } from "@/lib/use-rank";
 import { useRankDelta } from "@/lib/use-rank-delta";
@@ -27,13 +27,13 @@ function HeaderDesktop() {
         <Link
           href="/"
           aria-label="Kosjati, ke beranda"
-          className="text-[22px] font-extrabold tracking-[-0.02em] text-ink"
+          className="logo text-[22px] font-extrabold tracking-[-0.02em] text-ink"
         >
           kosjati<span className="text-accent-ink">.</span>
         </Link>
         <span className="text-[13px] text-muted">Rekomendasi kos Jatinangor · SAW 8 kriteria</span>
         <span className="flex-1" />
-        <Link href="/#tentang" className="text-sm font-semibold text-ink hover:text-accent-ink">
+        <Link href="/#tentang" className="tautan text-sm font-semibold text-ink">
           Cara kerja perhitungan
         </Link>
       </div>
@@ -53,12 +53,12 @@ export function HasilDesktop() {
   const [pilih, setPilih] = useState<string | null>(pilihAwal);
 
   const rank = useRank(filter, { debounceMs: 300 });
-  const sebaran = useSebaranHarga(filter.tipe);
+  const { data: sebaran, memuat: memuatSebaran } = useSebaranHarga(filter.tipe);
   const daftar = rank.status === "success" ? rank.data : rank.dataTerakhir;
   const delta = useRankDelta(daftar);
 
   function simpan(f: FilterState, p: string | null) {
-    gantiUrl(buildHref("/hasil", f, { pilih: p }));
+    gantiUrl(buildHref("/hasil", f, { ...PARAM_OK, pilih: p }));
   }
   function terapkan(baru: FilterState) {
     setFilter(baru);
@@ -93,6 +93,7 @@ export function HasilDesktop() {
           <FilterSidebar
             filter={filter}
             sebaran={sebaran}
+            memuatSebaran={memuatSebaran}
             onChange={(patch) => terapkan({ ...filter, ...patch })}
           />
         </div>
@@ -140,7 +141,7 @@ export function HasilDesktop() {
                         catatan={i === 0 ? catatanTeratas : undefined}
                         terpilih={kos.id === terpilih?.id}
                         delta={delta[kos.id]}
-                        href={buildHref("/hasil", filter, { pilih: kos.id })}
+                        href={buildHref("/hasil", filter, { ...PARAM_OK, pilih: kos.id })}
                         onPilih={() => pilihKos(kos.id)}
                       />
                     ))}

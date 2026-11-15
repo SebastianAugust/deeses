@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 import { MotionProvider } from "@/components/motion-provider";
 import { NavigationTracker } from "@/components/navigation-tracker";
+import { PengamanViewTransition } from "@/components/pengaman-view-transition";
 import { ToastProvider } from "@/components/toast";
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <MotionProvider>
           <ToastProvider>{children}</ToastProvider>
         </MotionProvider>
+        <PengamanViewTransition />
         {/* Mencatat navigasi internal untuk tombol back (lib/riwayat.ts). */}
         <Suspense fallback={null}>
           <NavigationTracker />

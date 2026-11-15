@@ -11,7 +11,7 @@ export function NavigationTracker() {
 
   useEffect(() => {
     if (sebelumnya.current !== null && sebelumnya.current !== pathname) {
-      tandaiNavigasiInternal();
+      tandaiNavigasiInternal(sebelumnya.current);
     }
     sebelumnya.current = pathname;
   }, [pathname]);

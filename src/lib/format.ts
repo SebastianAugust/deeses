@@ -24,6 +24,29 @@ export function formatSkor(nilai: number): string {
   return nilai.toFixed(2).replace(".", ",");
 }
 
+/** 150 → "150 m", 1250 → "1,3 km" */
+export function formatJarakMeter(meter: number): string {
+  if (meter < 1000) return `${Math.round(meter)} m`;
+  return `${(meter / 1000).toFixed(1).replace(".", ",")} km`;
+}
+
+/** "2026-10-05T00:00:00Z" → "5 Oktober 2026" (null kalau tidak valid). */
+export function formatTanggal(iso: string): string | null {
+  const t = new Date(iso);
+  if (Number.isNaN(t.getTime())) return null;
+  const BULAN = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+  ];
+  return `${t.getUTCDate()} ${BULAN[t.getUTCMonth()]} ${t.getUTCFullYear()}`;
+}
+
+/** "Ibu Contoh 3" → "IC" */
+export function inisial(nama: string): string {
+  const kata = nama.trim().split(/\s+/).filter((k) => /\p{L}/u.test(k[0] ?? ""));
+  return (kata.slice(0, 2).map((k) => k[0]).join("") || "?").toUpperCase();
+}
+
 /** 0.3 → "0,3 km" */
 export function formatJarak(km: number): string {
   return `${km.toFixed(1).replace(".", ",")} km`;

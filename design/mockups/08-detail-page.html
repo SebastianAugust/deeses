@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Halaman detail kos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:#F3F6FB}
+button{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
+a{color:#1A55BC}
+</style>
+</helmet>
+<div style="width:100%;min-height:1700px;box-sizing:border-box;color:#1A1D24;display:flex;flex-direction:column;background-color:#F3F6FB;background-image:radial-gradient(circle at 0% 0%,#B7D0FF 0,transparent 28%),radial-gradient(circle at 100% 18%,#C6EDFF 0,transparent 26%),radial-gradient(circle at 30% 100%,#DDE9FF 0,transparent 32%)">
+
+  <div style="background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-bottom:1px solid rgba(255,255,255,.9)">
+    <div style="max-width:1220px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <span style="font-weight:800;font-size:22px;letter-spacing:-.02em">kosjati<span style="color:#1A55BC">.</span></span>
+      <a href="DesktopV2.dc.html" style="height:40px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid #E3E7EE;display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#1A1D24;text-decoration:none">← Kembali ke peringkat</a>
+      <span style="flex:1"></span>
+      <a href="#metode" style="font-size:14px;font-weight:600;color:#1A1D24;text-decoration:none">Cara kerja perhitungan</a>
+    </div>
+  </div>
+
+  <div style="max-width:1220px;width:100%;box-sizing:border-box;margin:0 auto;padding:24px 32px 64px;display:flex;flex-direction:column;gap:28px">
+
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:200px 200px;gap:10px">
+      <div style="grid-row:span 2;border-radius:24px 8px 8px 24px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg><span style="font-size:13px;color:#5B6170">foto utama</span></div>
+      <div style="border-radius:8px;background:linear-gradient(135deg,#DCE3EB,#C3CCD7)"></div>
+      <div style="border-radius:8px 24px 8px 8px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA)"></div>
+      <div style="border-radius:8px;background:linear-gradient(135deg,#D6DEE8,#BFC9D6)"></div>
+      <div style="border-radius:8px 8px 24px 8px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative"><button type="button" style="position:absolute;right:12px;bottom:12px;height:40px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:13px;font-weight:700;color:#1A1D24">Lihat semua foto (12)</button></div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:48px;align-items:flex-start">
+      <main style="flex:1 1 600px;min-width:0;display:flex;flex-direction:column;gap:32px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:800;padding:5px 11px;border-radius:9px;background:#1D5FD1;color:#fff">#1 dari 9 untukmu</span>
+            <span style="font-size:12px;font-weight:700;padding:5px 11px;border-radius:9px;background:#E3ECFD;color:#1A55BC">Campur</span>
+            <span style="font-size:12px;font-weight:700;padding:5px 11px;border-radius:9px;background:rgba(255,255,255,.75);border:1px solid #E3E7EE;color:#4E5463">Skor SAW 0,49</span>
+          </div>
+          <h1 style="margin:0;font-weight:800;font-size:42px;letter-spacing:-.03em;line-height:1.1">Kos Contoh 20</h1>
+          <span style="font-size:15px;color:#4E5463">[ALAMAT LENGKAP], Jatinangor, Sumedang · <b style="color:#1A1D24">0,9 km</b> ke kampus</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+          <sc-for list="{{facts}}" as="f" hint-placeholder-count="4">
+            <div style="padding:14px;border-radius:18px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:8px">
+              <span style="width:36px;height:36px;border-radius:11px;background:#E3ECFD;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A55BC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{f.icon}}"/></svg></span>
+              <span style="font-size:12px;color:#4E5463">{{f.label}}</span>
+              <span style="font-size:15px;font-weight:700;margin-top:-6px">{{f.value}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <section style="display:flex;flex-direction:column;gap:14px">
+          <h2 style="margin:0;font-size:22px;font-weight:800">Fasilitas</h2>
+          <sc-for list="{{fasGroups}}" as="g" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:14px;font-weight:700;color:#4E5463">{{g.title}}</span>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{g.items}}" as="it" hint-placeholder-count="5">
+                  <span style="height:40px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.65);border:1px solid #E3E7EE;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A55BC" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>{{it}}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+          <section style="padding:18px;border-radius:22px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:12px">
+            <h2 style="margin:0;font-size:18px;font-weight:800">Aturan kos</h2>
+            <sc-for list="{{rules}}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;gap:10px;font-size:14px;line-height:1.45"><span style="width:6px;height:6px;flex:none;border-radius:3px;background:#1D5FD1;margin-top:8px"></span><span>{{r}}</span></div>
+            </sc-for>
+          </section>
+          <section style="padding:18px;border-radius:22px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);display:flex;flex-direction:column;gap:12px">
+            <h2 style="margin:0;font-size:18px;font-weight:800">Sekitar kos</h2>
+            <sc-for list="{{near}}" as="nb" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;font-size:14px;border-bottom:1px solid #E3E7EE;padding-bottom:8px"><span>{{nb.name}}</span><span style="font-weight:700">{{nb.dist}}</span></div>
+            </sc-for>
+          </section>
+        </div>
+
+        <section style="padding:22px;border-radius:24px;background:rgba(255,255,255,.62);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.95);box-shadow:0 10px 28px rgba(30,45,90,.08);display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+            <h2 style="margin:0;font-size:22px;font-weight:800">Kenapa direkomendasikan untukmu</h2>
+            <span style="font-size:13px;color:#4E5463">SAW <b style="color:#1A55BC">0,49</b> · pembanding TOPSIS #5 (0,46)</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 28px">
+            <sc-for list="{{crit}}" as="c" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:120px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:13px"><span>{{c.name}}</span><div style="height:8px;border-radius:4px;background:#E3E7EE"><div style="height:8px;border-radius:4px;width:{{c.w}};background:{{c.fill}}"></div></div><span style="text-align:right;font-weight:700">{{c.v}}</span></div>
+            </sc-for>
+          </div>
+          <div style="padding:14px 16px;border-radius:16px;background:#E3ECFD;font-size:14px;line-height:1.55">Unggul di biaya sewa dan keamanan, dua dari tiga prioritas teratasmu. Skor terendahnya di luas kamar (0,47), tapi bobotnya cuma 8,3%.</div>
+          <span style="font-size:12px;color:#4E5463">Urutan kriteria mengikuti prioritasmu. <a href="DesktopSetup.dc.html">Ubah prioritas</a></span>
+        </section>
+
+        <span style="font-size:12px;color:#4E5463">Data dari listing publik, terakhir diperbarui [TANGGAL]. Informasi bisa berubah, pastikan lagi ke pengelola sebelum survei.</span>
+      </main>
+
+      <aside style="flex:0 1 380px;min-width:320px;position:sticky;top:24px;display:flex;flex-direction:column;gap:14px">
+        <div style="padding:22px;border-radius:26px;background:rgba(255,255,255,.7);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid rgba(255,255,255,.95);box-shadow:0 18px 44px rgba(30,45,90,.12);display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;gap:6px"><span style="font-weight:800;font-size:32px;letter-spacing:-.02em">Rp 1.000.000</span><span style="font-size:15px;color:#4E5463">/ bulan</span></div>
+          <span style="font-size:13px;color:#4E5463;margin-top:-8px">Listrik [TERMASUK / TIDAK] · deposit [Rp …]</span>
+          <div style="height:1px;background:#E3E7EE"></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="width:44px;height:44px;border-radius:22px;background:#E3ECFD;color:#1A55BC;font-weight:800;display:flex;align-items:center;justify-content:center">P</span>
+            <div style="display:flex;flex-direction:column"><span style="font-weight:700;font-size:15px">[NAMA PENGELOLA]</span><span style="font-size:12px;color:#4E5463">Pengelola kos · biasanya balas [JAM]</span></div>
+          </div>
+          <a href="#wa" style="height:54px;border-radius:16px;background:#1D5FD1;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;font-size:16px;font-weight:700;box-shadow:0 10px 22px rgba(29,95,209,.28)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.3-4.4A9 9 0 1 1 21 12z"/></svg>Chat WhatsApp</a>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <a href="#tel" style="height:46px;border-radius:14px;background:rgba(255,255,255,.8);border:1px solid #E3E7EE;color:#1A1D24;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1D24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>Telepon</a>
+            <button type="button" style="height:46px;border-radius:14px;background:rgba(255,255,255,.8);border:1px solid #E3E7EE;color:#1A1D24;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1D24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Salin alamat</button>
+          </div>
+          <span style="font-size:12px;color:#4E5463;line-height:1.5">Pesan otomatis: "Halo, saya lihat Kos Contoh 20 di kosjati, masih ada kamar kosong?"</span>
+          <a href="#sumber" style="align-self:center;font-size:13px;font-weight:600">Kontak tidak tersedia? Hubungi lewat listing sumber ↗</a>
+        </div>
+        <a href="#next" style="padding:14px 16px;border-radius:20px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.95);display:flex;align-items:center;gap:12px;color:#1A1D24;text-decoration:none">
+          <span style="width:56px;height:44px;flex:none;border-radius:10px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA)"></span>
+          <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;color:#4E5463">Berikutnya · #2</span><span style="font-size:14px;font-weight:700">Kos Contoh 14 · 0,47</span></div>
+          <span style="font-size:18px;color:#1A55BC">→</span>
+        </a>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // DATA CONTOH — isian dalam [KURUNG] menunggu data asli
+    const facts = [
+      { label: 'Luas kamar', value: '[3 × 4 m]', icon: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5' },
+      { label: 'Tipe', value: 'Campur', icon: 'M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM4 21c1-4 4-6 8-6s7 2 8 6' },
+      { label: 'Kamar mandi', value: '[Dalam]', icon: 'M4 12h16v3a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM6 12V5a2 2 0 0 1 4 0' },
+      { label: 'Sisa kamar', value: '[Tanya pengelola]', icon: 'M3 21V8l9-5 9 5v13M9 21v-6h6v6' }
+    ];
+    const fasGroups = [
+      { title: 'Di dalam kamar', items: ['Kasur', 'Lemari', 'Meja belajar', 'Kipas angin', 'Kamar mandi dalam'] },
+      { title: 'Fasilitas bersama', items: ['Wi-Fi', 'Dapur', 'Parkir motor', 'CCTV', 'Jemuran'] }
+    ];
+    const rules = ['[Jam malam 22.00]', '[Tamu lawan jenis tidak boleh masuk kamar]', '[Boleh bawa motor]', '[Pembayaran per bulan / per semester]'];
+    const near = [{ name: 'Gerbang kampus', dist: '0,9 km' }, { name: 'Minimarket', dist: '[150 m]' }, { name: 'Laundry', dist: '[200 m]' }, { name: 'Warung makan', dist: '[100 m]' }];
+    const crit = [['Biaya sewa',.82],['Jarak ke kampus',.71],['Keamanan',.90],['Fasilitas',.56],['Akses layanan',.64],['Luas kamar',.47],['Pengelolaan',.47],['Lingkungan',.62]]
+      .map(([name, v]) => ({ name, v: v.toFixed(2).replace('.', ','), w: Math.round(v * 100) + '%', fill: v < 0.6 ? '#4E5463' : '#1D5FD1' }));
+    return { facts, fasGroups, rules, near, crit };
+  }
+}
+</script>
+</body>
+</html>

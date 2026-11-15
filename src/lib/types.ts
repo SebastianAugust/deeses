@@ -60,6 +60,53 @@ export type RankResult = {
   skor_kriteria: Record<Kriteria, number>;
 };
 
+export type KamarMandi = "dalam" | "luar";
+
+export type TempatSekitar = { nama: string; jarak_m: number };
+
+/**
+ * Info lengkap kos untuk halaman detail. Semua opsional/nullable: data hasil
+ * scraping bisa tidak lengkap, dan UI harus tetap rapi kalau kosong.
+ */
+export type KosInfo = {
+  alamat?: string | null;
+  /** Teks bebas dari listing, mis. "3 × 4 m". */
+  luas_kamar?: string | null;
+  kamar_mandi?: KamarMandi | null;
+  listrik_termasuk?: boolean | null;
+  /** Rupiah. */
+  deposit?: number | null;
+  fasilitas_kamar?: string[] | null;
+  fasilitas_bersama?: string[] | null;
+  aturan?: string[] | null;
+  sekitar?: TempatSekitar[] | null;
+  foto_urls?: string[] | null;
+  kontak_nama?: string | null;
+  /** Nomor WhatsApp format internasional tanpa "+", mis. "62812…". */
+  kontak_wa?: string | null;
+  kontak_telp?: string | null;
+  sumber_url?: string | null;
+  /** ISO 8601. */
+  diperbarui_at?: string | null;
+};
+
+export type KosDetail = RankResult & KosInfo;
+
+/** Ringkasan kos untuk pintasan "Berikutnya". */
+export type KosRingkas = Pick<RankResult, "id" | "nama" | "rank" | "skor_saw" | "foto_url">;
+
+/** Respons GET /api/kos/[id]?budget&tipe&urutan. */
+export type KosDetailResponse = {
+  kos: KosDetail;
+  /** Posisi kos di hasil untuk filter yang dikirim; null kalau kos tidak lolos filter. */
+  peringkat: {
+    rank: number;
+    total: number;
+    rank_topsis: number;
+    berikutnya: KosRingkas | null;
+  } | null;
+};
+
 export function isKriteria(v: unknown): v is Kriteria {
   return typeof v === "string" && (KODE_KRITERIA as readonly string[]).includes(v);
 }

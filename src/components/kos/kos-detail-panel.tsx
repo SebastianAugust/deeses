@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { KosPhoto } from "@/components/kos-photo";
 import { PrimaryButton } from "@/components/primary-button";
@@ -13,13 +14,15 @@ type KosDetailPanelProps = {
   kos: RankResult;
   semua: RankResult[];
   urutan: Kriteria[];
+  /** /kos/[id] dengan semua query params hasil saat ini (budget, tipe, urutan, ok). */
+  hrefDetail: string;
 };
 
 /**
  * Panel detail kanan di /hasil desktop. Berganti kos → isi lama memudar keluar,
  * isi baru masuk (fade + geser 8px) tanpa pindah halaman.
  */
-export function KosDetailPanel({ kos, semua, urutan }: KosDetailPanelProps) {
+export function KosDetailPanel({ kos, semua, urutan, hrefDetail }: KosDetailPanelProps) {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.section
@@ -52,13 +55,9 @@ export function KosDetailPanel({ kos, semua, urutan }: KosDetailPanelProps) {
           <SkorKriteriaList kos={kos} urutan={urutan} ringkas judul={false} />
         </div>
         <KenapaBox kos={kos} urutan={urutan} ringkas className="mx-1.5" />
-        <PrimaryButton
-          href={kos.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mx-1.5 mb-1.5 h-12 rounded-[14px]"
-        >
-          Buka iklan asli
+        <PrimaryButton href={hrefDetail} className="mx-1.5 mb-1.5 h-12 rounded-[14px]">
+          Lihat detail kos
+          <ArrowRight size={18} strokeWidth={2.4} aria-hidden />
         </PrimaryButton>
       </motion.section>
     </AnimatePresence>

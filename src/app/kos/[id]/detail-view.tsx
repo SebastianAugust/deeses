@@ -1,146 +1,217 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import { Crossfade } from "@/components/crossfade";
-import { GlassCard } from "@/components/glass-card";
-import { DetailSkeleton } from "@/components/hasil/hasil-skeleton";
-import { KosPhoto } from "@/components/kos-photo";
 import {
-  DetailBadges,
-  KenapaBox,
-  SkorKriteriaList,
-  SkorTiles,
-} from "@/components/kos/detail-parts";
+  AturanSekitar,
+  CatatanSumber,
+  FaktaTiles,
+  Fasilitas,
+  JudulKos,
+  KenapaDirekomendasikan,
+} from "@/components/detail/bagian-detail";
+import { GaleriDesktop, GaleriMobile } from "@/components/detail/galeri";
+import { KontakBarMobile, KontakCard, KosBerikutnya } from "@/components/detail/kontak";
+import { Lightbox } from "@/components/detail/lightbox";
 import { PrimaryButton } from "@/components/primary-button";
 import { ErrorCard, InfoCard } from "@/components/status-card";
-import { StickyBottomBar } from "@/components/sticky-bottom-bar";
-import { rankTopsis } from "@/lib/explain";
-import { formatJarak, formatRupiah } from "@/lib/format";
-import { PARAM_OK, buildHref } from "@/lib/query";
-import type { RankResult } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PARAM_OK, adaPenandaOk, buildHref, type FilterState } from "@/lib/query";
+import type { KosDetailResponse } from "@/lib/types";
 import { useFilter } from "@/lib/use-filter";
-import { useDesktopRedirect } from "@/lib/use-media";
-import { useRank } from "@/lib/use-rank";
-import { cn } from "@/lib/utils";
+import { useKosDetail } from "@/lib/use-kos-detail";
 
-function TombolKembali({ href, mengambang = false }: { href: string; mengambang?: boolean }) {
+/** Header kaca desktop: logo, "← Kembali ke peringkat", "Cara kerja perhitungan". */
+function HeaderDetail({ hrefHasil }: { hrefHasil: string }) {
+  return (
+    <header className="hidden border-b border-white/90 bg-white/55 backdrop-blur-[20px] backdrop-saturate-[1.6] lg:block">
+      <div className="mx-auto flex max-w-[1220px] flex-wrap items-center gap-5 px-8 py-3.5">
+        <Link
+          href="/"
+          aria-label="Kosjati, ke beranda"
+          className="logo text-[22px] font-extrabold tracking-[-0.02em] text-ink"
+        >
+          kosjati<span className="text-accent-ink">.</span>
+        </Link>
+        {/* router.back() kalau halaman sebelumnya memang /hasil (state & scroll terjaga). */}
+        <BackLink
+          href={hrefHasil}
+          pakaiRiwayat="/hasil"
+          className="tekan tombol-kaca inline-flex h-10 items-center gap-1.5 rounded-full bg-white/75 px-3.5 text-sm font-semibold text-ink"
+        >
+          <ArrowLeft size={16} aria-hidden />
+          Kembali ke peringkat
+        </BackLink>
+        <span className="flex-1" />
+        <Link href="/#tentang" className="tautan text-sm font-semibold text-ink">
+          Cara kerja perhitungan
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+function TombolKembaliMobile({ href }: { href: string }) {
   return (
     <BackLink
       href={href}
       pakaiRiwayat
-      aria-label="Kembali ke hasil"
-      className={cn(
-        "tekan tombol-kaca flex size-11 items-center justify-center rounded-full border-white/90 bg-white/78 text-ink backdrop-blur-[14px]",
-        mengambang && "absolute top-3.5 left-3.5",
-      )}
+      aria-label="Kembali"
+      className="tekan tombol-kaca flex size-11 items-center justify-center rounded-full border-white/90 bg-white/78 text-ink lg:hidden"
     >
       <ChevronLeft size={20} strokeWidth={2.2} aria-hidden />
     </BackLink>
   );
 }
 
-export function DetailView() {
-  const { id } = useParams<{ id: string }>();
-  const filter = useFilter();
-  const keHasil = buildHref("/hasil", filter, PARAM_OK);
-  // Di desktop, detail tampil sebagai panel kanan di /hasil.
-  const keDesktop = useDesktopRedirect(buildHref("/hasil", filter, { ...PARAM_OK, pilih: id }));
-  const rank = useRank(filter);
-
-  if (keDesktop) return null;
-
-  const kunci =
-    rank.status === "loading" ? "skeleton" : rank.status === "error" ? "error" : "isi";
-
+/** Skeleton halaman detail (juga dipakai sebagai fallback <Suspense> di page.tsx). */
+export function DetailSkeleton() {
   return (
-    <Crossfade kunci={kunci} className="flex flex-1 flex-col">
-      {rank.status === "loading" ? (
-        <main className="mx-auto w-full max-w-[480px] px-3 pt-3">
-          <DetailSkeleton />
-        </main>
-      ) : null}
-
-      {rank.status === "error" ? (
-        <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5">
-          <TombolKembali href={keHasil} />
-          <ErrorCard pesan={rank.error} onCobaLagi={rank.cobaLagi} />
-        </main>
-      ) : null}
-
-      {rank.status === "success" ? <IsiDetail id={id} data={rank.data} keHasil={keHasil} /> : null}
-    </Crossfade>
+    <main
+      aria-busy="true"
+      aria-label="Memuat detail kos"
+      className="mx-auto flex w-full max-w-[480px] flex-col gap-6 lg:max-w-[1220px] lg:px-8 lg:pt-6"
+    >
+      <Skeleton className="h-[260px] rounded-none bg-line lg:h-[410px] lg:rounded-[24px]" />
+      <div className="flex flex-col gap-8 px-4 lg:flex-row lg:gap-12 lg:px-0">
+        <div className="flex flex-1 flex-col gap-4">
+          <Skeleton className="h-6 w-56 bg-line" />
+          <Skeleton className="h-10 w-72 bg-line" />
+          <Skeleton className="h-4 w-80 max-w-full bg-line" />
+          <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[104px] rounded-[18px] bg-line" />
+            ))}
+          </div>
+        </div>
+        <Skeleton className="hidden h-[320px] rounded-[26px] bg-line lg:block lg:w-[380px]" />
+      </div>
+    </main>
   );
 }
 
 function IsiDetail({
-  id,
   data,
-  keHasil,
+  filter,
+  dariHasil,
+  hrefHasil,
 }: {
-  id: string;
-  data: RankResult[];
-  keHasil: string;
+  data: KosDetailResponse;
+  filter: FilterState;
+  dariHasil: boolean;
+  hrefHasil: string;
 }) {
-  const filter = useFilter();
-  const kos = data.find((k) => k.id === id);
-
-  if (!kos) {
-    return (
-      <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5">
-        <TombolKembali href={keHasil} />
-        <InfoCard judul="Kos tidak ditemukan">
-          <p className="text-sm leading-[1.55] text-muted">
-            Kos ini tidak ada di hasil untuk filter saat ini. Mungkin harganya di atas budget atau
-            tipenya berbeda.
-          </p>
-          <PrimaryButton href={keHasil} block className="mt-1.5">
-            Lihat hasil rekomendasi
-          </PrimaryButton>
-        </InfoCard>
-      </main>
-    );
-  }
+  const { kos, peringkat } = data;
+  const foto = kos.foto_urls?.filter(Boolean) ?? [];
+  const [fotoAktif, setFotoAktif] = useState<number | null>(null);
+  const paramTambahan = dariHasil ? PARAM_OK : undefined;
 
   return (
-    <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-28">
-      <KosPhoto
-        src={kos.foto_url}
+    <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-28 lg:max-w-[1220px] lg:px-8 lg:pt-6 lg:pb-16">
+      <GaleriMobile
+        className="lg:hidden"
+        foto={foto}
         nama={kos.nama}
-        iconSize={34}
-        label="foto kos (galeri)"
-        className="h-[220px] flex-none rounded-none"
-      >
-        <TombolKembali href={keHasil} mengambang />
-      </KosPhoto>
+        onBuka={setFotoAktif}
+        backHref={hrefHasil}
+      />
+      <GaleriDesktop className="hidden lg:grid" foto={foto} nama={kos.nama} onBuka={setFotoAktif} />
 
-      <GlassCard className="relative mx-3 -mt-5 flex flex-col gap-3 rounded-[24px] shadow-[0_10px_30px_rgba(30,45,90,.10)]">
-        <div className="flex flex-col gap-1.5">
-          <DetailBadges kos={kos} total={data.length} />
-          <h1 className="text-[25px] leading-tight font-extrabold tracking-[-0.02em]">{kos.nama}</h1>
-          <span className="text-[13px] text-muted">{formatJarak(kos.jarak_km)} ke kampus</span>
+      <div className="flex flex-col gap-8 px-4 pt-6 lg:flex-row lg:items-start lg:gap-12 lg:px-0 lg:pt-7">
+        <div className="flex min-w-0 flex-1 flex-col gap-8">
+          <JudulKos kos={kos} peringkat={peringkat} dariHasil={dariHasil} />
+          <FaktaTiles kos={kos} />
+          <Fasilitas kos={kos} />
+          <AturanSekitar kos={kos} />
+          <KenapaDirekomendasikan
+            kos={kos}
+            peringkat={peringkat}
+            urutan={filter.urutan}
+            hrefUbahPrioritas={buildHref("/prioritas", filter)}
+          />
+          <CatatanSumber kos={kos} />
         </div>
-        <SkorTiles kos={kos} rankTopsis={rankTopsis(kos, data)} />
-        <SkorKriteriaList kos={kos} urutan={filter.urutan} />
-      </GlassCard>
 
-      <KenapaBox kos={kos} urutan={filter.urutan} className="mx-3 mt-3" />
+        <aside className="flex flex-col gap-3.5 lg:sticky lg:top-6 lg:w-[380px] lg:flex-none">
+          <KontakCard kos={kos} />
+          {peringkat?.berikutnya ? (
+            <KosBerikutnya
+              kos={peringkat.berikutnya}
+              href={buildHref(`/kos/${peringkat.berikutnya.id}`, filter, paramTambahan)}
+            />
+          ) : null}
+        </aside>
+      </div>
 
-      <StickyBottomBar className="pt-3 pb-[max(20px,env(safe-area-inset-bottom))]">
-        <div className="flex flex-1 flex-col">
-          <span className="text-[17px] font-extrabold">{formatRupiah(kos.harga)}</span>
-          <span className="text-xs text-muted">per bulan</span>
-        </div>
-        <PrimaryButton
-          href={kos.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="h-[50px] px-5"
-        >
-          Buka iklan asli
-        </PrimaryButton>
-      </StickyBottomBar>
+      {/* Mobile: kartu kontak jadi bar bawah sticky (harga + tombol utama). */}
+      <div className="lg:hidden">
+        <KontakBarMobile kos={kos} />
+      </div>
+
+      <Lightbox
+        foto={foto}
+        nama={kos.nama}
+        indeks={fotoAktif}
+        onGanti={setFotoAktif}
+        onTutup={() => setFotoAktif(null)}
+      />
     </main>
+  );
+}
+
+/**
+ * /kos/[id]: halaman detail kos penuh (mockup 08). Data dari GET /api/kos/[id]
+ * dengan params yang sama seperti hasil, supaya rank & alasan konsisten.
+ * Badge "#rank dari N untukmu" hanya kalau datang dari hasil (`ok=1`).
+ */
+export function DetailView() {
+  const { id } = useParams<{ id: string }>();
+  const filter = useFilter();
+  const dariHasil = adaPenandaOk(useSearchParams());
+  const detail = useKosDetail(id, filter);
+  const hrefHasil = buildHref("/hasil", filter, dariHasil ? PARAM_OK : undefined);
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <HeaderDetail hrefHasil={hrefHasil} />
+      <Crossfade kunci={detail.status} className="flex flex-1 flex-col">
+        {detail.status === "loading" ? <DetailSkeleton /> : null}
+
+        {detail.status === "error" ? (
+          <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5 lg:pt-10">
+            <TombolKembaliMobile href={hrefHasil} />
+            <ErrorCard pesan={detail.error} onCobaLagi={detail.cobaLagi} />
+          </main>
+        ) : null}
+
+        {detail.status === "notfound" ? (
+          <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5 lg:pt-10">
+            <TombolKembaliMobile href={hrefHasil} />
+            <InfoCard judul="Kos tidak ditemukan">
+              <p className="text-sm leading-[1.55] text-muted">
+                Kos ini tidak ada di data kami. Mungkin tautannya sudah tidak berlaku.
+              </p>
+              <PrimaryButton href={hrefHasil} block className="mt-1.5">
+                Lihat hasil rekomendasi
+              </PrimaryButton>
+            </InfoCard>
+          </main>
+        ) : null}
+
+        {detail.status === "success" ? (
+          <IsiDetail
+            key={id}
+            data={detail.data}
+            filter={filter}
+            dariHasil={dariHasil}
+            hrefHasil={hrefHasil}
+          />
+        ) : null}
+      </Crossfade>
+    </div>
   );
 }

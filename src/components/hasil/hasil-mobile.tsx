@@ -65,7 +65,8 @@ function DaftarMobile({
   const [pertama, ...lainnya] = data;
   const duaTiga = lainnya.slice(0, 2);
   const sisanya = lainnya.slice(2);
-  const href = (kos: RankResult) => `/kos/${kos.id}?${query}`;
+  // Detail kos dibuka dari hasil → bawa semua params + penanda ok (badge "#rank dari N").
+  const href = (kos: RankResult) => `/kos/${kos.id}?${query}&ok=1`;
 
   return (
     <div className="pb-24">

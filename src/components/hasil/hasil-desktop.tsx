@@ -156,7 +156,12 @@ export function HasilDesktop() {
           <Crossfade kunci={memuatAwal ? "skeleton" : terpilih ? "panel" : "kosong"}>
             {memuatAwal ? <DetailSkeleton /> : null}
             {!memuatAwal && terpilih && daftar ? (
-              <KosDetailPanel kos={terpilih} semua={daftar} urutan={filter.urutan} />
+              <KosDetailPanel
+                kos={terpilih}
+                semua={daftar}
+                urutan={filter.urutan}
+                hrefDetail={buildHref(`/kos/${terpilih.id}`, filter, PARAM_OK)}
+              />
             ) : null}
           </Crossfade>
         </div>

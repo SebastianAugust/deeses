@@ -6,7 +6,7 @@
  * sebelum database + perhitungan SAW/TOPSIS dari tim Model/Backend siap.
  * Jangan dipakai untuk analisis atau ditampilkan sebagai hasil sungguhan.
  */
-import type { Kriteria, RankResult, TipePenghuni } from "./types";
+import type { KosDetail, KosInfo, Kriteria, RankResult, TipePenghuni } from "./types";
 
 /** 6 kos dari mockup — skor tertinggi, urutannya dipertahankan. */
 const KOS_MOCKUP: RankResult[] = [
@@ -162,12 +162,85 @@ function buatKosContoh(): RankResult[] {
   });
 }
 
+/* ---------------------------------------------------------------------------
+ * DATA CONTOH — info detail (alamat, fasilitas, aturan, kontak, dst.).
+ * Alamat & nama pengelola fiktif. Nomor kontak memakai pola 0800… yang
+ * sengaja TIDAK berupa nomor HP sungguhan. Sebagian kos sengaja tanpa
+ * kontak_wa / kontak_telp untuk menguji kondisi "kontak tidak tersedia".
+ * ------------------------------------------------------------------------- */
+
+const FASILITAS_KAMAR = ["Kasur", "Lemari", "Meja belajar", "Kursi", "Kipas angin", "AC", "Jendela", "Wi-Fi kamar"];
+const FASILITAS_BERSAMA = ["Wi-Fi", "Dapur", "Parkir motor", "CCTV", "Jemuran", "Ruang tamu", "Kulkas bersama", "Mesin cuci"];
+const ATURAN = [
+  "Jam malam 22.00",
+  "Tamu lawan jenis tidak boleh masuk kamar",
+  "Boleh bawa motor",
+  "Pembayaran per bulan atau per semester",
+  "Dilarang merokok di dalam kamar",
+  "Tidak boleh membawa hewan peliharaan",
+];
+const SEKITAR = ["Minimarket", "Laundry", "Warung makan", "Fotokopi", "Apotek", "Masjid"];
+const JALAN = ["Jl. Contoh Raya", "Jl. Contoh Indah", "Gg. Contoh Asri", "Jl. Contoh Sayang", "Gg. Contoh Damai"];
+const PENGELOLA = ["Ibu Contoh", "Bapak Contoh", "Teh Contoh", "Mang Contoh"];
+const LUAS = ["3 × 3 m", "3 × 4 m", "3 × 3,5 m", "4 × 4 m", "2,5 × 3 m"];
+
+/** Foto contoh lokal (public/contoh) untuk menguji galeri & lightbox. */
+const FOTO_CONTOH = [1, 2, 3, 4, 5, 6].map((n) => `/contoh/kos-${n}.svg`);
+
+function ambil<T>(daftar: T[], mulai: number, jumlah: number): T[] {
+  return Array.from({ length: jumlah }, (_, i) => daftar[(mulai + i) % daftar.length]);
+}
+
+function buatInfo(kos: RankResult, i: number): KosInfo {
+  const acak = prng(1000 + i);
+  const pilih = (n: number) => Math.floor(acak() * n);
+  const adaKontak = i % 4 !== 3; // tiap kos ke-4 tanpa kontak sama sekali
+  const adaWa = adaKontak && i % 5 !== 2; // sebagian hanya punya telepon
+  const nomor = `62800000${String(1000 + i).padStart(4, "0")}`; // fiktif
+  return {
+    alamat: i % 9 === 8 ? null : `${JALAN[i % JALAN.length]} No. ${3 + pilih(60)}, Hegarmanah, Jatinangor, Sumedang`,
+    luas_kamar: i % 7 === 6 ? null : LUAS[pilih(LUAS.length)],
+    kamar_mandi: i % 6 === 5 ? null : kos.harga >= 1_000_000 || i % 2 === 0 ? "dalam" : "luar",
+    listrik_termasuk: i % 8 === 7 ? null : kos.harga >= 950_000,
+    deposit: i % 5 === 4 ? null : (kos.harga >= 1_000_000 ? 500_000 : 300_000),
+    fasilitas_kamar: ambil(FASILITAS_KAMAR, pilih(FASILITAS_KAMAR.length), 3 + pilih(3)),
+    fasilitas_bersama: i % 10 === 9 ? [] : ambil(FASILITAS_BERSAMA, pilih(FASILITAS_BERSAMA.length), 3 + pilih(3)),
+    aturan: i % 11 === 10 ? [] : ambil(ATURAN, pilih(ATURAN.length), 3 + pilih(2)),
+    sekitar: ambil(SEKITAR, pilih(SEKITAR.length), 3).map((nama, j) => ({
+      nama,
+      jarak_m: 50 + (j + 1) * 50 + pilih(150),
+    })),
+    foto_urls: [],
+    kontak_nama: adaKontak ? `${PENGELOLA[i % PENGELOLA.length]} ${i + 1}` : null,
+    kontak_wa: adaWa ? nomor : null,
+    kontak_telp: adaKontak ? `0800000${String(1000 + i).padStart(4, "0")}` : null,
+    sumber_url: "https://mamikos.com",
+    diperbarui_at: new Date(Date.UTC(2026, 9, 1 + (i % 28))).toISOString(),
+  };
+}
+
+/** Info khusus kos mockup (Melati punya foto contoh; Dahlia sengaja tanpa kontak). */
+const INFO_KHUSUS: Record<string, Partial<KosInfo>> = {
+  "kos-melati": {
+    foto_urls: FOTO_CONTOH,
+    kontak_nama: "Ibu Contoh Melati",
+    kontak_wa: "6280000000001",
+    kontak_telp: "08000000001",
+  },
+  "kos-mawar": { foto_urls: FOTO_CONTOH.slice(2, 4) },
+  "kos-dahlia": { kontak_nama: null, kontak_wa: null, kontak_telp: null },
+};
+
 /** Semua DATA CONTOH (40 kos), urut skor SAW, rank global 1…40. */
-export const MOCK_KOS: RankResult[] = [...KOS_MOCKUP, ...buatKosContoh()]
+export const MOCK_KOS: KosDetail[] = [...KOS_MOCKUP, ...buatKosContoh()]
   .sort((a, b) => b.skor_saw - a.skor_saw)
-  .map((k, i) => ({ ...k, rank: i + 1 }));
+  .map((k, i) => {
+    const info = { ...buatInfo(k, i), ...INFO_KHUSUS[k.id] };
+    const foto = info.foto_urls?.[0] ?? k.foto_url;
+    return { ...k, ...info, foto_url: foto, rank: i + 1 };
+  });
 
 /** DATA CONTOH — cari satu kos berdasarkan id. */
-export function getMockKos(id: string): RankResult | undefined {
+export function getMockKos(id: string): KosDetail | undefined {
   return MOCK_KOS.find((k) => k.id === id);
 }

@@ -1,5 +1,32 @@
+import { buildQuery, type FilterState } from "./query";
 import type { SebaranHarga } from "./sebaran";
-import type { RankRequest, RankResult, TipePenghuni } from "./types";
+import type { KosDetailResponse, RankRequest, RankResult, TipePenghuni } from "./types";
+
+/** Error dengan kode HTTP (mis. 404 untuk kos yang tidak ada). */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
+/** GET /api/kos/[id] — data lengkap 1 kos + peringkatnya untuk filter yang sama dengan hasil. */
+export async function fetchKosDetail(
+  id: string,
+  filter: FilterState,
+  signal?: AbortSignal,
+): Promise<KosDetailResponse> {
+  const res = await fetch(`/api/kos/${encodeURIComponent(id)}?${buildQuery(filter)}`, { signal });
+  if (!res.ok) {
+    throw new ApiError(
+      res.status === 404 ? "Kos tidak ditemukan." : `Gagal memuat detail kos (kode ${res.status}).`,
+      res.status,
+    );
+  }
+  return (await res.json()) as KosDetailResponse;
+}
 
 /** GET /api/sebaran-harga — jumlah kos per rentang harga Rp 100 rb. */
 export async function fetchSebaranHarga(

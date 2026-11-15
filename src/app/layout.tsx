@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
+import { MotionProvider } from "@/components/motion-provider";
 import { NavigationTracker } from "@/components/navigation-tracker";
+import { ToastProvider } from "@/components/toast";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -21,7 +23,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${jakarta.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col text-ink">
-        {children}
+        <MotionProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </MotionProvider>
         {/* Mencatat navigasi internal untuk tombol back (lib/riwayat.ts). */}
         <Suspense fallback={null}>
           <NavigationTracker />

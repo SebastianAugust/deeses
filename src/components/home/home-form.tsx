@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { BudgetHistogramSlider } from "@/components/BudgetHistogramSlider";
 import { GlassCard } from "@/components/glass-card";
+import { PerkiraanCocok } from "@/components/perkiraan-cocok";
 import { PrimaryButton } from "@/components/primary-button";
 import { TipeSegmented } from "@/components/tipe-segmented";
 import { BUDGET_MAX, BUDGET_MIN, BUDGET_STEP, buildHref, type FilterState } from "@/lib/query";
@@ -13,7 +14,9 @@ import { useSebaranHarga } from "@/lib/use-sebaran";
 
 /**
  * Kartu kaca Home: budget (slider + sebaran harga), tipe penghuni, perkiraan
- * jumlah kos, lalu lanjut ke /prioritas. Nilai awal dari query params.
+ * jumlah kos. Mobile → "Lanjut atur prioritas" (/prioritas); desktop →
+ * "Lihat rekomendasi" (/hasil, karena prioritas ada di sidebar hasil).
+ * Nilai awal dari query params.
  */
 export function HomeForm({ initial }: { initial: FilterState }) {
   const [filter, setFilter] = useState<FilterState>(initial);
@@ -28,12 +31,10 @@ export function HomeForm({ initial }: { initial: FilterState }) {
     gantiUrl(buildHref("/", baru));
   }
 
-  const jumlah = rank.status === "success" ? rank.data.length : rank.dataTerakhir?.length;
-
   return (
     <GlassCard
       padding="none"
-      className="mx-5 mt-[22px] flex flex-col gap-4 rounded-[24px] p-4"
+      className="mx-5 mt-[22px] flex flex-col gap-4 rounded-[24px] p-4 lg:m-0 lg:p-5"
       role="form"
       aria-label="Cari kos"
     >
@@ -42,6 +43,7 @@ export function HomeForm({ initial }: { initial: FilterState }) {
           Budget maks per bulan
         </span>
         <BudgetHistogramSlider
+          labelledBy={idBudget}
           value={filter.budget}
           onChange={(budget) => ubah({ budget })}
           bins={sebaran?.bins}
@@ -62,25 +64,18 @@ export function HomeForm({ initial }: { initial: FilterState }) {
         />
       </div>
 
-      <p className="text-sm" aria-live="polite">
-        {rank.status === "error" ? (
-          <span className="text-muted">Perkiraan belum tersedia.</span>
-        ) : jumlah === undefined ? (
-          <span className="text-muted">Menghitung kos yang cocok…</span>
-        ) : jumlah === 0 ? (
-          <span className="text-muted">Belum ada yang cocok, coba naikkan budget</span>
-        ) : (
-          <b className="font-extrabold">± {jumlah} kos cocok</b>
-        )}
-      </p>
+      <PerkiraanCocok rank={rank} className="min-h-5 text-sm font-extrabold" />
 
       <div className="flex flex-col items-center gap-1">
-        <PrimaryButton href={buildHref("/prioritas", filter)} block className="text-base">
+        <PrimaryButton href={buildHref("/prioritas", filter)} block className="text-base lg:hidden">
           Lanjut atur prioritas
+        </PrimaryButton>
+        <PrimaryButton href={buildHref("/hasil", filter)} block className="hidden text-base lg:flex">
+          Lihat rekomendasi
         </PrimaryButton>
         <Link
           href={buildHref("/filter", filter)}
-          className="inline-flex min-h-11 items-center text-[13px] font-semibold text-accent-ink underline-offset-4 hover:underline"
+          className="tekan inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-semibold text-accent-ink underline-offset-4 hover:underline lg:hidden"
         >
           Atur filter lebih detail
         </Link>

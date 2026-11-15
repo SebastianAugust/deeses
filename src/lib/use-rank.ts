@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchRank } from "./api";
 import type { FilterState } from "./query";
 import type { Kriteria, RankResult } from "./types";
@@ -14,7 +14,8 @@ type Tersimpan = { kunci: string; data?: RankResult[]; error?: string };
 
 /**
  * Ambil peringkat dari /api/rank untuk filter tertentu.
- * - `debounceMs`: tunda permintaan (mis. saat slider digeser).
+ * - `debounceMs`: tunda permintaan (mis. saat slider digeser). Permintaan
+ *   pertama tidak ditunda supaya halaman cepat terisi.
  * - `dataTerakhir`: hasil sukses terakhir, tetap tersedia selama memuat ulang.
  */
 export function useRank(filter: FilterState, { debounceMs = 0 }: { debounceMs?: number } = {}) {
@@ -23,12 +24,15 @@ export function useRank(filter: FilterState, { debounceMs = 0 }: { debounceMs?: 
   const [percobaan, setPercobaan] = useState(0);
   const [tersimpan, setTersimpan] = useState<Tersimpan | null>(null);
   const [dataTerakhir, setDataTerakhir] = useState<RankResult[] | undefined>(undefined);
+  const pernahDimuat = useRef(false);
 
   const kunci = `${budget}|${tipe}|${urutan}|${percobaan}`;
 
   useEffect(() => {
     const ctrl = new AbortController();
+    const tunda = pernahDimuat.current ? debounceMs : 0;
     const timer = setTimeout(() => {
+      pernahDimuat.current = true;
       fetchRank(
         { budget, tipe, urutan_kriteria: urutan.split(",") as Kriteria[] },
         ctrl.signal,
@@ -44,7 +48,7 @@ export function useRank(filter: FilterState, { debounceMs = 0 }: { debounceMs?: 
             error: e instanceof Error ? e.message : "Gagal memuat rekomendasi.",
           });
         });
-    }, debounceMs);
+    }, tunda);
     return () => {
       clearTimeout(timer);
       ctrl.abort();

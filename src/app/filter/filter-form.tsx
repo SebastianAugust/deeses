@@ -4,6 +4,7 @@ import { useState } from "react";
 import { User, Users, type LucideIcon } from "lucide-react";
 import { BudgetHistogramSlider } from "@/components/BudgetHistogramSlider";
 import { GlassCard } from "@/components/glass-card";
+import { PerkiraanCocok } from "@/components/perkiraan-cocok";
 import { PrimaryButton } from "@/components/primary-button";
 import { StepHeader } from "@/components/step-header";
 import { StickyBottomBar } from "@/components/sticky-bottom-bar";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/query";
 import type { TipePenghuni } from "@/lib/types";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
+import { useDesktopRedirect } from "@/lib/use-media";
 import { useRank } from "@/lib/use-rank";
 import { useSebaranHarga } from "@/lib/use-sebaran";
 import { cn } from "@/lib/utils";
@@ -39,19 +41,16 @@ export function FilterForm() {
   const rank = useRank(filter, { debounceMs: 300 });
   const sebaran = useSebaranHarga(filter.tipe);
 
+  // Di desktop, filter sudah ada di sidebar /hasil.
+  const keDesktop = useDesktopRedirect(buildHref("/hasil", filter));
+
   function ubah(patch: Partial<FilterState>) {
     const baru = { ...filter, ...patch };
     setFilter(baru);
     gantiUrl(buildHref("/filter", baru));
   }
 
-  const jumlah = rank.status === "success" ? rank.data.length : rank.dataTerakhir?.length;
-  const teksJumlah =
-    rank.status === "error"
-      ? "Tidak tersedia"
-      : jumlah === undefined
-        ? "Menghitung…"
-        : `${jumlah} kos cocok`;
+  if (keDesktop) return null;
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-32">
@@ -87,7 +86,7 @@ export function FilterForm() {
                 aria-pressed={aktif}
                 onClick={() => ubah({ budget: chip.nilai })}
                 className={cn(
-                  "h-11 rounded-full px-3.5 text-[13px] transition-colors",
+                  "tekan h-11 rounded-full px-3.5 text-[13px]",
                   aktif
                     ? "border-[1.5px] border-accent bg-soft font-bold text-accent-ink"
                     : "border border-line bg-white/78 font-semibold text-ink hover:bg-white",
@@ -114,7 +113,7 @@ export function FilterForm() {
                 aria-pressed={aktif}
                 onClick={() => ubah({ tipe: nilai })}
                 className={cn(
-                  "flex h-24 flex-col items-center justify-center gap-2 rounded-[20px] text-sm transition-colors",
+                  "tekan flex h-24 flex-col items-center justify-center gap-2 rounded-[20px] text-sm",
                   aktif
                     ? "border-2 border-accent bg-soft font-bold text-accent-ink"
                     : "border border-white/90 bg-white/55 font-semibold text-ink backdrop-blur-[20px] hover:bg-white/78",
@@ -129,9 +128,9 @@ export function FilterForm() {
       </div>
 
       <StickyBottomBar>
-        <div className="flex flex-1 flex-col" aria-live="polite">
+        <div className="flex flex-1 flex-col">
           <span className="text-xs text-muted">Perkiraan</span>
-          <span className="text-base font-extrabold">{teksJumlah}</span>
+          <PerkiraanCocok rank={rank} varian="angka" className="text-base font-extrabold" />
         </div>
         <PrimaryButton href={buildHref("/prioritas", filter)}>Lanjut ke prioritas</PrimaryButton>
       </StickyBottomBar>

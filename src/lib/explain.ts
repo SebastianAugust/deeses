@@ -8,6 +8,11 @@ export function infoKriteria(kode: Kriteria): KriteriaInfo {
   return INFO[kode];
 }
 
+/** Peringkat TOPSIS sebuah kos di antara hasil yang sama (API belum mengirim kolom ini). */
+export function rankTopsis(kos: RankResult, semua: RankResult[]): number {
+  return 1 + semua.filter((k) => k.skor_topsis > kos.skor_topsis).length;
+}
+
 export type Penjelasan = {
   /** 2 kriteria dengan kontribusi (skor × bobot) tertinggi. */
   kelebihan: [KriteriaInfo, KriteriaInfo];

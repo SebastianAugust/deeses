@@ -77,14 +77,21 @@ export function parseFilter(params: SearchParamsInput): FilterState {
   };
 }
 
+/** Param tambahan di luar filter, mis. { pilih: "kos-melati" } (undefined/null = tidak ditulis). */
+export type ParamTambahan = Record<string, string | null | undefined>;
+
 /** FilterState → "budget=1200000&tipe=putri&urutan=C1,C2,…" (tanpa "?"). */
-export function buildQuery(state: FilterState): string {
-  return `budget=${state.budget}&tipe=${state.tipe}&urutan=${state.urutan.join(",")}`;
+export function buildQuery(state: FilterState, tambahan?: ParamTambahan): string {
+  let q = `budget=${state.budget}&tipe=${state.tipe}&urutan=${state.urutan.join(",")}`;
+  for (const [k, v] of Object.entries(tambahan ?? {})) {
+    if (v) q += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
+  }
+  return q;
 }
 
-/** Contoh: buildHref("/hasil", state) → "/hasil?budget=…&tipe=…&urutan=…" */
-export function buildHref(pathname: string, state: FilterState): string {
-  return `${pathname}?${buildQuery(state)}`;
+/** Contoh: buildHref("/hasil", state, { pilih: id }) → "/hasil?budget=…&tipe=…&urutan=…&pilih=…" */
+export function buildHref(pathname: string, state: FilterState, tambahan?: ParamTambahan): string {
+  return `${pathname}?${buildQuery(state, tambahan)}`;
 }
 
 /** FilterState → body untuk POST /api/rank. */

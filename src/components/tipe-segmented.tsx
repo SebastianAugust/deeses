@@ -1,8 +1,10 @@
 "use client";
 
-import type { TipePenghuni } from "@/lib/types";
-import { TIPE_PENGHUNI } from "@/lib/types";
+import { useId } from "react";
+import { motion } from "motion/react";
+import { TRANSISI } from "@/lib/motion";
 import { labelTipe } from "@/lib/ringkasan";
+import { TIPE_PENGHUNI, type TipePenghuni } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type TipeSegmentedProps = {
@@ -10,15 +12,28 @@ type TipeSegmentedProps = {
   onChange: (tipe: TipePenghuni) => void;
   /** id elemen judul grup. */
   labelledBy: string;
+  /** "md" = pill kaca 44px (mobile/Home), "sm" = kotak 36px (sidebar desktop). */
+  size?: "md" | "sm";
 };
 
-/** Tombol segmented Putra / Putri / Campur dalam wadah pill kaca. */
-export function TipeSegmented({ value, onChange, labelledBy }: TipeSegmentedProps) {
+/**
+ * Tombol segmented Putra / Putri / Campur. Indikator putih bergeser halus ke
+ * opsi terpilih (layoutId motion; dengan reduced motion langsung pindah).
+ */
+export function TipeSegmented({ value, onChange, labelledBy, size = "md" }: TipeSegmentedProps) {
+  const idIndikator = useId();
+  const kecil = size === "sm";
+
   return (
     <div
       role="group"
       aria-labelledby={labelledBy}
-      className="flex gap-1 rounded-full border border-white/90 bg-white/55 p-1 backdrop-blur-[20px]"
+      className={cn(
+        "grid grid-cols-3 gap-1 p-1",
+        kecil
+          ? "rounded-[12px] border border-line bg-white/60"
+          : "rounded-full border border-white/90 bg-white/55 backdrop-blur-[20px]",
+      )}
     >
       {TIPE_PENGHUNI.map((tipe) => {
         const aktif = tipe === value;
@@ -29,13 +44,23 @@ export function TipeSegmented({ value, onChange, labelledBy }: TipeSegmentedProp
             aria-pressed={aktif}
             onClick={() => onChange(tipe)}
             className={cn(
-              "h-11 flex-1 rounded-full text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-              aktif
-                ? "bg-white font-bold text-accent-ink shadow-[0_2px_8px_rgba(30,45,90,.12)]"
-                : "font-semibold text-muted hover:text-ink",
+              "tekan relative",
+              kecil ? "h-9 rounded-[9px] text-[13px]" : "h-11 rounded-full text-sm",
+              aktif ? "font-bold text-accent-ink" : "font-semibold text-muted hover:text-ink",
             )}
           >
-            {labelTipe(tipe)}
+            {aktif ? (
+              <motion.span
+                layoutId={idIndikator}
+                transition={TRANSISI}
+                aria-hidden
+                className={cn(
+                  "absolute inset-0 bg-white shadow-[0_2px_8px_rgba(30,45,90,.12)]",
+                  kecil ? "rounded-[9px]" : "rounded-full",
+                )}
+              />
+            ) : null}
+            <span className="relative">{labelTipe(tipe)}</span>
           </button>
         );
       })}

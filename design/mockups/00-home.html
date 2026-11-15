@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Beranda</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;color:{{c.ink}};display:flex;flex-direction:column;overflow:hidden;background-color:{{c.base}};background-image:radial-gradient(circle at 0% 0%,{{c.b1}} 0,transparent 45%),radial-gradient(circle at 100% 35%,{{c.b2}} 0,transparent 40%),radial-gradient(circle at 30% 100%,{{c.b3}} 0,transparent 45%)">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px">
+    <span style="font-weight:800;font-size:20px;letter-spacing:-.02em">kosjati<span style="color:{{c.accentInk}}">.</span></span>
+    <a href="#tentang" style="font-size:14px;font-weight:600;color:{{c.ink}}">Tentang</a>
+  </div>
+
+  <div style="padding:10px 20px 0;display:flex;flex-direction:column;gap:10px">
+    <h1 style="margin:0;font-weight:800;font-size:30px;line-height:1.15;letter-spacing:-.02em">Cari kos di Jatinangor yang paling pas buatmu</h1>
+    <p style="margin:0;font-size:14px;line-height:1.5;color:{{c.muted}}">Atur budget dan prioritasmu, lalu kami urutkan kos yang cocok dari skor tertinggi.</p>
+  </div>
+
+  <div style="margin:22px 20px 0;padding:14px;border-radius:24px;background:{{c.glass}};backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid {{c.gBorder}};box-shadow:0 8px 24px {{c.gShadow}};display:flex;flex-direction:column;gap:12px">
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      <div style="border-radius:16px;padding:10px 12px;background:{{c.glassStrong}};border:1px solid {{c.line}};display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:600;color:{{c.muted}}">Budget maks</span><span style="font-size:15px;font-weight:700">Rp 1.200.000</span></div>
+      <div style="border-radius:16px;padding:10px 12px;background:{{c.glassStrong}};border:1px solid {{c.line}};display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:600;color:{{c.muted}}">Tipe</span><span style="font-size:15px;font-weight:700">Putri</span></div>
+    </div>
+    <a href="Filter.dc.html" style="height:52px;border-radius:16px;background:{{c.accent}};color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:700;box-shadow:0 8px 20px {{c.glow}}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      Mulai cari kos
+    </a>
+  </div>
+
+  <div style="padding:26px 20px 0;display:flex;flex-direction:column;gap:12px">
+    <span style="font-weight:800;font-size:17px">Cara kerjanya</span>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+      <div style="border-radius:18px;padding:12px;background:{{c.glass}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid {{c.gBorder}};display:flex;flex-direction:column;gap:8px"><span style="width:30px;height:30px;border-radius:10px;background:{{c.soft}};color:{{c.accentInk}};font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center">1</span><span style="font-size:13px;font-weight:700;line-height:1.3">Atur budget &amp; tipe</span></div>
+      <div style="border-radius:18px;padding:12px;background:{{c.glass}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid {{c.gBorder}};display:flex;flex-direction:column;gap:8px"><span style="width:30px;height:30px;border-radius:10px;background:{{c.soft}};color:{{c.accentInk}};font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center">2</span><span style="font-size:13px;font-weight:700;line-height:1.3">Urutkan prioritas</span></div>
+      <div style="border-radius:18px;padding:12px;background:{{c.glass}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid {{c.gBorder}};display:flex;flex-direction:column;gap:8px"><span style="width:30px;height:30px;border-radius:10px;background:{{c.soft}};color:{{c.accentInk}};font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center">3</span><span style="font-size:13px;font-weight:700;line-height:1.3">Lihat peringkat</span></div>
+    </div>
+  </div>
+
+  <div style="padding:26px 0 0 20px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;padding-right:20px"><span style="font-weight:800;font-size:17px">Kos di data kami</span><span style="font-size:13px;font-weight:600;color:{{c.accentInk}}">Lihat semua</span></div>
+    <div style="display:flex;gap:12px">
+      <div style="flex:none;width:200px;display:flex;flex-direction:column;gap:6px">
+        <div style="height:130px;border-radius:18px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg><span style="font-size:11px;color:#5B6170">foto kos</span></div>
+        <span style="font-weight:700;font-size:14px">Kos Melati</span>
+        <span style="font-size:13px"><b>Rp 1.050.000</b> <span style="color:{{c.muted}}">/bln</span></span>
+      </div>
+      <div style="flex:none;width:200px;display:flex;flex-direction:column;gap:6px">
+        <div style="height:130px;border-radius:18px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg><span style="font-size:11px;color:#5B6170">foto kos</span></div>
+        <span style="font-weight:700;font-size:14px">Kos Mawar</span>
+        <span style="font-size:13px"><b>Rp 900.000</b> <span style="color:{{c.muted}}">/bln</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palet":{"editor":"enum","options":["Laut","Mint","Peach","Sakura"],"default":"Laut","section":"Warna"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const L = {base:'#F3F6FB',ink:'#1A1D24',muted:'#4E5463',line:'#E3E7EE',glass:'rgba(255,255,255,.55)',glassStrong:'rgba(255,255,255,.78)',gBorder:'rgba(255,255,255,.9)',gShadow:'rgba(30,45,90,.10)'};
+    const P = {
+      Laut:{accent:'#1D5FD1',accentInk:'#1A55BC',soft:'#E3ECFD',glow:'rgba(29,95,209,.28)',b1:'#B7D0FF',b2:'#C6EDFF',b3:'#DDE9FF'},
+      Mint:{accent:'#0E7C66',accentInk:'#0B6B58',soft:'#DDF4EC',glow:'rgba(14,124,102,.26)',b1:'#B8EDDB',b2:'#CFF3EA',b3:'#DFF6EE'},
+      Peach:{accent:'#C0391D',accentInk:'#A9321A',soft:'#FFE7DD',glow:'rgba(192,57,29,.24)',b1:'#FFCDB8',b2:'#FFE3CF',b3:'#FFEFE5'},
+      Sakura:{accent:'#C2316E',accentInk:'#A82A60',soft:'#FFE1EC',glow:'rgba(194,49,110,.24)',b1:'#FFC7DC',b2:'#FFDCE8',b3:'#FFEAF1'}
+    };
+    return { c: Object.assign({}, L, P[this.props.palet] || P.Laut) };
+  }
+}
+</script>
+</body>
+</html>

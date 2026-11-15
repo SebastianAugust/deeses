@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Hasil desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:#F3F6FB}
+</style>
+</helmet>
+<div style="width:100%;min-height:900px;box-sizing:border-box;color:{{c.ink}};display:flex;flex-direction:column;background-color:{{c.base}};background-image:radial-gradient(circle at 0% 0%,{{c.b1}} 0,transparent 35%),radial-gradient(circle at 100% 25%,{{c.b2}} 0,transparent 32%),radial-gradient(circle at 50% 100%,{{c.b3}} 0,transparent 40%)">
+  <div style="position:sticky;top:0;z-index:2;background:{{c.glass}};backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-bottom:1px solid {{c.gBorder}}">
+    <div style="max-width:1200px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <span style="font-weight:800;font-size:22px;letter-spacing:-.02em">kosjati<span style="color:{{c.accentInk}}">.</span></span>
+      <a href="Filter.dc.html" style="flex:1 1 420px;max-width:580px;margin:0 auto;height:54px;border-radius:27px;background:{{c.glassStrong}};border:1px solid {{c.line}};box-shadow:0 6px 18px {{c.gShadow}};display:flex;align-items:center;color:{{c.ink}};text-decoration:none">
+        <div style="flex:1;padding:0 20px;display:flex;flex-direction:column;border-right:1px solid {{c.line}}"><span style="font-size:11px;font-weight:700">Tipe</span><span style="font-size:14px;color:{{c.muted}}">Putri</span></div>
+        <div style="flex:1;padding:0 20px;display:flex;flex-direction:column;border-right:1px solid {{c.line}}"><span style="font-size:11px;font-weight:700">Budget</span><span style="font-size:14px;color:{{c.muted}}">≤ Rp 1,2 jt</span></div>
+        <div style="flex:1.3;padding:0 20px;display:flex;flex-direction:column"><span style="font-size:11px;font-weight:700">Prioritas</span><span style="font-size:14px;color:{{c.muted}}">Biaya, jarak, +6</span></div>
+        <span style="width:42px;height:42px;margin-right:6px;flex:none;border-radius:21px;background:{{c.accent}};display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span>
+      </a>
+      <a href="#tentang" style="font-size:14px;font-weight:600;color:{{c.ink}}">Tentang metode</a>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;width:100%;box-sizing:border-box;margin:0 auto;padding:26px 32px 48px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+      <h1 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.02em">14 kos cocok untukmu</h1>
+      <span style="font-size:13px;color:{{c.muted}}">Diurutkan berdasarkan skor SAW</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px">
+      <a href="Detail.dc.html" style="grid-column:span 2;display:flex;flex-direction:column;gap:10px;color:{{c.ink}};text-decoration:none">
+        <div style="height:300px;border-radius:22px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+          <span style="font-size:12px;color:#5B6170">foto kos</span>
+          <span style="position:absolute;top:14px;left:14px;background:{{c.glassStrong}};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid {{c.gBorder}};border-radius:12px;padding:6px 12px;font-size:13px;font-weight:800;color:{{c.ink}}">#1 Paling cocok</span>
+          <span style="position:absolute;bottom:14px;right:14px;background:{{c.accent}};color:#fff;border-radius:12px;padding:6px 12px;font-size:14px;font-weight:800">Skor 0,82</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><span style="font-weight:800;font-size:20px">Kos Melati</span><span style="font-size:14px;color:{{c.muted}}">0,3 km ke kampus · Putri</span></div>
+        <span style="font-size:15px"><b>Rp 1.050.000</b> <span style="color:{{c.muted}}">/ bulan · unggul di biaya &amp; keamanan</span></span>
+      </a>
+      <sc-for list="{{others}}" as="k" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="height:190px;border-radius:18px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative"><span style="position:absolute;top:10px;left:10px;background:{{c.glassStrong}};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid {{c.gBorder}};border-radius:10px;padding:4px 10px;font-size:12px;font-weight:800;color:{{c.ink}}">#{{k.rank}}</span><span style="position:absolute;bottom:10px;right:10px;background:{{c.glassStrong}};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid {{c.gBorder}};border-radius:10px;padding:4px 10px;font-size:12px;font-weight:800;color:{{c.ink}}">{{k.score}}</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font-weight:700;font-size:15px">{{k.name}}</span><span style="font-size:13px;color:{{c.muted}}">{{k.dist}}</span></div>
+          <span style="font-size:14px"><b>{{k.price}}</b> <span style="color:{{c.muted}}">/ bulan</span></span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palet":{"editor":"enum","options":["Laut","Mint","Peach","Sakura"],"default":"Laut","section":"Warna"},"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const L = {base:'#F3F6FB',ink:'#1A1D24',muted:'#4E5463',line:'#E3E7EE',glass:'rgba(255,255,255,.55)',glassStrong:'rgba(255,255,255,.78)',gBorder:'rgba(255,255,255,.9)',gShadow:'rgba(30,45,90,.10)'};
+    const P = {
+      Laut:{accent:'#1D5FD1',accentInk:'#1A55BC',soft:'#E3ECFD',glow:'rgba(29,95,209,.28)',b1:'#B7D0FF',b2:'#C6EDFF',b3:'#DDE9FF'},
+      Mint:{accent:'#0E7C66',accentInk:'#0B6B58',soft:'#DDF4EC',glow:'rgba(14,124,102,.26)',b1:'#B8EDDB',b2:'#CFF3EA',b3:'#DFF6EE'},
+      Peach:{accent:'#C0391D',accentInk:'#A9321A',soft:'#FFE7DD',glow:'rgba(192,57,29,.24)',b1:'#FFCDB8',b2:'#FFE3CF',b3:'#FFEFE5'},
+      Sakura:{accent:'#C2316E',accentInk:'#A82A60',soft:'#FFE1EC',glow:'rgba(194,49,110,.24)',b1:'#FFC7DC',b2:'#FFDCE8',b3:'#FFEAF1'}
+    };
+    const others = [
+      {rank:2,name:'Kos Mawar',score:'0,74',price:'Rp 900.000',dist:'0,6 km'},
+      {rank:3,name:'Kos Anggrek',score:'0,69',price:'Rp 1.150.000',dist:'1,1 km'},
+      {rank:4,name:'Kos Kenanga',score:'0,65',price:'Rp 950.000',dist:'0,9 km'},
+      {rank:5,name:'Kos Dahlia',score:'0,61',price:'Rp 1.000.000',dist:'1,4 km'}
+    ];
+    return { c: Object.assign({}, L, P[this.props.palet] || P.Laut), others };
+  }
+}
+</script>
+</body>
+</html>

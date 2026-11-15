@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Detail kos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;color:{{c.ink}};display:flex;flex-direction:column;position:relative;overflow:hidden;background-color:{{c.base}};background-image:radial-gradient(circle at 0% 45%,{{c.b1}} 0,transparent 42%),radial-gradient(circle at 100% 75%,{{c.b2}} 0,transparent 40%),radial-gradient(circle at 40% 100%,{{c.b3}} 0,transparent 45%)">
+  <div style="height:220px;flex:none;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7D8590" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+    <span style="font-size:12px;color:#5B6170">foto kos (galeri)</span>
+    <a href="Hasil.dc.html" aria-label="Kembali ke hasil" style="position:absolute;top:14px;left:14px;width:44px;height:44px;border-radius:22px;background:{{c.glassStrong}};backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid {{c.gBorder}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span style="position:absolute;bottom:32px;right:14px;background:{{c.glassStrong}};backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid {{c.gBorder}};border-radius:10px;padding:4px 10px;font-size:12px;font-weight:700;color:{{c.ink}}">1/5</span>
+  </div>
+
+  <div style="margin:-20px 12px 0;padding:16px;border-radius:24px;background:{{c.glass}};backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);border:1px solid {{c.gBorder}};box-shadow:0 10px 30px {{c.gShadow}};display:flex;flex-direction:column;gap:12px;position:relative">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;gap:6px"><span style="font-size:12px;font-weight:800;padding:4px 10px;border-radius:8px;background:{{c.accent}};color:#fff">#1 dari 14</span><span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;background:{{c.soft}};color:{{c.accentInk}}">Putri</span></div>
+      <h1 style="margin:0;font-weight:800;font-size:25px;letter-spacing:-.02em">Kos Melati</h1>
+      <span style="font-size:13px;color:{{c.muted}}">0,3 km ke kampus</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      <div style="background:{{c.glassStrong}};border:1px solid {{c.line}};border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;color:{{c.muted}}">Skor SAW</span><span style="font-weight:800;font-size:20px;color:{{c.accentInk}}">0,82</span></div>
+      <div style="background:{{c.glassStrong}};border:1px solid {{c.line}};border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;color:{{c.muted}}">Pembanding TOPSIS</span><span style="font-weight:800;font-size:20px">#1 <span style="font-size:12px;font-weight:600;color:{{c.muted}}">· 0,79</span></span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font-weight:800;font-size:15px">Skor per kriteria</span>
+      <sc-for list="{{crit}}" as="k" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:100px minmax(0,1fr) 32px;gap:10px;align-items:center;font-size:12px">
+          <span>{{k.name}}</span>
+          <div style="height:8px;border-radius:4px;background:{{c.line}}"><div style="height:8px;width:{{k.w}};border-radius:4px;background:{{k.fill}}"></div></div>
+          <span style="text-align:right;font-weight:700">{{k.v}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="margin:12px 12px 0;padding:14px;border-radius:20px;background:{{c.soft}};display:flex;flex-direction:column;gap:4px">
+    <span style="font-weight:800;font-size:14px">Kenapa peringkat 1?</span>
+    <span style="font-size:12px;line-height:1.45">Unggul di biaya sewa dan keamanan, dua dari tiga prioritas teratasmu. Kamarnya agak sempit, tapi bobot luas kamar cuma 8,3%.</span>
+  </div>
+
+  <div style="position:absolute;left:0;right:0;bottom:0;padding:12px 20px 20px;background:{{c.glassStrong}};backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-top:1px solid {{c.gBorder}};display:flex;align-items:center;gap:14px">
+    <div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:800;font-size:17px">Rp 1.050.000</span><span style="font-size:12px;color:{{c.muted}}">per bulan</span></div>
+    <a href="https://mamikos.com" style="height:50px;padding:0 20px;border-radius:16px;background:{{c.accent}};color:#fff;text-decoration:none;display:flex;align-items:center;font-size:15px;font-weight:700;box-shadow:0 8px 20px {{c.glow}}">Buka iklan asli</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palet":{"editor":"enum","options":["Laut","Mint","Peach","Sakura"],"default":"Laut","section":"Warna"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const L = {base:'#F3F6FB',ink:'#1A1D24',muted:'#4E5463',line:'#E3E7EE',glass:'rgba(255,255,255,.55)',glassStrong:'rgba(255,255,255,.78)',gBorder:'rgba(255,255,255,.9)',gShadow:'rgba(30,45,90,.10)'};
+    const P = {
+      Laut:{accent:'#1D5FD1',accentInk:'#1A55BC',soft:'#E3ECFD',glow:'rgba(29,95,209,.28)',b1:'#B7D0FF',b2:'#C6EDFF',b3:'#DDE9FF'},
+      Mint:{accent:'#0E7C66',accentInk:'#0B6B58',soft:'#DDF4EC',glow:'rgba(14,124,102,.26)',b1:'#B8EDDB',b2:'#CFF3EA',b3:'#DFF6EE'},
+      Peach:{accent:'#C0391D',accentInk:'#A9321A',soft:'#FFE7DD',glow:'rgba(192,57,29,.24)',b1:'#FFCDB8',b2:'#FFE3CF',b3:'#FFEFE5'},
+      Sakura:{accent:'#C2316E',accentInk:'#A82A60',soft:'#FFE1EC',glow:'rgba(194,49,110,.24)',b1:'#FFC7DC',b2:'#FFDCE8',b3:'#FFEAF1'}
+    };
+    const c = Object.assign({}, L, P[this.props.palet] || P.Laut);
+    const crit = [['Biaya sewa',.90],['Jarak',.80],['Keamanan',.90],['Fasilitas',.85],['Akses layanan',.70],['Luas kamar',.50],['Pengelolaan',.60],['Lingkungan',.55]]
+      .map(([name, v]) => ({ name, v: v.toFixed(2).replace('.', ','), w: Math.round(v * 100) + '%', fill: v < 0.6 ? c.muted : c.accent }));
+    return { c, crit };
+  }
+}
+</script>
+</body>
+</html>

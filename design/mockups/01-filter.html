@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Filter kos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif}
+button{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;color:{{c.ink}};display:flex;flex-direction:column;position:relative;overflow:hidden;background-color:{{c.base}};background-image:radial-gradient(circle at 100% 0%,{{c.b1}} 0,transparent 45%),radial-gradient(circle at 0% 55%,{{c.b2}} 0,transparent 40%),radial-gradient(circle at 90% 100%,{{c.b3}} 0,transparent 45%)">
+  <div style="display:flex;align-items:center;gap:8px;padding:10px 12px">
+    <a href="Main.dc.html" aria-label="Kembali" style="width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span style="flex:1;font-size:13px;font-weight:600;color:{{c.muted}}">Langkah 1 dari 2</span>
+  </div>
+  <div style="height:4px;margin:0 20px;border-radius:2px;background:{{c.line}}"><div style="height:4px;width:50%;border-radius:2px;background:{{c.accent}}"></div></div>
+
+  <div style="padding:20px 20px 0;display:flex;flex-direction:column;gap:6px">
+    <h1 style="margin:0;font-weight:800;font-size:26px;letter-spacing:-.02em">Mulai dari batasmu</h1>
+    <p style="margin:0;font-size:14px;line-height:1.5;color:{{c.muted}}">Kos di luar batas ini tidak ikut dihitung.</p>
+  </div>
+
+  <div style="margin:20px 16px 0;padding:16px;border-radius:24px;background:{{c.glass}};backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid {{c.gBorder}};box-shadow:0 8px 24px {{c.gShadow}};display:flex;flex-direction:column;gap:12px">
+    <label for="budget" style="font-weight:700;font-size:14px">Budget maksimal per bulan</label>
+    <span style="font-weight:800;font-size:28px;letter-spacing:-.02em">Rp 1.200.000</span>
+    <input id="budget" type="range" min="500000" max="3000000" step="100000" value="1200000" style="width:100%;accent-color:{{c.accent}};height:28px;margin:0">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:{{c.muted}}"><span>Rp 500 rb</span><span>Rp 3 jt</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" style="height:40px;padding:0 14px;border-radius:999px;border:1px solid {{c.line}};background:{{c.glassStrong}};color:{{c.ink}};font-size:13px;font-weight:600">≤ 800 rb</button>
+      <button type="button" style="height:40px;padding:0 14px;border-radius:999px;border:1px solid {{c.line}};background:{{c.glassStrong}};color:{{c.ink}};font-size:13px;font-weight:600">≤ 1 jt</button>
+      <button type="button" aria-pressed="true" style="height:40px;padding:0 14px;border-radius:999px;border:1.5px solid {{c.accent}};background:{{c.soft}};color:{{c.accentInk}};font-size:13px;font-weight:700">≤ 1,2 jt</button>
+      <button type="button" style="height:40px;padding:0 14px;border-radius:999px;border:1px solid {{c.line}};background:{{c.glassStrong}};color:{{c.ink}};font-size:13px;font-weight:600">≤ 1,5 jt</button>
+    </div>
+  </div>
+
+  <div style="padding:22px 16px 0;display:flex;flex-direction:column;gap:12px">
+    <span style="font-weight:700;font-size:14px;padding-left:4px">Tipe penghuni</span>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+      <button type="button" style="height:96px;border-radius:20px;border:1px solid {{c.gBorder}};background:{{c.glass}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:{{c.ink}};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Putra</button>
+      <button type="button" aria-pressed="true" style="height:96px;border-radius:20px;border:2px solid {{c.accent}};background:{{c.soft}};color:{{c.accentInk}};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{c.accentInk}}" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Putri</button>
+      <button type="button" style="height:96px;border-radius:20px;border:1px solid {{c.gBorder}};background:{{c.glass}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:{{c.ink}};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c.8-3 3-5 6-5s5.2 2 6 5M14 15c3 0 5.2 2 6 5"/></svg>Campur</button>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 22px;background:{{c.glassStrong}};backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-top:1px solid {{c.gBorder}};display:flex;align-items:center;gap:14px">
+    <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;color:{{c.muted}}">Perkiraan</span><span style="font-weight:800;font-size:16px">14 kos cocok</span></div>
+    <a href="Prioritas.dc.html" style="height:52px;padding:0 22px;border-radius:16px;background:{{c.accent}};color:#fff;text-decoration:none;display:flex;align-items:center;font-size:15px;font-weight:700;box-shadow:0 8px 20px {{c.glow}}">Lanjut ke prioritas</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"palet":{"editor":"enum","options":["Laut","Mint","Peach","Sakura"],"default":"Laut","section":"Warna"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const L = {base:'#F3F6FB',ink:'#1A1D24',muted:'#4E5463',line:'#E3E7EE',glass:'rgba(255,255,255,.55)',glassStrong:'rgba(255,255,255,.78)',gBorder:'rgba(255,255,255,.9)',gShadow:'rgba(30,45,90,.10)'};
+    const P = {
+      Laut:{accent:'#1D5FD1',accentInk:'#1A55BC',soft:'#E3ECFD',glow:'rgba(29,95,209,.28)',b1:'#B7D0FF',b2:'#C6EDFF',b3:'#DDE9FF'},
+      Mint:{accent:'#0E7C66',accentInk:'#0B6B58',soft:'#DDF4EC',glow:'rgba(14,124,102,.26)',b1:'#B8EDDB',b2:'#CFF3EA',b3:'#DFF6EE'},
+      Peach:{accent:'#C0391D',accentInk:'#A9321A',soft:'#FFE7DD',glow:'rgba(192,57,29,.24)',b1:'#FFCDB8',b2:'#FFE3CF',b3:'#FFEFE5'},
+      Sakura:{accent:'#C2316E',accentInk:'#A82A60',soft:'#FFE1EC',glow:'rgba(194,49,110,.24)',b1:'#FFC7DC',b2:'#FFDCE8',b3:'#FFEAF1'}
+    };
+    return { c: Object.assign({}, L, P[this.props.palet] || P.Laut) };
+  }
+}
+</script>
+</body>
+</html>

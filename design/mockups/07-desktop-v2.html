@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Desktop hasil tampilan terpisah</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',sans-serif;background:#F3F6FB}
+button{font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer}
+a{color:#1A55BC}
+</style>
+</helmet>
+<div style="width:100%;min-height:900px;box-sizing:border-box;color:#1A1D24;display:flex;flex-direction:column;background-color:#F3F6FB;background-image:radial-gradient(circle at 0% 0%,#B7D0FF 0,transparent 30%),radial-gradient(circle at 100% 20%,#C6EDFF 0,transparent 28%),radial-gradient(circle at 50% 100%,#DDE9FF 0,transparent 35%)">
+  <div style="background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border-bottom:1px solid rgba(255,255,255,.9)">
+    <div style="max-width:1440px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <span style="font-weight:800;font-size:22px;letter-spacing:-.02em">kosjati<span style="color:#1A55BC">.</span></span>
+      <span style="font-size:13px;color:#4E5463">Rekomendasi kos Jatinangor · SAW 8 kriteria</span>
+      <span style="flex:1"></span>
+      <a href="#metode" style="font-size:14px;font-weight:600;color:#1A1D24">Cara kerja perhitungan</a>
+    </div>
+  </div>
+
+  <div style="max-width:1440px;width:100%;box-sizing:border-box;margin:0 auto;padding:22px 28px 40px;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+
+    <aside style="flex:0 1 300px;min-width:260px;display:flex;flex-direction:column;gap:14px">
+      <div style="padding:16px;border-radius:22px;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(30,45,90,.10);display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:12px;font-weight:700;color:#4E5463;letter-spacing:.04em">BUDGET MAKS / BULAN</span>
+        <span style="font-weight:800;font-size:24px;letter-spacing:-.02em">Rp 1.200.000</span>
+        <div role="img" aria-label="Sebaran harga kos" style="display:flex;align-items:flex-end;gap:2px;height:48px">
+          <sc-for list="{{bars}}" as="bar" hint-placeholder-count="26"><div style="flex:1;height:{{bar.h}};border-radius:2px 2px 0 0;background:{{bar.c}}"></div></sc-for>
+        </div>
+        <div style="height:6px;border-radius:3px;background:#E3E7EE;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:28%;border-radius:3px;background:#1D5FD1"></div><div style="position:absolute;left:28%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:10px;background:#fff;border:2px solid #1D5FD1;box-shadow:0 2px 6px rgba(30,45,90,.2)"></div></div>
+        <span style="font-size:12px;color:#4E5463">30 kos di bawah budget ini</span>
+        <span style="font-size:12px;font-weight:700;color:#4E5463;letter-spacing:.04em;margin-top:6px">TIPE PENGHUNI</span>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:12px;background:rgba(255,255,255,.6);border:1px solid #E3E7EE">
+          <button type="button" style="height:36px;border:0;border-radius:9px;background:transparent;color:#4E5463;font-size:13px;font-weight:600">Putra</button>
+          <button type="button" aria-pressed="true" style="height:36px;border:0;border-radius:9px;background:#fff;color:#1A55BC;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(30,45,90,.12)">Putri</button>
+          <button type="button" style="height:36px;border:0;border-radius:9px;background:transparent;color:#4E5463;font-size:13px;font-weight:600">Campur</button>
+        </div>
+      </div>
+
+      <div style="padding:16px;border-radius:22px;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 24px rgba(30,45,90,.10);display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;font-weight:700;color:#4E5463;letter-spacing:.04em">PRIORITAS</span><span style="font-size:12px;font-weight:600;color:#1A55BC">Reset</span></div>
+        <sc-for list="{{prio}}" as="p" hint-placeholder-count="8">
+          <div style="height:38px;box-sizing:border-box;border-radius:11px;padding:0 10px;display:flex;align-items:center;gap:8px;background:{{p.bg}};border:{{p.border}};box-shadow:{{p.shadow}}">
+            <span style="font-size:12px;font-weight:700;color:#4E5463;width:14px">{{p.no}}</span>
+            <span style="flex:1;font-size:13px;font-weight:600">{{p.name}}</span>
+            <span style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;background:#E3ECFD;color:#1A55BC">{{p.w}}</span>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="#8A91A1" aria-hidden="true"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>
+          </div>
+        </sc-for>
+        <span style="font-size:11px;color:#4E5463;line-height:1.4">Seret untuk mengubah urutan. Peringkat di tengah langsung diperbarui.</span>
+      </div>
+    </aside>
+
+    <main style="flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+        <h1 style="margin:0;font-weight:800;font-size:24px;letter-spacing:-.02em">14 kos cocok</h1>
+        <span style="font-size:13px;color:#4E5463">Urut skor SAW · diperbarui otomatis</span>
+      </div>
+      <sc-for list="{{kos}}" as="k" hint-placeholder-count="5">
+        <div style="padding:10px;border-radius:20px;display:flex;gap:14px;align-items:stretch;background:{{k.bg}};backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:{{k.border}};box-shadow:{{k.shadow}};transform:{{k.tf}}">
+          <div style="width:150px;height:104px;flex:none;border-radius:14px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative"><span style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.9);border-radius:8px;padding:2px 8px;font-size:12px;font-weight:800">#{{k.rank}}</span></div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-weight:800;font-size:16px">{{k.name}}</span><span style="font-weight:800;font-size:16px;color:#1A55BC">{{k.score}}</span></div>
+            <span style="font-size:13px;color:#4E5463">{{k.meta}}</span>
+            <span style="font-size:14px"><b>{{k.price}}</b> <span style="color:#4E5463">/ bulan</span></span>
+            <div style="height:5px;border-radius:3px;background:#E3E7EE;margin-top:4px"><div style="height:5px;border-radius:3px;width:{{k.bar}};background:#1D5FD1"></div></div>
+          </div>
+          <span style="align-self:center;font-size:11px;font-weight:700;color:{{k.moveColor}};width:34px;text-align:right">{{k.move}}</span>
+        </div>
+      </sc-for>
+    </main>
+
+    <section style="flex:0 1 380px;min-width:300px;padding:12px;border-radius:24px;background:rgba(255,255,255,.62);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 12px 34px rgba(30,45,90,.14);display:flex;flex-direction:column;gap:12px">
+      <div style="height:190px;border-radius:18px;background:linear-gradient(135deg,#E3E6EA,#CDD3DA);position:relative;display:flex;align-items:center;justify-content:center"><span style="font-size:12px;color:#5B6170">foto kos (galeri)</span><span style="position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,.8);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700">1/5</span></div>
+      <div style="padding:0 6px;display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;gap:6px"><span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:7px;background:#1D5FD1;color:#fff">#1 dari 14</span><span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px;background:#E3ECFD;color:#1A55BC">Putri</span></div>
+        <span style="font-weight:800;font-size:22px;letter-spacing:-.02em">Kos Melati</span>
+        <span style="font-size:13px;color:#4E5463">0,3 km ke kampus · Rp 1.050.000 / bulan</span>
+      </div>
+      <div style="padding:0 6px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+        <div style="border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.8);border:1px solid #E3E7EE"><span style="font-size:11px;color:#4E5463">Skor SAW</span><div style="font-weight:800;font-size:18px;color:#1A55BC">0,82</div></div>
+        <div style="border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.8);border:1px solid #E3E7EE"><span style="font-size:11px;color:#4E5463">TOPSIS</span><div style="font-weight:800;font-size:18px">#1 <span style="font-size:12px;color:#4E5463">· 0,79</span></div></div>
+      </div>
+      <div style="padding:0 6px;display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{crit}}" as="c" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 30px;gap:8px;align-items:center;font-size:12px"><span>{{c.name}}</span><div style="height:7px;border-radius:4px;background:#E3E7EE"><div style="height:7px;border-radius:4px;width:{{c.w}};background:{{c.fill}}"></div></div><span style="text-align:right;font-weight:700">{{c.v}}</span></div>
+        </sc-for>
+      </div>
+      <div style="margin:0 6px;padding:12px;border-radius:14px;background:#E3ECFD;font-size:12px;line-height:1.45"><b style="font-size:13px">Kenapa peringkat 1?</b><br>Unggul di biaya dan keamanan, dua dari tiga prioritas teratasmu. Kamarnya agak sempit, tapi bobot luas kamar cuma 8,3%.</div>
+      <a href="https://mamikos.com" style="margin:0 6px 6px;height:48px;border-radius:14px;background:#1D5FD1;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;box-shadow:0 8px 20px rgba(29,95,209,.28)">Buka iklan asli</a>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    // DATA CONTOH
+    const hist = [1,2,3,4,5,4,6,5,4,3,3,2,2,2,1,1,1,1,0,1,0,0,1,0,0,1];
+    const mx = 6, budget = 1200000;
+    const bars = hist.map((n, i) => ({ h: Math.max(6, Math.round(n / mx * 100)) + '%', c: 500000 + i * 100000 <= budget ? '#1D5FD1' : '#CBD5E3' }));
+    const names = ['Biaya sewa','Jarak ke kampus','Keamanan','Fasilitas','Akses layanan','Luas kamar','Pengelolaan','Lingkungan'];
+    const ws = ['22,2%','19,4%','16,7%','13,9%','11,1%','8,3%','5,6%','2,8%'];
+    const prio = names.map((name, i) => ({ no: i + 1, name, w: ws[i],
+      bg: i === 2 ? '#FFFFFF' : 'rgba(255,255,255,.6)', border: i === 2 ? '1.5px solid #1D5FD1' : '1px solid #E3E7EE',
+      shadow: i === 2 ? '0 8px 18px rgba(29,95,209,.25)' : 'none' }));
+    const K = [
+      ['Kos Melati','0,82','0,3 km · Putri · unggul biaya & keamanan','Rp 1.050.000','100%','',''],
+      ['Kos Mawar','0,74','0,6 km · Putri','Rp 900.000','90%','▲ 1','#0E7C66'],
+      ['Kos Anggrek','0,69','1,1 km · Putri','Rp 1.150.000','84%','▼ 1','#B4440A'],
+      ['Kos Kenanga','0,65','0,9 km · Putri','Rp 950.000','79%','',''],
+      ['Kos Dahlia','0,61','1,4 km · Putri','Rp 1.000.000','74%','','']
+    ];
+    const kos = K.map((k, i) => ({ rank: i + 1, name: k[0], score: k[1], meta: k[2], price: k[3], bar: k[4], move: k[5], moveColor: k[6],
+      bg: i === 0 ? 'rgba(255,255,255,.78)' : 'rgba(255,255,255,.55)', border: i === 0 ? '2px solid #1D5FD1' : '1px solid rgba(255,255,255,.9)',
+      shadow: i === 0 ? '0 12px 28px rgba(29,95,209,.20)' : '0 6px 18px rgba(30,45,90,.08)', tf: i === 0 ? 'translateX(4px)' : 'none' }));
+    const crit = [['Biaya sewa',.90],['Jarak',.80],['Keamanan',.90],['Fasilitas',.85],['Akses layanan',.70],['Luas kamar',.50],['Pengelolaan',.60],['Lingkungan',.55]]
+      .map(([name, v]) => ({ name, v: v.toFixed(2).replace('.', ','), w: Math.round(v * 100) + '%', fill: v < 0.6 ? '#4E5463' : '#1D5FD1' }));
+    return { bars, prio, kos, crit };
+  }
+}
+</script>
+</body>
+</html>

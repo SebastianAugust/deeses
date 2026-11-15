@@ -16,20 +16,22 @@ export type IkonKriteria =
 export type KriteriaInfo = {
   kode: Kriteria;
   nama: string;
+  /** Nama pendek huruf kecil untuk ringkasan, mis. "biaya". */
+  singkat: string;
   jenis: JenisKriteria;
   hint: string;
   ikon: IkonKriteria;
 };
 
 export const KRITERIA: readonly KriteriaInfo[] = [
-  { kode: "C1", nama: "Biaya sewa", jenis: "cost", hint: "Makin murah makin baik", ikon: "Wallet" },
-  { kode: "C2", nama: "Jarak ke kampus", jenis: "cost", hint: "Makin dekat makin baik", ikon: "MapPin" },
-  { kode: "C3", nama: "Akses layanan", jenis: "cost", hint: "Makin dekat makin baik", ikon: "ShoppingBag" },
-  { kode: "C4", nama: "Luas kamar", jenis: "benefit", hint: "Makin luas makin baik", ikon: "Maximize" },
-  { kode: "C5", nama: "Fasilitas", jenis: "benefit", hint: "Makin lengkap makin baik", ikon: "Star" },
-  { kode: "C6", nama: "Keamanan", jenis: "benefit", hint: "Makin tinggi makin baik", ikon: "ShieldCheck" },
-  { kode: "C7", nama: "Pengelolaan", jenis: "benefit", hint: "Makin tertata makin baik", ikon: "UserCog" },
-  { kode: "C8", nama: "Lingkungan", jenis: "benefit", hint: "Makin nyaman makin baik", ikon: "Leaf" },
+  { kode: "C1", nama: "Biaya sewa", singkat: "biaya", jenis: "cost", hint: "Makin murah makin baik", ikon: "Wallet" },
+  { kode: "C2", nama: "Jarak ke kampus", singkat: "jarak", jenis: "cost", hint: "Makin dekat makin baik", ikon: "MapPin" },
+  { kode: "C3", nama: "Akses layanan", singkat: "akses", jenis: "cost", hint: "Makin dekat makin baik", ikon: "ShoppingBag" },
+  { kode: "C4", nama: "Luas kamar", singkat: "luas", jenis: "benefit", hint: "Makin luas makin baik", ikon: "Maximize" },
+  { kode: "C5", nama: "Fasilitas", singkat: "fasilitas", jenis: "benefit", hint: "Makin lengkap makin baik", ikon: "Star" },
+  { kode: "C6", nama: "Keamanan", singkat: "keamanan", jenis: "benefit", hint: "Makin tinggi makin baik", ikon: "ShieldCheck" },
+  { kode: "C7", nama: "Pengelolaan", singkat: "pengelolaan", jenis: "benefit", hint: "Makin tertata makin baik", ikon: "UserCog" },
+  { kode: "C8", nama: "Lingkungan", singkat: "lingkungan", jenis: "benefit", hint: "Makin nyaman makin baik", ikon: "Leaf" },
 ];
 
 export const KODE_KRITERIA: readonly Kriteria[] = KRITERIA.map((k) => k.kode);

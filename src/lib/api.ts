@@ -1,6 +1,13 @@
+import type { KriteriaInfo } from "@/config/kriteria";
 import { buildQuery, type FilterState } from "./query";
 import type { SebaranHarga } from "./sebaran";
-import type { KosDetailResponse, RankRequest, RankResult, TipePenghuni } from "./types";
+import type {
+  KosDetailResponse,
+  KosRingkasCarousel,
+  RankRequest,
+  RankResult,
+  TipePenghuni,
+} from "./types";
 
 /** Error dengan kode HTTP (mis. 404 untuk kos yang tidak ada). */
 export class ApiError extends Error {
@@ -12,6 +19,19 @@ export class ApiError extends Error {
   }
 }
 
+/** Ambil pesan `error` dari body JSON galat server (aman ditampilkan), atau pakai `cadangan`. */
+async function pesanGalat(res: Response, cadangan: string): Promise<string> {
+  try {
+    const body: unknown = await res.json();
+    if (typeof body === "object" && body !== null && "error" in body && typeof body.error === "string") {
+      return body.error;
+    }
+  } catch {
+    // body bukan JSON
+  }
+  return cadangan;
+}
+
 /** GET /api/kos/[id] — data lengkap 1 kos + peringkatnya untuk filter yang sama dengan hasil. */
 export async function fetchKosDetail(
   id: string,
@@ -21,11 +41,27 @@ export async function fetchKosDetail(
   const res = await fetch(`/api/kos/${encodeURIComponent(id)}?${buildQuery(filter)}`, { signal });
   if (!res.ok) {
     throw new ApiError(
-      res.status === 404 ? "Kos tidak ditemukan." : `Gagal memuat detail kos (kode ${res.status}).`,
+      res.status === 404
+        ? "Kos tidak ditemukan."
+        : await pesanGalat(res, `Gagal memuat detail kos (kode ${res.status}).`),
       res.status,
     );
   }
   return (await res.json()) as KosDetailResponse;
+}
+
+/** GET /api/kriteria — daftar kriteria (dari src/config/kriteria.ts di server). */
+export async function fetchKriteria(signal?: AbortSignal): Promise<KriteriaInfo[]> {
+  const res = await fetch("/api/kriteria", { signal });
+  if (!res.ok) throw new Error(`Gagal memuat daftar kriteria (kode ${res.status}).`);
+  return (await res.json()) as KriteriaInfo[];
+}
+
+/** GET /api/kos — daftar ringkas semua kos (carousel). Pesan galat server dipakai apa adanya. */
+export async function fetchKosRingkas(signal?: AbortSignal): Promise<KosRingkasCarousel[]> {
+  const res = await fetch("/api/kos", { signal });
+  if (!res.ok) throw new Error(await pesanGalat(res, `Gagal memuat daftar kos (kode ${res.status}).`));
+  return (await res.json()) as KosRingkasCarousel[];
 }
 
 /** GET /api/sebaran-harga — jumlah kos per rentang harga Rp 100 rb. */
@@ -35,7 +71,7 @@ export async function fetchSebaranHarga(
 ): Promise<SebaranHarga> {
   const url = tipe ? `/api/sebaran-harga?tipe=${tipe}` : "/api/sebaran-harga";
   const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`Gagal memuat sebaran harga (kode ${res.status}).`);
+  if (!res.ok) throw new Error(await pesanGalat(res, `Gagal memuat sebaran harga (kode ${res.status}).`));
   return (await res.json()) as SebaranHarga;
 }
 
@@ -55,21 +91,7 @@ export async function fetchRank(
   });
 
   if (!res.ok) {
-    let pesan = `Gagal memuat rekomendasi (kode ${res.status}).`;
-    try {
-      const body: unknown = await res.json();
-      if (
-        typeof body === "object" &&
-        body !== null &&
-        "error" in body &&
-        typeof body.error === "string"
-      ) {
-        pesan = body.error;
-      }
-    } catch {
-      // body bukan JSON — pakai pesan bawaan
-    }
-    throw new Error(pesan);
+    throw new Error(await pesanGalat(res, `Gagal memuat rekomendasi (kode ${res.status}).`));
   }
 
   return (await res.json()) as RankResult[];

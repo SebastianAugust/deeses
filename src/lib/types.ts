@@ -1,40 +1,4 @@
-export type Kriteria = "C1" | "C2" | "C3" | "C4" | "C5" | "C6" | "C7" | "C8";
-
-export type JenisKriteria = "cost" | "benefit";
-
-/** Nama ikon lucide-react yang dipakai tiap kriteria. */
-export type IkonKriteria =
-  | "Wallet"
-  | "MapPin"
-  | "ShoppingBag"
-  | "Maximize"
-  | "Star"
-  | "ShieldCheck"
-  | "UserCog"
-  | "Leaf";
-
-export type KriteriaInfo = {
-  kode: Kriteria;
-  nama: string;
-  /** Nama pendek huruf kecil untuk ringkasan, mis. "biaya". */
-  singkat: string;
-  jenis: JenisKriteria;
-  hint: string;
-  ikon: IkonKriteria;
-};
-
-export const KRITERIA: readonly KriteriaInfo[] = [
-  { kode: "C1", nama: "Biaya sewa", singkat: "biaya", jenis: "cost", hint: "Makin murah makin baik", ikon: "Wallet" },
-  { kode: "C2", nama: "Jarak ke kampus", singkat: "jarak", jenis: "cost", hint: "Makin dekat makin baik", ikon: "MapPin" },
-  { kode: "C3", nama: "Akses layanan", singkat: "akses", jenis: "cost", hint: "Makin dekat makin baik", ikon: "ShoppingBag" },
-  { kode: "C4", nama: "Luas kamar", singkat: "luas", jenis: "benefit", hint: "Makin luas makin baik", ikon: "Maximize" },
-  { kode: "C5", nama: "Fasilitas", singkat: "fasilitas", jenis: "benefit", hint: "Makin lengkap makin baik", ikon: "Star" },
-  { kode: "C6", nama: "Keamanan", singkat: "keamanan", jenis: "benefit", hint: "Makin tinggi makin baik", ikon: "ShieldCheck" },
-  { kode: "C7", nama: "Pengelolaan", singkat: "pengelolaan", jenis: "benefit", hint: "Makin tertata makin baik", ikon: "UserCog" },
-  { kode: "C8", nama: "Lingkungan", singkat: "lingkungan", jenis: "benefit", hint: "Makin nyaman makin baik", ikon: "Leaf" },
-];
-
-export const KODE_KRITERIA: readonly Kriteria[] = KRITERIA.map((k) => k.kode);
+import type { Kriteria } from "@/config/kriteria";
 
 export type TipePenghuni = "putra" | "putri" | "campur";
 
@@ -51,13 +15,31 @@ export type RankResult = {
   nama: string;
   rank: number;
   harga: number;
+  /** = C2 (km). */
   jarak_km: number;
+  /** true = jarak hasil imputasi (heuristik sementara, lihat src/lib/repo/mapper.ts). */
+  jarak_imputasi?: boolean;
   tipe: TipePenghuni;
   foto_url: string | null;
-  url: string;
+  /** URL listing asli; null kalau belum ada di data. */
+  url: string | null;
   skor_saw: number;
   skor_topsis: number;
+  /** Peringkat TOPSIS (unik) di hasil yang sama; dihitung server (src/lib/dss). */
+  rank_topsis?: number;
   skor_kriteria: Record<Kriteria, number>;
+};
+
+/** Item ringkas GET /api/kos (carousel). Nilai yang tidak ada di data = null. */
+export type KosRingkasCarousel = {
+  id: string;
+  nama: string;
+  harga: number | null;
+  tipe: TipePenghuni | null;
+  jarak_km: number | null;
+  jarak_imputasi: boolean;
+  foto_url: string | null;
+  url: string | null;
 };
 
 export type KamarMandi = "dalam" | "luar";
@@ -70,8 +52,10 @@ export type TempatSekitar = { nama: string; jarak_m: number };
  */
 export type KosInfo = {
   alamat?: string | null;
-  /** Teks bebas dari listing, mis. "3 × 4 m". */
+  /** Teks tampilan, mis. "12 m²" (dari C4). */
   luas_kamar?: string | null;
+  /** = C4 (m²). */
+  luas_m2?: number | null;
   kamar_mandi?: KamarMandi | null;
   listrik_termasuk?: boolean | null;
   /** Rupiah. */
@@ -98,6 +82,12 @@ export type KosRingkas = Pick<RankResult, "id" | "nama" | "rank" | "skor_saw" | 
 /** Respons GET /api/kos/[id]?budget&tipe&urutan. */
 export type KosDetailResponse = {
   kos: KosDetail;
+  /**
+   * Jumlah kos yang jadi pembanding normalisasi min-max untuk skor di atas (kandidat
+   * hasil filter, + kos ini sendiri bila tidak lolos filter). Skor selalu RELATIF
+   * terhadap kos-kos ini; kalau ≤ 2, bar skor per kriteria tidak bermakna.
+   */
+  pembanding: number;
   /** Posisi kos di hasil untuk filter yang dikirim; null kalau kos tidak lolos filter. */
   peringkat: {
     rank: number;
@@ -106,10 +96,6 @@ export type KosDetailResponse = {
     berikutnya: KosRingkas | null;
   } | null;
 };
-
-export function isKriteria(v: unknown): v is Kriteria {
-  return typeof v === "string" && (KODE_KRITERIA as readonly string[]).includes(v);
-}
 
 export function isTipePenghuni(v: unknown): v is TipePenghuni {
   return typeof v === "string" && (TIPE_PENGHUNI as readonly string[]).includes(v);

@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
 import { KosPhoto } from "@/components/kos-photo";
 import { RankBadge } from "@/components/rank-badge";
-import { formatJarak, formatRupiah, formatSkor } from "@/lib/format";
+import { formatRupiah, formatSkor, teksJarak } from "@/lib/format";
 import { TRANSISI, jedaStagger } from "@/lib/motion";
 import { labelTipe } from "@/lib/ringkasan";
 import type { RankResult } from "@/lib/types";
@@ -17,6 +17,8 @@ type KosListCardProps = {
   index: number;
   /** Skor SAW tertinggi di daftar (lebar bar skor relatif terhadapnya). */
   skorMaks: number;
+  /** Sembunyikan bar skor (hasil hanya 1–2 kos: bar penuh menyesatkan). */
+  tanpaBar?: boolean;
   /** Teks tambahan meta, mis. "unggul biaya & keamanan" untuk #1. */
   catatan?: string;
   terpilih: boolean;
@@ -35,6 +37,7 @@ export function KosListCard({
   kos,
   index,
   skorMaks,
+  tanpaBar = false,
   catatan,
   terpilih,
   delta,
@@ -83,18 +86,20 @@ export function KosListCard({
             </span>
           </div>
           <span className="truncate text-[13px] text-muted">
-            {formatJarak(kos.jarak_km)} · {labelTipe(kos.tipe)}
+            {teksJarak(kos)} · {labelTipe(kos.tipe)}
             {catatan ? ` · ${catatan}` : null}
           </span>
           <span className="text-sm">
             <b>{formatRupiah(kos.harga)}</b> <span className="text-muted">/ bulan</span>
           </span>
-          <div className="mt-1 h-[5px] rounded-[3px] bg-line" aria-hidden>
-            <div
-              className="h-[5px] rounded-[3px] bg-accent transition-[width] duration-250 ease-out motion-reduce:transition-none"
-              style={{ width: `${Math.round((kos.skor_saw / skorMaks) * 100)}%` }}
-            />
-          </div>
+          {tanpaBar ? null : (
+            <div className="mt-1 h-[5px] rounded-[3px] bg-line" aria-hidden>
+              <div
+                className="h-[5px] rounded-[3px] bg-accent transition-[width] duration-250 ease-out motion-reduce:transition-none"
+                style={{ width: `${Math.round((kos.skor_saw / skorMaks) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
         <span className="flex w-[34px] flex-none items-center justify-end">
           <RankDeltaBadge delta={delta} />

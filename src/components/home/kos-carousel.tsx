@@ -10,13 +10,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatRupiah } from "@/lib/format";
 import { TRANSISI, jedaStagger } from "@/lib/motion";
 import { DEFAULT_FILTER, buildHref, buildQuery } from "@/lib/query";
-import { useRank } from "@/lib/use-rank";
+import { useKosRingkas } from "@/lib/use-kos-ringkas";
 
 const JUMLAH = 6;
 
-/** Carousel "Kos di data kami": beberapa kos dari /api/rank dengan filter default. */
+/**
+ * Carousel "Kos di data kami": beberapa kos dari GET /api/kos (bukan hasil peringkat).
+ * Kos yang punya foto ditampilkan lebih dulu; selebihnya urut id.
+ */
 export function KosCarousel() {
-  const rank = useRank(DEFAULT_FILTER);
+  const rank = useKosRingkas();
   const query = buildQuery(DEFAULT_FILTER);
   const kunci = rank.status === "loading" ? "skeleton" : rank.status;
   const [sibuk, jalankan] = useSibukSingkat();
@@ -71,7 +74,10 @@ export function KosCarousel() {
         {rank.status === "success" && rank.data.length > 0 ? (
           // pt/pb memberi ruang untuk kartu yang terangkat saat hover (overflow-x memotong sumbu y).
           <ul className="no-scrollbar flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pt-1 pb-3 lg:px-0">
-            {rank.data.slice(0, JUMLAH).map((kos, i) => (
+            {[...rank.data]
+              .sort((a, b) => Number(b.foto_url !== null) - Number(a.foto_url !== null))
+              .slice(0, JUMLAH)
+              .map((kos, i) => (
               <motion.li
                 key={kos.id}
                 initial={{ opacity: 0, y: 8 }}
@@ -91,7 +97,13 @@ export function KosCarousel() {
                   />
                   <span className="text-sm font-bold">{kos.nama}</span>
                   <span className="text-[13px]">
-                    <b>{formatRupiah(kos.harga)}</b> <span className="text-muted">/bln</span>
+                    {kos.harga === null ? (
+                      <span className="text-muted">Harga belum ada data</span>
+                    ) : (
+                      <>
+                        <b>{formatRupiah(kos.harga)}</b> <span className="text-muted">/bln</span>
+                      </>
+                    )}
                   </span>
                 </Link>
               </motion.li>

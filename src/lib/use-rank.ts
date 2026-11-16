@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchRank } from "./api";
 import type { FilterState } from "./query";
-import type { Kriteria, RankResult } from "./types";
+import type { Kriteria } from "@/config/kriteria";
+import type { RankResult } from "./types";
 
 export type RankState =
   | { status: "loading"; data?: undefined; error?: undefined }

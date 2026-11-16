@@ -5,7 +5,8 @@ import { ScoreBar } from "@/components/score-bar";
 import { infoKriteria, jelaskanPeringkat } from "@/lib/explain";
 import { formatSkor } from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
-import type { Kriteria, RankResult } from "@/lib/types";
+import type { Kriteria } from "@/config/kriteria";
+import type { RankResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /*

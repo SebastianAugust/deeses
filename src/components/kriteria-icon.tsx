@@ -10,7 +10,7 @@ import {
   type LucideIcon,
   type LucideProps,
 } from "lucide-react";
-import type { IkonKriteria } from "@/lib/types";
+import type { IkonKriteria } from "@/config/kriteria";
 
 const IKON: Record<IkonKriteria, LucideIcon> = {
   Wallet,
@@ -23,7 +23,7 @@ const IKON: Record<IkonKriteria, LucideIcon> = {
   Leaf,
 };
 
-/** Ikon lucide untuk sebuah kriteria (nama ikon dari KRITERIA di lib/types). */
+/** Ikon lucide untuk sebuah kriteria (nama ikon dari KRITERIA di config/kriteria). */
 export function KriteriaIcon({ nama, ...props }: { nama: IkonKriteria } & LucideProps) {
   const Ikon = IKON[nama];
   return <Ikon strokeWidth={2} aria-hidden {...props} />;

@@ -9,10 +9,10 @@ import {
   BUDGET_MAX,
   BUDGET_MIN,
   BUDGET_STEP,
-  DEFAULT_URUTAN,
   type FilterState,
 } from "@/lib/query";
 import type { SebaranHarga } from "@/lib/sebaran";
+import { useUrutanDefault } from "@/lib/use-kriteria";
 
 type FilterSidebarProps = {
   filter: FilterState;
@@ -32,7 +32,8 @@ export function FilterSidebar({ filter, onChange, sebaran, memuatSebaran }: Filt
   const idBudget = useId();
   const idTipe = useId();
   const idPrioritas = useId();
-  const sudahDefault = filter.urutan.join(",") === DEFAULT_URUTAN.join(",");
+  const urutanDefault = useUrutanDefault();
+  const sudahDefault = !urutanDefault || filter.urutan.join(",") === urutanDefault.join(",");
 
   return (
     <aside aria-label="Filter dan prioritas" className="flex flex-col gap-3.5">
@@ -69,7 +70,7 @@ export function FilterSidebar({ filter, onChange, sebaran, memuatSebaran }: Filt
           </span>
           <button
             type="button"
-            onClick={() => onChange({ urutan: [...DEFAULT_URUTAN] })}
+            onClick={() => urutanDefault && onChange({ urutan: [...urutanDefault] })}
             disabled={sudahDefault}
             className="tekan tautan -my-1 rounded-lg px-2 py-1 text-xs font-semibold text-accent-ink"
           >

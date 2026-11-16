@@ -1,5 +1,6 @@
 import { formatSkor } from "./format";
-import { KRITERIA, type Kriteria, type KriteriaInfo, type RankResult } from "./types";
+import { KRITERIA, type Kriteria, type KriteriaInfo } from "@/config/kriteria";
+import type { RankResult } from "./types";
 import { formatPersen, rankSumWeights } from "./weights";
 
 const INFO = Object.fromEntries(KRITERIA.map((k) => [k.kode, k])) as Record<Kriteria, KriteriaInfo>;
@@ -8,8 +9,12 @@ export function infoKriteria(kode: Kriteria): KriteriaInfo {
   return INFO[kode];
 }
 
-/** Peringkat TOPSIS sebuah kos di antara hasil yang sama (API belum mengirim kolom ini). */
+/**
+ * Peringkat TOPSIS sebuah kos di antara hasil yang sama. Pakai `rank_topsis` dari
+ * server (unik, aturan seri sama dengan SAW); fallback hitung lokal kalau tidak ada.
+ */
 export function rankTopsis(kos: RankResult, semua: RankResult[]): number {
+  if (kos.rank_topsis !== undefined) return kos.rank_topsis;
   return 1 + semua.filter((k) => k.skor_topsis > kos.skor_topsis).length;
 }
 

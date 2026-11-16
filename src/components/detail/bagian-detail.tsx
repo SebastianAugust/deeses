@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { Bath, Check, Maximize, Users, Zap, type LucideIcon } from "lucide-react";
+import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { ScoreBar } from "@/components/score-bar";
 import { infoKriteria, jelaskanPeringkat } from "@/lib/explain";
-import { formatJarak, formatJarakMeter, formatSkor, formatTanggal } from "@/lib/format";
+import { formatJarakMeter, formatSkor, formatTanggal, teksJarak } from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
-import type { KosDetail, KosDetailResponse, Kriteria } from "@/lib/types";
+import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
+import type { Kriteria } from "@/config/kriteria";
+import type { KosDetail, KosDetailResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /*
@@ -51,8 +54,14 @@ export function JudulKos({
         {kos.nama}
       </h1>
       <p className="text-sm text-muted lg:text-[15px]">
-        {kos.alamat ? `${kos.alamat} · ` : null}
-        <b className="text-ink">{formatJarak(kos.jarak_km)}</b> ke kampus
+        {kos.alamat ?? "Alamat belum ada data"} ·{" "}
+        {kos.jarak_imputasi ? (
+          "jarak ke kampus belum diketahui"
+        ) : (
+          <>
+            <b className="text-ink">{teksJarak(kos)}</b> ke kampus
+          </>
+        )}
       </p>
     </div>
   );
@@ -137,7 +146,10 @@ const KARTU_KECIL =
 
 export function AturanSekitar({ kos }: { kos: KosDetail }) {
   const sekitar = [
-    { nama: "Kampus (gerbang utama)", jarak: formatJarak(kos.jarak_km) },
+    {
+      nama: "Kampus (gerbang utama)",
+      jarak: kos.jarak_imputasi ? "Belum diketahui" : teksJarak(kos),
+    },
     ...(kos.sekitar ?? []).map((s) => ({ nama: s.nama, jarak: formatJarakMeter(s.jarak_m) })),
   ];
   return (
@@ -181,15 +193,19 @@ export function AturanSekitar({ kos }: { kos: KosDetail }) {
 export function KenapaDirekomendasikan({
   kos,
   peringkat,
+  pembanding,
   urutan,
   hrefUbahPrioritas,
 }: {
   kos: KosDetail;
   peringkat: KosDetailResponse["peringkat"];
+  /** Jumlah kos yang jadi dasar normalisasi skor (KosDetailResponse.pembanding). */
+  pembanding: number;
   urutan: Kriteria[];
   hrefUbahPrioritas: string;
 }) {
   const penjelasan = jelaskanPeringkat(kos, urutan);
+  const sedikit = pembandingTerlaluSedikit(pembanding);
   return (
     <section
       aria-labelledby="judul-kenapa"
@@ -197,27 +213,33 @@ export function KenapaDirekomendasikan({
     >
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h2 id="judul-kenapa" className="text-xl font-extrabold lg:text-[22px]">
-          Kenapa direkomendasikan untukmu
+          {peringkat ? "Kenapa direkomendasikan untukmu" : "Skor dibanding pilihanmu"}
         </h2>
         <span className="text-[13px] text-muted">
           SAW <b className="text-accent-ink">{formatSkor(kos.skor_saw)}</b> · pembanding TOPSIS{" "}
           {peringkat ? `#${peringkat.rank_topsis} ` : null}({formatSkor(kos.skor_topsis)})
         </span>
       </div>
-      <div className="grid gap-x-7 gap-y-2.5 lg:grid-cols-2">
-        {urutan.map((kode, i) => (
-          <ScoreBar
-            key={kode}
-            index={i}
-            saatTerlihat
-            lebarLabel={120}
-            className="text-[13px]"
-            label={infoKriteria(kode).nama}
-            nilai={kos.skor_kriteria[kode]}
-          />
-        ))}
-      </div>
-      <p className="rounded-[16px] bg-soft px-4 py-3.5 text-sm leading-[1.55]">{penjelasan.teks}</p>
+      {sedikit ? (
+        <CatatanSkorRelatif jumlah={pembanding} />
+      ) : (
+        <>
+          <div className="grid gap-x-7 gap-y-2.5 lg:grid-cols-2">
+            {urutan.map((kode, i) => (
+              <ScoreBar
+                key={kode}
+                index={i}
+                saatTerlihat
+                lebarLabel={120}
+                className="text-[13px]"
+                label={infoKriteria(kode).nama}
+                nilai={kos.skor_kriteria[kode]}
+              />
+            ))}
+          </div>
+          <p className="rounded-[16px] bg-soft px-4 py-3.5 text-sm leading-[1.55]">{penjelasan.teks}</p>
+        </>
+      )}
       <p className="text-xs text-muted">
         Urutan kriteria mengikuti prioritasmu.{" "}
         <Link href={hrefUbahPrioritas} className="tautan font-semibold text-accent-ink">
@@ -234,8 +256,9 @@ export function CatatanSumber({ kos }: { kos: KosDetail }) {
   const tanggal = kos.diperbarui_at ? formatTanggal(kos.diperbarui_at) : null;
   return (
     <p className="text-xs leading-normal text-muted">
-      Data dari listing publik{tanggal ? `, terakhir diperbarui ${tanggal}` : ""}. Informasi bisa
-      berubah, pastikan lagi ke pengelola sebelum survei.
+      Data dari listing publik{tanggal ? `, terakhir diperbarui ${tanggal}` : ""}.{" "}
+      <b className="text-ink">Data sementara:</b> sebagian informasi (alamat, kontak, foto) belum
+      terisi. Informasi bisa berubah, pastikan lagi ke pengelola sebelum survei.
     </p>
   );
 }

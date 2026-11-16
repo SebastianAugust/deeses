@@ -1,0 +1,176 @@
+
+==============================================================================
+Skenario budget <= Rp 1.000.000 | tipe putri | n kandidat = 61
+==============================================================================
+
+[default (C1..C8)]  rho(SAW,TOPSISmm)=0.921  rho(SAW,TOPSISvektor)=0.862
+   top-3 SAW        : ['Kost Derumahkoe Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Dara I Tipe B']
+   top-3 TOPSIS mm  : ['Kost Pondok Kaca II Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Dara I Tipe B']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Derumahkoe Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Kaca II Tipe A']  (overlap 2/3)
+
+[hemat: C1,C2,C3,...]  rho(SAW,TOPSISmm)=0.922  rho(SAW,TOPSISvektor)=0.865
+   top-3 SAW        : ['Kost Pondok Annisa UNPAD Tipe A', 'Kost Derumahkoe Tipe B', 'Kost Pondok Dara I Tipe B']
+   top-3 TOPSIS mm  : ['Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Kaca II Tipe B', 'Kost Pondok Kaca II Tipe A']  (overlap 1/3)
+   top-3 TOPSIS vek : ['Kost Pondok Annisa UNPAD Tipe A', 'Kost Derumahkoe Tipe B', 'Kost Witte Hegarmanah Tipe B']  (overlap 2/3)
+
+[dekat kampus: C2,C3,C1,...]  rho(SAW,TOPSISmm)=0.967  rho(SAW,TOPSISvektor)=0.922
+   top-3 SAW        : ['Kost Derumahkoe Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Annisa Tipe 3']
+   top-3 TOPSIS mm  : ['Kost Pondok Annisa UNPAD Tipe A', 'Kost Derumahkoe Tipe B', 'Kost Ikopin C24']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Derumahkoe Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Annisa Tipe 3']  (overlap 3/3)
+
+[fasilitas: C5,C4,C6,...]  rho(SAW,TOPSISmm)=0.977  rho(SAW,TOPSISvektor)=0.962
+   top-3 SAW        : ['Kost Pondok Barokah 232', 'Kost Pondok Raozen Tipe B', 'Kost Pondok Dara I Tipe B']
+   top-3 TOPSIS mm  : ['Kost Pondok Barokah 232', 'Kost Pondok Raozen Tipe B', 'Kost Pondok Dara I Tipe B']  (overlap 3/3)
+   top-3 TOPSIS vek : ['Kost Pondok Barokah 232', 'Kost Pondok Raozen Tipe B', 'Kost Wisma Triarga Tipe Executive']  (overlap 2/3)
+
+[aman: C6,C1,C5,...]  rho(SAW,TOPSISmm)=0.968  rho(SAW,TOPSISvektor)=0.932
+   top-3 SAW        : ['Kost Bumi Campernik Tipe A', 'Kost Pondok Barokah 232', 'Kost Pondok Dara I Tipe B']
+   top-3 TOPSIS mm  : ['Kost Bumi Campernik Tipe A', 'Kost Pondok Barokah 232', 'Kost Pondok Darul Ulum II']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Barokah 232', 'Kost Wisma Triarga Tipe Executive', 'Kost Wisma Triarga Tipe Standart']  (overlap 1/3)
+
+[terbalik (C8..C1)]  rho(SAW,TOPSISmm)=0.968  rho(SAW,TOPSISvektor)=0.950
+   top-3 SAW        : ['Kost Bumi Campernik Tipe A', 'Kost Pondok Raozen Tipe B', 'Kost Pondok Barokah 232']
+   top-3 TOPSIS mm  : ['Kost Bumi Campernik Tipe A', 'Kost Pondok Raozen Tipe B', 'Kost Bumi Campernik Tipe C']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Raozen Tipe B', 'Kost Bumi Campernik Tipe A', 'Kost Pondok Barokah 232']  (overlap 3/3)
+
+[SEMUA 40.320 urutan]
+   kos berbeda yang pernah jadi #1 SAW: 14; paling sering: Kost Bumi Campernik Tipe A 50.7%; Kost Pondok Dara I Tipe B 22.6%; Kost Derumahkoe Tipe B 11.8%; Kost Pondok Barokah 232 9.2%
+   himpunan top-3 SAW berbeda: 143; paling sering muncul 13.9%
+   kos paling sering masuk top-3 SAW: Kost Bumi Campernik Tipe A 75%; Kost Pondok Dara I Tipe B 56%; Kost Pondok Barokah 232 47%; Kost Derumahkoe Tipe B 32%; Kost Pondok Annisa UNPAD Tipe A 22%
+   #1 SAW == #1 TOPSIS(min-max): 73.0% dari semua urutan
+   Spearman SAW vs TOPSIS min-max : min 0.862 | p5 0.919 | median 0.968 | max 0.994
+   Spearman SAW vs TOPSIS vektor  : min 0.709 | p5 0.804 | median 0.916 | max 0.989
+   saat C1 di posisi 1: #1 paling sering = Kost Bumi Campernik Tipe A (Rp 700,000) 61%
+   saat C1 di posisi 8: #1 paling sering = Kost Bumi Campernik Tipe A (Rp 700,000) 42%
+
+==============================================================================
+Skenario budget <= Rp 1.000.000 | tipe putra | n kandidat = 24
+==============================================================================
+
+[default (C1..C8)]  rho(SAW,TOPSISmm)=0.943  rho(SAW,TOPSISvektor)=0.903
+   top-3 SAW        : ['Kost Satu Tipe A', 'Kost Pondok Sakhalin Tipe B', 'Kost Dosteng Eksklusif Tipe A']
+   top-3 TOPSIS mm  : ['Kost Satu Tipe A', 'Kost Breeze', 'Kost Pak Amung Hegarmanah']  (overlap 1/3)
+   top-3 TOPSIS vek : ['Kost Pondok Sakhalin Tipe B', 'Kost Satu Tipe A', 'Kost Breeze']  (overlap 2/3)
+
+[hemat: C1,C2,C3,...]  rho(SAW,TOPSISmm)=0.965  rho(SAW,TOPSISvektor)=0.849
+   top-3 SAW        : ['Kost Satu Tipe A', 'Kost Dosteng Eksklusif Tipe A', 'Kost Pondok Sakhalin Tipe B']
+   top-3 TOPSIS mm  : ['Kost Satu Tipe A', 'Kost Dosteng Eksklusif Tipe A', 'Kost Gallant House Tipe A']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Sakhalin Tipe B', 'Kost Breeze', 'Kost Satu Tipe A']  (overlap 2/3)
+
+[dekat kampus: C2,C3,C1,...]  rho(SAW,TOPSISmm)=0.950  rho(SAW,TOPSISvektor)=0.930
+   top-3 SAW        : ['Kost Satu Tipe A', 'Kost Pondok Sakhalin Tipe B', 'Kost Dosteng Eksklusif Tipe A']
+   top-3 TOPSIS mm  : ['Kost Satu Tipe A', 'Kost Gallant House Tipe A', 'Kost Pondok Sakhalin Tipe B']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Satu Tipe A', 'Kost Pondok Sakhalin Tipe B', 'Kost Gallant House Tipe A']  (overlap 2/3)
+
+[fasilitas: C5,C4,C6,...]  rho(SAW,TOPSISmm)=0.958  rho(SAW,TOPSISvektor)=0.893
+   top-3 SAW        : ['Kost Satu Tipe A', 'Kost Dyana', 'Kost Casa De Aufar I Deluxe']
+   top-3 TOPSIS mm  : ['Kost Casa De Aufar I Deluxe', 'Kost Dyana', 'Kost Dosteng Eksklusif Tipe A']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Casa De Aufar I Deluxe', 'Kost Dyana', 'Kost Caringin Ganesha']  (overlap 2/3)
+
+[aman: C6,C1,C5,...]  rho(SAW,TOPSISmm)=0.965  rho(SAW,TOPSISvektor)=0.875
+   top-3 SAW        : ['Kost Satu Tipe A', 'Kost Dosteng Eksklusif Tipe A', 'Kost Dyana']
+   top-3 TOPSIS mm  : ['Kost Satu Tipe A', 'Kost Dyana', 'Kost Dosteng Eksklusif Tipe A']  (overlap 3/3)
+   top-3 TOPSIS vek : ['Kost Dyana', 'Kost Satu Tipe A', 'Kost Pondok Trubus Tipe A']  (overlap 2/3)
+
+[terbalik (C8..C1)]  rho(SAW,TOPSISmm)=0.977  rho(SAW,TOPSISvektor)=0.941
+   top-3 SAW        : ['Kost Satu Tipe A', 'Kost Casa De Aufar I Deluxe', 'Kost Dosteng Eksklusif Tipe A']
+   top-3 TOPSIS mm  : ['Kost Satu Tipe A', 'Kost Casa De Aufar I Deluxe', 'Kost Dosteng Eksklusif Tipe A']  (overlap 3/3)
+   top-3 TOPSIS vek : ['Kost Casa De Aufar I Deluxe', 'Kost Satu Tipe A', 'Kost Dosteng Eksklusif Tipe A']  (overlap 3/3)
+
+[SEMUA 40.320 urutan]
+   kos berbeda yang pernah jadi #1 SAW: 4; paling sering: Kost Satu Tipe A 93.0%; Kost Dosteng Eksklusif Tipe A 5.3%; Kost Pondok Sakhalin Tipe B 1.4%; Kost Dyana 0.2%
+   himpunan top-3 SAW berbeda: 31; paling sering muncul 21.2%
+   kos paling sering masuk top-3 SAW: Kost Satu Tipe A 100%; Kost Dosteng Eksklusif Tipe A 67%; Kost Dyana 36%; Kost Pondok Mandalawangi 31%; Kost Pondok Sakhalin Tipe B 22%
+   #1 SAW == #1 TOPSIS(min-max): 75.0% dari semua urutan
+   Spearman SAW vs TOPSIS min-max : min 0.859 | p5 0.937 | median 0.968 | max 0.998
+   Spearman SAW vs TOPSIS vektor  : min 0.340 | p5 0.664 | median 0.876 | max 0.987
+   saat C1 di posisi 1: #1 paling sering = Kost Satu Tipe A (Rp 600,000) 92%
+   saat C1 di posisi 8: #1 paling sering = Kost Satu Tipe A (Rp 600,000) 98%
+
+==============================================================================
+Skenario budget <= Rp 1.500.000 | tipe putri | n kandidat = 98
+==============================================================================
+
+[default (C1..C8)]  rho(SAW,TOPSISmm)=0.943  rho(SAW,TOPSISvektor)=0.925
+   top-3 SAW        : ['Kost Derumahkoe Tipe B', 'Kost Pondok Hemari Tipe B', 'Kost Pondok Annisa UNPAD Tipe A']
+   top-3 TOPSIS mm  : ['Kost Derumahkoe Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Dara I Tipe B']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Hemari Tipe B', 'Kost Derumahkoe Tipe B', 'Kost Pondok Hemari Tipe A']  (overlap 2/3)
+
+[hemat: C1,C2,C3,...]  rho(SAW,TOPSISmm)=0.943  rho(SAW,TOPSISvektor)=0.922
+   top-3 SAW        : ['Kost Derumahkoe Tipe B', 'Kost Pondok Hemari Tipe B', 'Kost Pondok Annisa UNPAD Tipe A']
+   top-3 TOPSIS mm  : ['Kost Pondok Annisa UNPAD Tipe A', 'Kost Derumahkoe Tipe B', 'Kost Ikopin C24']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Hemari Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Hemari Tipe C']  (overlap 2/3)
+
+[dekat kampus: C2,C3,C1,...]  rho(SAW,TOPSISmm)=0.966  rho(SAW,TOPSISvektor)=0.930
+   top-3 SAW        : ['Kost Pondok Hemari Tipe B', 'Kost Derumahkoe Tipe B', 'Kost Pondok Hemari Tipe C']
+   top-3 TOPSIS mm  : ['Kost Derumahkoe Tipe B', 'Kost Pondok Annisa UNPAD Tipe A', 'Kost Pondok Hemari Tipe C']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Hemari Tipe B', 'Kost Pondok Hemari Tipe C', 'Kost Derumahkoe Tipe B']  (overlap 3/3)
+
+[fasilitas: C5,C4,C6,...]  rho(SAW,TOPSISmm)=0.968  rho(SAW,TOPSISvektor)=0.925
+   top-3 SAW        : ['Kost Pondok Niaibas Tipe A', 'Kost Wisma Mayangsari', 'Kost Pondok Hemari Tipe A']
+   top-3 TOPSIS mm  : ['Kost Pondok Niaibas Tipe A', 'Kost Wisma Mayangsari', 'Kost Pondok Hemari Tipe B']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Wisma Mayangsari', 'Kost Pondok Niaibas Tipe A', 'Kost Pondok Hemari Tipe B']  (overlap 2/3)
+
+[aman: C6,C1,C5,...]  rho(SAW,TOPSISmm)=0.979  rho(SAW,TOPSISvektor)=0.958
+   top-3 SAW        : ['Kost Pondok Hemari Tipe B', 'Kost Bumi Campernik Tipe A', 'Kost Pondok Barokah 232']
+   top-3 TOPSIS mm  : ['Kost Pondok Barokah 232', 'Kost Bumi Campernik Tipe A', 'Kost Wisma Triarga Tipe Standart']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Pondok Hemari Tipe B', 'Kost Pondok Barokah 232', 'Kost Wisma Triarga Tipe Executive']  (overlap 2/3)
+
+[terbalik (C8..C1)]  rho(SAW,TOPSISmm)=0.976  rho(SAW,TOPSISvektor)=0.964
+   top-3 SAW        : ['Kost Bumi Campernik Tipe A', 'Kost Pondok Hemari Tipe A', 'Kost Pondok Hemari Tipe B']
+   top-3 TOPSIS mm  : ['Kost Bumi Campernik Tipe A', 'Kost Pondok Niaibas Tipe A', 'Kost Griya Tipe A']  (overlap 1/3)
+   top-3 TOPSIS vek : ['Kost Pondok Niaibas Tipe A', 'Kost Griya Tipe A', 'Kost Pondok Hemari Tipe B']  (overlap 1/3)
+
+[SEMUA 40.320 urutan]
+   kos berbeda yang pernah jadi #1 SAW: 11; paling sering: Kost Bumi Campernik Tipe A 38.1%; Kost Pondok Hemari Tipe A 31.1%; Kost Pondok Hemari Tipe B 19.0%; Kost Pondok Dara I Tipe B 4.7%
+   himpunan top-3 SAW berbeda: 140; paling sering muncul 12.6%
+   kos paling sering masuk top-3 SAW: Kost Pondok Hemari Tipe B 71%; Kost Bumi Campernik Tipe A 57%; Kost Pondok Hemari Tipe A 55%; Kost Pondok Hemari Tipe C 24%; Kost Pondok Dara I Tipe B 20%
+   #1 SAW == #1 TOPSIS(min-max): 70.9% dari semua urutan
+   Spearman SAW vs TOPSIS min-max : min 0.898 | p5 0.938 | median 0.973 | max 0.993
+   Spearman SAW vs TOPSIS vektor  : min 0.652 | p5 0.856 | median 0.941 | max 0.993
+   saat C1 di posisi 1: #1 paling sering = Kost Bumi Campernik Tipe A (Rp 700,000) 65%
+   saat C1 di posisi 8: #1 paling sering = Kost Pondok Hemari Tipe A (Rp 1,472,000) 61%
+
+==============================================================================
+Skenario budget <= Rp 1.500.000 | tipe campur | n kandidat = 144
+==============================================================================
+
+[default (C1..C8)]  rho(SAW,TOPSISmm)=0.855  rho(SAW,TOPSISvektor)=0.953
+   top-3 SAW        : ['Kost Puri C4 Deluxe', 'Kost Pondok Rayne Jaya Tipe B', 'Kost Bumi I Tipe Standard']
+   top-3 TOPSIS mm  : ['Kost Budi Asih 1 Tipe B', 'Kost Bumi I Tipe Standard', 'Kost Pondok Bhisma Tipe A1 Jatinangor Sumedang']  (overlap 1/3)
+   top-3 TOPSIS vek : ['Kost Puri C4 Deluxe', 'Kost Bumi I Tipe Standard', 'Kost Syalira']  (overlap 2/3)
+
+[hemat: C1,C2,C3,...]  rho(SAW,TOPSISmm)=0.870  rho(SAW,TOPSISvektor)=0.967
+   top-3 SAW        : ['Kost Puri C4 Deluxe', 'Kost Bumi I Tipe Standard', 'Kost Pondok Rayne Jaya Tipe B']
+   top-3 TOPSIS mm  : ['Kost Bumi I Tipe Standard', 'Kost Sederhana I Unpad Jatinangor Sumedang', 'Kost Pondok Rayne Jaya Tipe B']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Puri C4 Deluxe', 'Kost Bumi I Tipe Standard', 'Kost Pondok Rayne Jaya Tipe B']  (overlap 3/3)
+
+[dekat kampus: C2,C3,C1,...]  rho(SAW,TOPSISmm)=0.950  rho(SAW,TOPSISvektor)=0.978
+   top-3 SAW        : ['Kost Puri C4 Deluxe', 'Kost Bumi I Tipe Standard', 'Kost Pondok Rayne Jaya Tipe B']
+   top-3 TOPSIS mm  : ['Kost Bumi I Tipe Standard', 'Kost Puri C4 Deluxe', 'Kost Pondok Rayne Jaya Tipe B']  (overlap 3/3)
+   top-3 TOPSIS vek : ['Kost Puri C4 Deluxe', 'Kost Bumi I Tipe Standard', 'Kost Pondok Rayne Jaya Tipe B']  (overlap 3/3)
+
+[fasilitas: C5,C4,C6,...]  rho(SAW,TOPSISmm)=0.982  rho(SAW,TOPSISvektor)=0.966
+   top-3 SAW        : ['Kost Syalira', 'Kost Puri C4 Deluxe', 'Kost Pondok Bunda Rama Tipe Executive']
+   top-3 TOPSIS mm  : ['Kost Syalira', 'Kost Puri C4 Deluxe', 'Kost Griya Nawaloka 1 Tipe B Jatinangor Sumedang']  (overlap 2/3)
+   top-3 TOPSIS vek : ['Kost Syalira', 'Kost Griya Nawaloka 1 Tipe B Jatinangor Sumedang', 'Kost Puri C4 Deluxe']  (overlap 2/3)
+
+[aman: C6,C1,C5,...]  rho(SAW,TOPSISmm)=0.978  rho(SAW,TOPSISvektor)=0.972
+   top-3 SAW        : ['Kost Puri C4 Deluxe', 'Kost Bumi I Tipe Standard', 'Kost Syalira']
+   top-3 TOPSIS mm  : ['Kost Bumi I Tipe Standard', 'Kost Wisma Lathof Jatinangor Sumedang', 'Kost Wisma Pelangi 1']  (overlap 1/3)
+   top-3 TOPSIS vek : ['Kost Syalira', 'Kost Bumi I Tipe Standard', 'Kost Puri C4 Deluxe']  (overlap 3/3)
+
+[terbalik (C8..C1)]  rho(SAW,TOPSISmm)=0.988  rho(SAW,TOPSISvektor)=0.983
+   top-3 SAW        : ['Kost Puri C4 Deluxe', 'Kost Syalira', 'Kost Griya Idaman Kampung Geulis']
+   top-3 TOPSIS mm  : ['Kost Syalira', 'Kost Griya Idaman Kampung Geulis', 'Kost Puri C4 Deluxe']  (overlap 3/3)
+   top-3 TOPSIS vek : ['Kost Syalira', 'Kost Puri C4 Deluxe', 'Kost Pondok Bunda Rama Tipe Executive']  (overlap 2/3)
+
+[SEMUA 40.320 urutan]
+   kos berbeda yang pernah jadi #1 SAW: 5; paling sering: Kost Puri C4 Deluxe 73.6%; Kost Syalira 26.0%; Kost Pondok Rayne Jaya Tipe B 0.2%; Kost Griya Idaman Kampung Geulis 0.1%
+   himpunan top-3 SAW berbeda: 50; paling sering muncul 22.1%
+   kos paling sering masuk top-3 SAW: Kost Puri C4 Deluxe 100%; Kost Syalira 63%; Kost Bumi I Tipe Standard 39%; Kost Griya Idaman Kampung Geulis 22%; Kost Pondok Rayne Jaya Tipe B 20%
+   #1 SAW == #1 TOPSIS(min-max): 58.0% dari semua urutan
+   Spearman SAW vs TOPSIS min-max : min 0.793 | p5 0.889 | median 0.973 | max 0.995
+   Spearman SAW vs TOPSIS vektor  : min 0.771 | p5 0.878 | median 0.960 | max 0.996
+   saat C1 di posisi 1: #1 paling sering = Kost Puri C4 Deluxe (Rp 1,100,000) 63%
+   saat C1 di posisi 8: #1 paling sering = Kost Puri C4 Deluxe (Rp 1,100,000) 86%

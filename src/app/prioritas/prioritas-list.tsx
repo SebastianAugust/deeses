@@ -5,13 +5,15 @@ import { PrimaryButton } from "@/components/primary-button";
 import { PrioritasSortable } from "@/components/prioritas-sortable";
 import { StepHeader } from "@/components/step-header";
 import { StickyBottomBar } from "@/components/sticky-bottom-bar";
-import { DEFAULT_URUTAN, PARAM_OK, buildHref, hrefHome } from "@/lib/query";
-import type { Kriteria } from "@/lib/types";
+import { PARAM_OK, buildHref, hrefHome } from "@/lib/query";
+import { useUrutanDefault } from "@/lib/use-kriteria";
+import type { Kriteria } from "@/config/kriteria";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
 import { useDesktopRedirect } from "@/lib/use-media";
 
 export function PrioritasList() {
   const filter = useFilter();
+  const urutanDefault = useUrutanDefault();
   const [urutan, setUrutan] = useState<Kriteria[]>(filter.urutan);
   const sekarang = { ...filter, urutan };
   // Di desktop, langkah prioritas ada di Home (/?langkah=prioritas).
@@ -24,7 +26,8 @@ export function PrioritasList() {
 
   if (keDesktop) return null;
 
-  const sudahDefault = urutan.join(",") === DEFAULT_URUTAN.join(",");
+  // Reset aktif setelah urutan default dari /api/kriteria termuat.
+  const sudahDefault = !urutanDefault || urutan.join(",") === urutanDefault.join(",");
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-28">
@@ -37,7 +40,7 @@ export function PrioritasList() {
         kanan={
           <button
             type="button"
-            onClick={() => terapkan([...DEFAULT_URUTAN])}
+            onClick={() => urutanDefault && terapkan([...urutanDefault])}
             disabled={sudahDefault}
             className="tekan tautan min-h-11 rounded-[12px] px-2 text-[13px] font-semibold text-accent-ink"
           >

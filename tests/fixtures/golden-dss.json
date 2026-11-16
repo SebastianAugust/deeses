@@ -1,0 +1,368 @@
+{
+  "sumber": "Disalin & disesuaikan dari dss-model-kos-jatinangor/audit/golden_test.json (audit 16-11-2026). harga = nilai K1. TOPSIS = varian min-max. rank_topsis diturunkan dari expected.skor_topsis (TOPSIS turun -> SAW turun -> harga naik -> id naik).",
+  "toleransi": 1e-09,
+  "kasus": {
+    "utama_3x3": {
+      "keterangan": "Kasus utama: 3 kos x 3 kriteria, urutan K1 > K3 > K2.",
+      "kriteria": [
+        {
+          "kode": "K1",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K2",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K3",
+          "jenis": "benefit"
+        }
+      ],
+      "urutan": [
+        "K1",
+        "K3",
+        "K2"
+      ],
+      "alternatif": [
+        {
+          "id": "A",
+          "harga": 1000000.0,
+          "nilai": {
+            "K1": 1000000.0,
+            "K2": 0.5,
+            "K3": 0.5
+          }
+        },
+        {
+          "id": "B",
+          "harga": 800000.0,
+          "nilai": {
+            "K1": 800000.0,
+            "K2": 1.5,
+            "K3": 0.25
+          }
+        },
+        {
+          "id": "C",
+          "harga": 1200000.0,
+          "nilai": {
+            "K1": 1200000.0,
+            "K2": 1.0,
+            "K3": 1.0
+          }
+        }
+      ],
+      "expected": {
+        "bobot": {
+          "K1": 0.5,
+          "K3": 0.3333333333333333,
+          "K2": 0.16666666666666666
+        },
+        "skor_kriteria": {
+          "A": {
+            "K1": 0.5,
+            "K2": 1.0,
+            "K3": 0.3333333333333333
+          },
+          "B": {
+            "K1": 1.0,
+            "K2": 0.0,
+            "K3": 0.0
+          },
+          "C": {
+            "K1": 0.0,
+            "K2": 0.5,
+            "K3": 1.0
+          }
+        },
+        "skor_saw": {
+          "A": 0.5277777777777778,
+          "B": 0.5,
+          "C": 0.4166666666666667
+        },
+        "skor_topsis": {
+          "A": 0.4892036016308887,
+          "B": 0.5729490168751578,
+          "C": 0.4039936203984453
+        },
+        "rank": {
+          "A": 1,
+          "B": 2,
+          "C": 3
+        },
+        "rank_topsis": {
+          "B": 1,
+          "A": 2,
+          "C": 3
+        },
+        "urutan_id": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    },
+    "seri_saw": {
+      "keterangan": "Ketiga kos SAW-nya persis 0,5 (seri) -> pemutus seri = TOPSIS. Menguji galat floating point (C bisa jadi 0.49999999999999994).",
+      "kriteria": [
+        {
+          "kode": "K1",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K2",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K3",
+          "jenis": "benefit"
+        }
+      ],
+      "urutan": [
+        "K1",
+        "K3",
+        "K2"
+      ],
+      "alternatif": [
+        {
+          "id": "A",
+          "harga": 1200000.0,
+          "nilai": {
+            "K1": 1200000.0,
+            "K2": 0.5,
+            "K3": 1.0
+          }
+        },
+        {
+          "id": "B",
+          "harga": 800000.0,
+          "nilai": {
+            "K1": 800000.0,
+            "K2": 1.5,
+            "K3": 0.2
+          }
+        },
+        {
+          "id": "C",
+          "harga": 1000000.0,
+          "nilai": {
+            "K1": 1000000.0,
+            "K2": 1.0,
+            "K3": 0.6
+          }
+        }
+      ],
+      "expected": {
+        "bobot": {
+          "K1": 0.5,
+          "K3": 0.3333333333333333,
+          "K2": 0.16666666666666666
+        },
+        "skor_kriteria": {
+          "A": {
+            "K1": 0.0,
+            "K2": 1.0,
+            "K3": 1.0
+          },
+          "B": {
+            "K1": 1.0,
+            "K2": 0.0,
+            "K3": 0.0
+          },
+          "C": {
+            "K1": 0.5,
+            "K2": 0.5,
+            "K3": 0.5
+          }
+        },
+        "skor_saw": {
+          "A": 0.5,
+          "B": 0.5,
+          "C": 0.5
+        },
+        "skor_topsis": {
+          "A": 0.4270509831248423,
+          "B": 0.5729490168751578,
+          "C": 0.5
+        },
+        "rank": {
+          "B": 1,
+          "C": 2,
+          "A": 3
+        },
+        "rank_topsis": {
+          "B": 1,
+          "C": 2,
+          "A": 3
+        },
+        "urutan_id": [
+          "B",
+          "C",
+          "A"
+        ]
+      }
+    },
+    "kolom_konstan": {
+      "keterangan": "K3 sama untuk semua kos (max = min) -> norm K3 = 1 untuk semua (perilaku model teman). SAW semua naik +w(K3), ranking tidak berubah.",
+      "kriteria": [
+        {
+          "kode": "K1",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K2",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K3",
+          "jenis": "benefit"
+        }
+      ],
+      "urutan": [
+        "K3",
+        "K1",
+        "K2"
+      ],
+      "alternatif": [
+        {
+          "id": "A",
+          "harga": 900000.0,
+          "nilai": {
+            "K1": 900000.0,
+            "K2": 0.5,
+            "K3": 0.5
+          }
+        },
+        {
+          "id": "B",
+          "harga": 700000.0,
+          "nilai": {
+            "K1": 700000.0,
+            "K2": 1.0,
+            "K3": 0.5
+          }
+        },
+        {
+          "id": "C",
+          "harga": 1100000.0,
+          "nilai": {
+            "K1": 1100000.0,
+            "K2": 1.5,
+            "K3": 0.5
+          }
+        }
+      ],
+      "expected": {
+        "bobot": {
+          "K3": 0.5,
+          "K1": 0.3333333333333333,
+          "K2": 0.16666666666666666
+        },
+        "skor_kriteria": {
+          "A": {
+            "K1": 0.5,
+            "K2": 1.0,
+            "K3": 1.0
+          },
+          "B": {
+            "K1": 1.0,
+            "K2": 0.5,
+            "K3": 1.0
+          },
+          "C": {
+            "K1": 0.0,
+            "K2": 0.0,
+            "K3": 1.0
+          }
+        },
+        "skor_saw": {
+          "A": 0.8333333333333334,
+          "B": 0.9166666666666666,
+          "C": 0.5
+        },
+        "skor_topsis": {
+          "A": 0.585786437626905,
+          "B": 0.8048058983988963,
+          "C": 0.0
+        },
+        "rank": {
+          "B": 1,
+          "A": 2,
+          "C": 3
+        },
+        "rank_topsis": {
+          "B": 1,
+          "A": 2,
+          "C": 3
+        },
+        "urutan_id": [
+          "B",
+          "A",
+          "C"
+        ]
+      }
+    },
+    "satu_kandidat": {
+      "keterangan": "Hanya 1 kos lolos filter -> semua norm = 1, SAW = 1, TOPSIS = 1, Spearman = null.",
+      "kriteria": [
+        {
+          "kode": "K1",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K2",
+          "jenis": "cost"
+        },
+        {
+          "kode": "K3",
+          "jenis": "benefit"
+        }
+      ],
+      "urutan": [
+        "K2",
+        "K1",
+        "K3"
+      ],
+      "alternatif": [
+        {
+          "id": "A",
+          "harga": 900000.0,
+          "nilai": {
+            "K1": 900000.0,
+            "K2": 0.7,
+            "K3": 0.375
+          }
+        }
+      ],
+      "expected": {
+        "bobot": {
+          "K2": 0.5,
+          "K1": 0.3333333333333333,
+          "K3": 0.16666666666666666
+        },
+        "skor_kriteria": {
+          "A": {
+            "K1": 1.0,
+            "K2": 1.0,
+            "K3": 1.0
+          }
+        },
+        "skor_saw": {
+          "A": 1.0
+        },
+        "skor_topsis": {
+          "A": 1.0
+        },
+        "rank": {
+          "A": 1
+        },
+        "rank_topsis": {
+          "A": 1
+        },
+        "urutan_id": [
+          "A"
+        ]
+      }
+    }
+  }
+}

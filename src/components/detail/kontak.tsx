@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Copy, ExternalLink, MessageCircle, Phone } from "lucide-react";
+import { ArrowRight, Copy, MessageCircle, Phone } from "lucide-react";
 import { KosPhoto } from "@/components/kos-photo";
 import { KELAS_TOMBOL_SEKUNDER, PrimaryButton } from "@/components/primary-button";
 import { StickyBottomBar } from "@/components/sticky-bottom-bar";
@@ -41,7 +41,8 @@ function useSalinAlamat(alamat: string | null | undefined) {
 /**
  * Kartu harga & kontak (kolom kanan desktop; di mobile tampil di alur konten).
  * Ada WA → "Chat WhatsApp" (pesan terisi). Ada telepon → "Telepon". Tidak ada
- * kontak sama sekali → tombol "Hubungi lewat listing sumber ↗".
+ * kontak sama sekali → hanya pesan "belum tersedia". Listing sumber hanya tautan
+ * kecil "Lihat listing sumber ↗", bukan CTA utama (CTA utama = halaman detail ini).
  */
 export function KontakCard({ kos }: { kos: KosDetail }) {
   const salin = useSalinAlamat(kos.alamat);
@@ -132,12 +133,6 @@ export function KontakCard({ kos }: { kos: KosDetail }) {
       ) : (
         <>
           <p className="text-sm text-muted">Kontak pengelola belum tersedia di data kami.</p>
-          {kos.sumber_url ? (
-            <PrimaryButton href={kos.sumber_url} {...LUAR} block className="h-[54px] text-base">
-              Hubungi lewat listing sumber
-              <ExternalLink size={18} aria-hidden />
-            </PrimaryButton>
-          ) : null}
           {salin ? (
             <button
               type="button"
@@ -150,6 +145,15 @@ export function KontakCard({ kos }: { kos: KosDetail }) {
           ) : null}
         </>
       )}
+      {!adaKontak && kos.sumber_url ? (
+        <a
+          href={kos.sumber_url}
+          {...LUAR}
+          className="tautan self-center text-[13px] font-semibold text-accent-ink"
+        >
+          Hubungi lewat listing sumber ↗
+        </a>
+      ) : null}
     </section>
   );
 }
@@ -183,7 +187,7 @@ export function KosBerikutnya({ kos, href }: { kos: KosRingkas; href: string }) 
   );
 }
 
-/** Bar bawah mobile: harga + tombol kontak utama. */
+/** Bar bawah mobile: harga + tombol kontak (hanya kalau ada WA/telepon; listing sumber tidak jadi CTA). */
 export function KontakBarMobile({ kos }: { kos: KosDetail }) {
   return (
     <StickyBottomBar className="pt-3 pb-[max(20px,env(safe-area-inset-bottom))]">
@@ -200,11 +204,6 @@ export function KontakBarMobile({ kos }: { kos: KosDetail }) {
         <PrimaryButton href={tautanTelp(kos.kontak_telp)} className="h-[50px] px-5">
           <Phone size={18} aria-hidden />
           Telepon
-        </PrimaryButton>
-      ) : kos.sumber_url ? (
-        <PrimaryButton href={kos.sumber_url} {...LUAR} className="h-[50px] px-5">
-          Hubungi lewat sumber
-          <ExternalLink size={16} aria-hidden />
         </PrimaryButton>
       ) : null}
     </StickyBottomBar>

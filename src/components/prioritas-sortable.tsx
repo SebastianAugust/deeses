@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -27,9 +27,10 @@ import { GripVertical } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
 import { KriteriaIcon } from "@/components/kriteria-icon";
-import { infoKriteria } from "@/lib/explain";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TRANSISI_DND } from "@/lib/motion";
-import type { Kriteria } from "@/lib/types";
+import type { Kriteria, KriteriaInfo } from "@/config/kriteria";
+import { useKriteria } from "@/lib/use-kriteria";
 import { useDiBrowser } from "@/lib/use-media";
 import { formatPersen, rankSumWeights } from "@/lib/weights";
 import { cn } from "@/lib/utils";
@@ -41,7 +42,16 @@ type Keadaan = "diam" | "bayangan" | "melayang";
 const JUMLAH_MENONJOL = 3;
 
 const hanyaVertikal: Modifier = ({ transform }) => ({ ...transform, x: 0 });
-const nama = (id: UniqueIdentifier) => infoKriteria(id as Kriteria).nama;
+
+/** Info kriteria (dari GET /api/kriteria) untuk baris-baris di bawah <PrioritasSortable>. */
+const InfoKriteriaContext = createContext<Record<string, KriteriaInfo>>({});
+
+function useInfoKriteria(kode: string): KriteriaInfo {
+  const info = useContext(InfoKriteriaContext)[kode];
+  // Tidak mungkin terjadi: daftar urutan difilter terhadap data API sebelum dirender.
+  if (!info) throw new Error(`Kriteria ${kode} tidak ada di /api/kriteria.`);
+  return info;
+}
 
 /* ------------------------------ Tampilan baris ----------------------------- */
 
@@ -110,7 +120,7 @@ function IsiBaris({
   /** Varian besar: termasuk 3 teratas (tile accent, baris lebih tinggi). */
   menonjol?: boolean;
 }) {
-  const info = infoKriteria(kode);
+  const info = useInfoKriteria(kode);
   if (varian === "besar") {
     return (
       <>
@@ -218,7 +228,7 @@ function BarisSortable({
   // Selama menyeret, nomor & bobot mengikuti posisi sementara tiap baris.
   const posisi = isSorting ? newIndex : index;
   const total = bobotPosisi.length;
-  const info = infoKriteria(kode);
+  const info = useInfoKriteria(kode);
   const keadaan: Keadaan = isDragging ? "bayangan" : "diam";
   const style = { transform: CSS.Translate.toString(transform), transition };
 
@@ -286,17 +296,64 @@ type PrioritasSortableProps = {
 };
 
 /**
- * Daftar 8 kriteria yang bisa diurutkan (dnd-kit): pointer + keyboard
+ * Daftar semua kriteria (dari config) yang bisa diurutkan (dnd-kit): pointer + keyboard
  * (spasi/Enter angkat, panah pindah, Escape batal), DragOverlay melayang,
  * baris lain bergeser halus, bobot rank-sum ikut berubah, getar 10 ms saat drop.
  * Perubahan diumumkan lewat live region dnd-kit.
  */
-export function PrioritasSortable({
+export function PrioritasSortable(props: PrioritasSortableProps) {
+  const kriteria = useKriteria();
+  const { urutan, varian = "penuh", className } = props;
+
+  if (kriteria.status === "loading") {
+    const tinggi = varian === "ringkas" ? "h-[38px]" : "h-14";
+    return (
+      <ol
+        className={cn("flex flex-col", varian === "ringkas" ? "gap-1.5" : "gap-2", className)}
+        aria-busy="true"
+        aria-label="Memuat kriteria"
+      >
+        {urutan.map((kode) => (
+          <li key={kode}>
+            <Skeleton className={cn("w-full rounded-[18px] bg-line", tinggi)} />
+          </li>
+        ))}
+      </ol>
+    );
+  }
+
+  if (kriteria.status === "error") {
+    return (
+      <div role="alert" className={cn("flex flex-col items-start gap-2 text-[13px] text-muted", className)}>
+        <p>{kriteria.error}</p>
+        <button
+          type="button"
+          onClick={kriteria.cobaLagi}
+          className="tekan tautan min-h-11 rounded-lg font-bold text-accent-ink"
+        >
+          Coba lagi
+        </button>
+      </div>
+    );
+  }
+
+  const info = Object.fromEntries(kriteria.data.map((k) => [k.kode, k]));
+  const urutanValid = props.urutan.filter((k) => k in info);
+  return (
+    <InfoKriteriaContext.Provider value={info}>
+      <DaftarSortable {...props} urutan={urutanValid} />
+    </InfoKriteriaContext.Provider>
+  );
+}
+
+function DaftarSortable({
   urutan,
   onChange,
   varian = "penuh",
   className,
 }: PrioritasSortableProps) {
+  const infoMap = useContext(InfoKriteriaContext);
+  const nama = (id: UniqueIdentifier) => infoMap[id as string]?.nama ?? String(id);
   const reduced = useReducedMotion() ?? false;
   const diBrowser = useDiBrowser();
   const dndId = useId();

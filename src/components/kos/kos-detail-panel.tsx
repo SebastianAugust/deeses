@@ -2,12 +2,15 @@
 
 import { ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { KosPhoto } from "@/components/kos-photo";
 import { PrimaryButton } from "@/components/primary-button";
 import { rankTopsis } from "@/lib/explain";
-import { formatJarak, formatRupiah } from "@/lib/format";
+import { formatRupiah, teksJarakKeKampus } from "@/lib/format";
 import { TRANSISI_CEPAT } from "@/lib/motion";
-import type { Kriteria, RankResult } from "@/lib/types";
+import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
+import type { Kriteria } from "@/config/kriteria";
+import type { RankResult } from "@/lib/types";
 import { DetailBadges, KenapaBox, SkorKriteriaList, SkorTiles } from "./detail-parts";
 
 type KosDetailPanelProps = {
@@ -45,16 +48,22 @@ export function KosDetailPanel({ kos, semua, urutan, hrefDetail }: KosDetailPane
           <DetailBadges kos={kos} total={semua.length} ringkas />
           <h2 className="text-[22px] leading-tight font-extrabold tracking-[-0.02em]">{kos.nama}</h2>
           <span className="text-[13px] text-muted">
-            {formatJarak(kos.jarak_km)} ke kampus · {formatRupiah(kos.harga)} / bulan
+            {teksJarakKeKampus(kos)} · {formatRupiah(kos.harga)} / bulan
           </span>
         </div>
         <div className="px-1.5">
           <SkorTiles kos={kos} rankTopsis={rankTopsis(kos, semua)} ringkas />
         </div>
-        <div className="px-1.5">
-          <SkorKriteriaList kos={kos} urutan={urutan} ringkas judul={false} />
-        </div>
-        <KenapaBox kos={kos} urutan={urutan} ringkas className="mx-1.5" />
+        {pembandingTerlaluSedikit(semua.length) ? (
+          <CatatanSkorRelatif jumlah={semua.length} ringkas className="mx-1.5" />
+        ) : (
+          <>
+            <div className="px-1.5">
+              <SkorKriteriaList kos={kos} urutan={urutan} ringkas judul={false} />
+            </div>
+            <KenapaBox kos={kos} urutan={urutan} ringkas className="mx-1.5" />
+          </>
+        )}
         <PrimaryButton href={hrefDetail} className="mx-1.5 mb-1.5 h-12 rounded-[14px]">
           Lihat detail kos
           <ArrowRight size={18} strokeWidth={2.4} aria-hidden />

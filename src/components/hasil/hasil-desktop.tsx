@@ -5,14 +5,17 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
+import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { Crossfade } from "@/components/crossfade";
 import { IndikatorMuat } from "@/components/indikator-muat";
 import { KosDetailPanel } from "@/components/kos/kos-detail-panel";
 import { KosListCard } from "@/components/kos/kos-list-card";
 import { ErrorCard } from "@/components/status-card";
+import { JUMLAH_KRITERIA } from "@/config/kriteria";
 import { jelaskanPeringkat } from "@/lib/explain";
 import { PARAM_OK, buildHref, type FilterState } from "@/lib/query";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
+import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
 import { useRank } from "@/lib/use-rank";
 import { useRankDelta } from "@/lib/use-rank-delta";
 import { useSebaranHarga } from "@/lib/use-sebaran";
@@ -31,7 +34,7 @@ function HeaderDesktop() {
         >
           kosjati<span className="text-accent-ink">.</span>
         </Link>
-        <span className="text-[13px] text-muted">Rekomendasi kos Jatinangor · SAW 8 kriteria</span>
+        <span className="text-[13px] text-muted">Rekomendasi kos Jatinangor · SAW {JUMLAH_KRITERIA} kriteria</span>
         <span className="flex-1" />
         <Link href="/#tentang" className="tautan text-sm font-semibold text-ink">
           Cara kerja perhitungan
@@ -116,6 +119,10 @@ export function HasilDesktop() {
             <span className="text-[13px] text-muted">Urut skor SAW · diperbarui otomatis</span>
           </div>
 
+          {daftar && pembandingTerlaluSedikit(daftar.length) ? (
+            <CatatanSkorRelatif jumlah={daftar.length} />
+          ) : null}
+
           <Crossfade kunci={kunciTengah}>
             {kunciTengah === "skeleton" ? <DaftarDesktopSkeleton /> : null}
             {kunciTengah === "error" && rank.status === "error" ? (
@@ -138,6 +145,7 @@ export function HasilDesktop() {
                         kos={kos}
                         index={i}
                         skorMaks={skorMaks}
+                        tanpaBar={pembandingTerlaluSedikit(daftar.length)}
                         catatan={i === 0 ? catatanTeratas : undefined}
                         terpilih={kos.id === terpilih?.id}
                         delta={delta[kos.id]}

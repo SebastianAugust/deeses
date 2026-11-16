@@ -1,0 +1,51 @@
+==============================================================================
+A. rank_kos (teman) vs dss_independen - 6 budget x 3 tipe x 6 urutan
+==============================================================================
+jumlah skenario: 108
+selisih maksimum |teman - independen|: SAW=5.00e-05  TOPSIS=5.00e-05  skor_kriteria=5.00e-05  spearman rho=3.23e-04
+  (teman membulatkan skor ke 4 desimal, jadi selisih <= 5e-5 = cocok)
+skenario dengan urutan id berbeda: 45 (top-3 berbeda: 0; beda yang BUKAN karena SAW-bulat-sama: 0)
+grup 'seri' di rank teman yang sebenarnya TIDAK seri (akibat round 4 desimal sebelum rank): 119
+   contoh: (800000, 'campur', 'acak#2 48315762', 45, [('53948125', '0.3886420'), ('83576381', '0.3886251')])
+   contoh: (1000000, 'putra', 'default C1..C8', 20, [('97535537', '0.3533163'), ('84658937', '0.3533069')])
+   contoh: (1000000, 'putri', 'contoh teman', 46, [('54992206', '0.3799385'), ('19597678', '0.3798665')])
+
+==============================================================================
+B. Kasus tepi
+==============================================================================
+0 kandidat (budget 300rb): total=0 spearman=None hasil=[]
+1 kandidat (putri <= 500rb): total=1 SAW=1.0 TOPSIS=1.0 skor_kriteria={'C1': 1.0, 'C2': 1.0, 'C3': 1.0, 'C4': 1.0, 'C5': 1.0, 'C6': 1.0, 'C7': 1.0, 'C8': 1.0} spearman={'rho': 1.0, 'p_value': 0.0}
+2 kandidat (putri <= 550rb): total=2 spearman={'rho': 1.0, 'p_value': nan} skor=[(1, 0.7778, 0.7081, {'C1': 1.0, 'C2': 1.0, 'C3': 1.0, 'C4': 1.0, 'C5': 0.0, 'C6': 0.0, 'C7': 1.0, 'C8': 0.0}), (2, 0.3611, 0.2919, {'C1': 0.0, 'C2': 0.0, 'C3': 0.0, 'C4': 1.0, 'C5': 1.0, 'C6': 1.0, 'C7': 0.0, 'C8': 1.0})]
+   scipy.spearmanr 2 titik [0.2,0.3]vs[0.1,0.4] -> SignificanceResult(statistic=np.float64(0.9999999999999999), pvalue=np.float64(nan))
+urutan ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']: ditolak -> urutan_kriteria harus berisi tepat 8 kriteria unik…
+urutan ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C1']: ditolak -> urutan_kriteria harus berisi tepat 8 kriteria unik…
+urutan ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']: ditolak -> urutan_kriteria harus berisi tepat 8 kriteria unik…
+urutan ['c1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8']: ditolak -> urutan_kriteria harus berisi tepat 8 kriteria unik…
+budget=None: F1 dilewati diam-diam, total=133 (semua putri = 133)
+budget=0: F1 dilewati diam-diam, total=133 (semua putri = 133)
+budget=-5: F1 dilewati diam-diam, total=133 (semua putri = 133)
+tipe='Putri ': total=61
+tipe='perempuan': total=0
+tipe='': total=190
+tipe=None: total=190
+fasilitas_wajib=['ac']: total=16 (tanpa F3: 98)
+fasilitas_wajib=['AC ']: total=16 (tanpa F3: 98)
+fasilitas_wajib=['kloset duduk']: total=58 (tanpa F3: 98)
+fasilitas_wajib=['kamar mandi dalam']: total=98 (tanpa F3: 98)
+fasilitas_wajib=['k mandi dalam']: total=82 (tanpa F3: 98)
+fasilitas_wajib=['wifii']: total=98 (tanpa F3: 98)
+fasilitas_wajib=['harga']: total=0 (tanpa F3: 98)
+rank_kos punya parameter allow_campur? False
+filter_kos putri<=1jt: exact=61 allow_campur=166; campur+allow_campur=105
+
+==============================================================================
+C. fasilitas_prioritas menimpa C5
+==============================================================================
+User A (wajib = prioritas = AC + WC dalam): n=16, nilai norm C5 unik = {1.0}
+  -> C5 (prioritas #1, bobot 22,2%) jadi konstan; semua SAW naik +0,2222, tidak membedakan apa pun.
+  SAW terendah di hasil User A = 0.3329 (>= 0,2222 hanya dari C5)
+  top-3 dengan C5 dinamis: ['Kost Wisma Triarga Tipe Executive', 'Kost Rivita', 'Kost Graha Wgm']
+  top-3 dengan C5 asli    : ['Kost Wisma Triarga Tipe Executive', 'Kost Rivita', 'Kost Graha Wgm']
+fasilitas_prioritas=['harga'] diterima? C5 kandidat pertama jadi 0.972 dan rank-1 = Kost Pondok Hemari Tipe A Rp1,472,000
+fasilitas_prioritas=['cctv','penjaga'] (kolom C6) diterima -> C5 == C6 untuk tiap kos: True (dihitung ganda)
+User B diverifikasi independen: n=82, selisih SAW maks = 4.93e-05

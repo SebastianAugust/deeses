@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/glass-card";
+import { JUMLAH_KRITERIA } from "@/config/kriteria";
 import { Halaman } from "@/components/halaman";
 import { HomeUtama } from "@/components/home/home-utama";
 import { HomeUtamaFromUrl } from "@/components/home/home-utama-url";
@@ -52,9 +53,10 @@ export default function HomePage() {
               Tentang
             </h2>
             <p className="text-[13px] leading-normal text-muted">
-              Kosjati mengurutkan kos dengan metode SAW (Simple Additive Weighting) pada 8 kriteria.
+              Kosjati mengurutkan kos dengan metode SAW (Simple Additive Weighting) pada {JUMLAH_KRITERIA} kriteria.
               Bobot tiap kriteria dihitung dari urutan prioritasmu (rank-sum), dan TOPSIS ditampilkan
-              sebagai pembanding di detail kos. Data yang tampil saat ini masih data contoh.
+              sebagai pembanding di detail kos. Data sementara: sebagian kos belum punya foto,
+              alamat, atau kontak.
             </p>
           </GlassCard>
         </section>

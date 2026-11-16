@@ -130,6 +130,7 @@ function IsiDetail({
           <KenapaDirekomendasikan
             kos={kos}
             peringkat={peringkat}
+            pembanding={data.pembanding}
             urutan={filter.urutan}
             hrefUbahPrioritas={buildHref("/prioritas", filter)}
           />

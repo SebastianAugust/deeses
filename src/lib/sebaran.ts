@@ -7,7 +7,10 @@
  *   harga > max tidak dihitung (tidak bisa dipilih di slider).
  * Dengan begitu, untuk budget kelipatan step, jumlah kos ber-harga ≤ budget
  * = jumlah isi bin yang batas atasnya ≤ budget (lihat `jumlahDiBawah`).
+ * `total` = semua kos yang dihitung untuk tipe itu (termasuk yang > max).
  */
+import { cocokTipe } from "@/lib/dss/filter";
+import type { TipePenghuni } from "@/lib/types";
 
 export const SEBARAN_MIN = 500_000;
 export const SEBARAN_MAX = 3_000_000;
@@ -18,7 +21,28 @@ export type SebaranHarga = {
   max: number;
   step: number;
   bins: number[];
+  /** Jumlah kos ber-harga untuk tipe ini, termasuk yang di luar rentang slider. */
+  total: number;
 };
+
+/**
+ * Harga kos yang dihitung untuk sebaran tipe tertentu. Kos campur ikut untuk
+ * putra/putri sesuai aturan F2 (`IKUTKAN_CAMPUR_DEFAULT` di config). Tanpa tipe = semua.
+ * Kos tanpa harga atau dengan tipe tak dikenal dilewati.
+ */
+export function hargaUntukSebaran(
+  daftar: readonly { harga: number | null; tipe: TipePenghuni | null }[],
+  tipe?: TipePenghuni,
+  ikutkanCampur?: boolean,
+): number[] {
+  const hasil: number[] = [];
+  for (const k of daftar) {
+    if (k.harga === null || k.tipe === null) continue;
+    if (tipe && !cocokTipe(k.tipe, tipe, ikutkanCampur)) continue;
+    hasil.push(k.harga);
+  }
+  return hasil;
+}
 
 export function hitungSebaran(
   harga: number[],
@@ -33,7 +57,7 @@ export function hitungSebaran(
     const i = h <= min ? 0 : Math.ceil((h - min) / step) - 1;
     bins[Math.min(n - 1, i)] += 1;
   }
-  return { min, max, step, bins };
+  return { min, max, step, bins, total: harga.length };
 }
 
 /** Banyaknya bin yang seluruh rentangnya ≤ value (bin yang diberi warna accent). */

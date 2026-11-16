@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import { ArrowUpDown } from "lucide-react";
 import { motion } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
+import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { Crossfade } from "@/components/crossfade";
 import { IndikatorMuat } from "@/components/indikator-muat";
 import { KosPhoto } from "@/components/kos-photo";
 import { RankDeltaBadge } from "@/components/kos/rank-delta-badge";
 import { PhotoBadge, RankBadge } from "@/components/rank-badge";
 import { ErrorCard } from "@/components/status-card";
-import { formatJarak, formatRupiah, formatSkor } from "@/lib/format";
+import { formatRupiah, formatSkor, teksJarak, teksJarakKeKampus } from "@/lib/format";
 import { TRANSISI, jedaStagger } from "@/lib/motion";
+import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
 import { PARAM_OK, buildHref, buildQuery, type FilterState } from "@/lib/query";
 import { labelTipe } from "@/lib/ringkasan";
 import type { RankResult } from "@/lib/types";
@@ -80,6 +82,9 @@ function DaftarMobile({
         </h1>
         <span className="text-xs text-muted">Urut skor SAW</span>
       </div>
+      {pembandingTerlaluSedikit(data.length) ? (
+        <CatatanSkorRelatif jumlah={data.length} className="mx-5 mb-3" />
+      ) : null}
 
       <ul>
         <Muncul index={0} className="mx-5">
@@ -101,7 +106,7 @@ function DaftarMobile({
             </KosPhoto>
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-[17px] font-extrabold">{pertama.nama}</span>
-              <span className="text-[13px] text-muted">{formatJarak(pertama.jarak_km)} ke kampus</span>
+              <span className="text-[13px] text-muted">{teksJarakKeKampus(pertama)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[15px]">
@@ -142,7 +147,7 @@ function DaftarMobile({
                 </span>
                 <span className="text-[13px]">
                   <b>{formatRupiah(kos.harga)}</b>{" "}
-                  <span className="text-muted">Â· {formatJarak(kos.jarak_km)}</span>
+                  <span className="text-muted">· {teksJarak(kos)}</span>
                 </span>
               </Link>
             </Muncul>
@@ -168,7 +173,7 @@ function DaftarMobile({
                   </span>
                   <span className="text-[13px]">
                     <b>{formatRupiah(kos.harga)}</b>{" "}
-                    <span className="text-muted">Â· {formatJarak(kos.jarak_km)}</span>
+                    <span className="text-muted">· {teksJarak(kos)}</span>
                   </span>
                 </span>
                 <span className="flex flex-col items-end">

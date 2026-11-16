@@ -20,8 +20,9 @@ type FotoKosProps = {
  * blur + transparan → tajam. Lapisan .foto-zoom membesar sedikit saat wadah
  * induknya (.galeri-item / .kartu-angkat) di-hover.
  *
- * SVG lokal (DATA CONTOH di /public/contoh) ditampilkan tanpa optimisasi.
- * TODO: foto hasil scraping butuh host di images.remotePatterns (next.config.ts).
+ * SVG lokal dan foto dari URL luar (hasil scraping) ditampilkan tanpa optimisasi
+ * (`unoptimized`), sehingga host foto belum perlu didaftarkan di next.config.ts.
+ * TODO: daftarkan host di images.remotePatterns lalu aktifkan optimisasi.
  */
 export function FotoKos({ src, alt, sizes, isi = "cover", prioritas = false, className }: FotoKosProps) {
   const [dimuat, setDimuat] = useState(false);
@@ -33,7 +34,7 @@ export function FotoKos({ src, alt, sizes, isi = "cover", prioritas = false, cla
         fill
         sizes={sizes}
         priority={prioritas}
-        unoptimized={src.endsWith(".svg")}
+        unoptimized={src.endsWith(".svg") || /^https?:\/\//.test(src)}
         onLoad={() => setDimuat(true)}
         className={cn(
           "transition-[opacity,filter] duration-250 ease-out",

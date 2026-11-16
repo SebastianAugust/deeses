@@ -1,0 +1,115 @@
+TUGAS BUAT MODEL DSS KOS JATINANGOR
+(hasil audit model_dss.py, prepare_data.py, kos_scored.csv, dataset_kos_mamikos.xlsx)
+
+KABAR BAIKNYA
+Rumus modelnya udah bener (bobot rank-sum, min-max, SAW, TOPSIS cocok sama hitungan independen di 108 skenario). Yang perlu dibenerin itu datanya dan beberapa detail logika. Jadi ga perlu ulang dari nol.
+
+==================================================
+A. WAJIB DULU (ini yang nahan integrasi ke web)
+==================================================
+
+1. Nasib C3 (akses layanan)
+   Sekarang C3 = 0,15 + 0,35 x C2, jadi cuma salinan C2 (korelasi 0,9999993) dan jarak kehitung dua kali.
+   Pilih salah satu:
+   a) cari data asli (jarak ke minimarket / laundry / warung terdekat), atau
+   b) hapus C3 jadi 7 kriteria.
+   Ini keputusan grup, tolong kasih tau pilihannya.
+
+2. Lengkapi data buat tampilan web
+   - url listing: kosong 360 dari 360 baris
+   - foto_url / foto_urls: belum ada
+   - alamat: sekarang placeholder "Jatinangor, Sumedang" buat semua. Kalau ga ketemu, isi kosong (null), jangan placeholder.
+   - lat, lng: kosong semua
+   - kalau bisa juga: aturan kos, sekitar kos, deposit, tanggal scraping (diperbarui_at)
+   - kontak (nama / WA / telp): ambil HANYA yang memang tercantum publik di listing. Jangan scrape nomor pribadi yang ga publik.
+
+3. Beresin jarak
+   - 59 kos (16%) ga punya jarak sama sekali, lalu diisi median 1,1 km. Termasuk "Kost Haffair Rancaekek" dan "Kost Fengsui Tipe A Cileunyi Bandung". Cari jarak aslinya, atau keluarin kos itu dari data.
+   - Seragamin acuan kampus. Sekarang C2 = min(jarak Unpad, jarak ITB), dan sumbernya campur (127 baris cuma punya jarak Unpad, 121 cuma ITB, 53 dua-duanya). Putuskan kampus acuan, ukur dari titik gerbang yang sama.
+
+4. Bersihin data
+   - Keluarin 3 "Rumah Kontrakan" (Sweethome Fasyiha, Bu Eli, Cukup Besar). Luasnya 60 m2 merusak normalisasi luas buat kos lain.
+   - Cek kos di luar Jatinangor (Rancaekek, Cileunyi) dan keluarin kalau emang bukan Jatinangor.
+   - Cek 58 harga berdesimal yang polanya x/12 (misal 895.833,33 = 10.750.000/12). Kemungkinan harga tahunan dibagi 12. Simpan harga_bulanan dan harga_tahunan terpisah, plus kolom basis_harga.
+   - 3 nama dobel beda id (Kost Hoop Tipe B/C, Pondok Sakinah): konfirmasi itu listing beda atau dobel.
+
+5. Tambah kolom penanda imputasi
+   jarak_imputasi (true/false) dan luas_imputasi (true/false), supaya web bisa nulis "jarak belum diketahui" dan ga nampilin angka karangan. Simpan juga teks asli ukuran_kamar (misal "3x4") buat ditampilin.
+
+6. Benerin C7 dan C8 (isi atau nama harus jujur)
+   - C7 sekarang = rata-rata(termasuk_listrik, bayar bulanan, bayar tahunan). Di web labelnya "Pengelolaan". Opsi pembayaran bukan ukuran kualitas pengelolaan, dan listrik itu aspek biaya. Ganti isinya (misal ada pengelola, kebersihan, rating) atau ganti nama jadi "Fleksibilitas pembayaran", dan pindahin termasuk_listrik jadi koreksi biaya.
+   - C8 sekarang = parkir motor, parkir mobil, ruang tamu, ruang jemur. Itu fasilitas bersama, bukan "Lingkungan". Ganti nama jadi "Fasilitas bersama" atau ganti isinya.
+
+==================================================
+B. PERBAIKAN model_dss.py
+==================================================
+
+7. Rank dihitung dari skor mentah, jangan dari skor yang udah dibulatkan 4 desimal.
+   Sekarang muncul rank dobel ("#2, #2") padahal skornya beda tipis. Pemutus seri: SAW turun, TOPSIS turun, harga naik, id naik. Rank harus unik 1..n. Bulatin cuma buat tampilan.
+
+8. Spearman
+   - Kembaliin null kalau kandidat kurang dari 3 atau skor konstan. Jangan isi rho=1.0 dan p=0.0 palsu.
+   - Jangan sampai ada NaN (n=2 bikin p_value NaN, dan JSON jadi ga valid).
+
+9. Kriteria dibuat dinamis
+   KRITERIA_COLS / COST_COLS sekarang global dan hitung_bobot_ranksum maksa tepat 8. Ubah jadi parameter kriteria = list (kode, jenis) dan n = len(kriteria), supaya hapus C3 atau nambah kriteria ga perlu ubah 3 tempat.
+
+10. Whitelist nama fasilitas di filter F3
+    Sekarang nama yang salah ketik ("kamar mandi dalam", "wifii") diabaikan diam-diam. Kolom non-fasilitas (misal "harga") malah keterima. Lempar error buat nama yang ga dikenal.
+
+11. Teruskan allow_campur lewat rank_kos
+    Sekarang allow_campur ada di filter_kos tapi ga bisa diakses dari rank_kos.
+
+12. BUANG fasilitas_prioritas untuk versi UTS
+    Fitur ini nimpa definisi C5 per user. Kalau prioritas = wajib (contoh User A), C5 jadi konstan dan bobot 22,2% kebuang. Kolom apa aja juga keterima (["harga"] bikin C5 = harga). Skor antar-user jadi ga bisa dibandingin dan susah dijelasin di laporan.
+
+13. Kecil-kecil
+    - pd.read_csv("kos_scored.csv") pakai path relatif folder kerja; pakai Path(__file__).parent.
+    - Validasi budget (None / 0 / negatif) dan tipe kosong di level fungsi, raise error.
+    - Tipe "perempuan" sekarang bikin 0 hasil, jadi samain atau tolak dengan jelas.
+
+==================================================
+C. PERTANYAAN YANG PERLU KAMU JAWAB
+==================================================
+
+1. C3 "jarak ke layanan" dihitung 0,15 + 0,35 x C2. Angka 0,15 dan 0,35 dari mana? Ada data asli jarak ke minimarket / laundry / warung? Kalau ga ada, setuju C3 dihapus (7 kriteria) atau mau diisi data asli?
+2. Harga berdesimal (misal 895.833,33 = 10.750.000/12, 58 baris, kebanyakan nama berakhiran "Jatinangor Sumedang"): itu harga tahunan dibagi 12? Kalau iya, ada harga bulanan aslinya?
+3. Kolom jarak_ke_unpad dan jarak_ke_itb diambil dari mana (teks listing Mamikos? Google Maps?) dan diukur ke titik mana (gerbang mana)? Kenapa kebanyakan baris cuma punya salah satunya?
+4. 59 kos tanpa jarak sama sekali diisi median 1,1 km, termasuk "Kost Haffair Rancaekek" dan "Kost Fengsui Tipe A Cileunyi Bandung". Bisa dicari jarak aslinya, atau kos itu dikeluarin?
+5. "Rumah Kontrakan Sweethome Fasyiha / Bu Eli / Cukup Besar" sengaja dimasukin? Kalau buat kos, 60 m2 merusak normalisasi luas.
+6. id itu id listing Mamikos? Masih punya URL listing, foto, nama/nomor pemilik yang tercantum publik, aturan kos, dan alamat dari hasil scraping? (Di CSV, url / lat / lng kosong semua.)
+7. C7 = listrik termasuk + bisa bayar bulanan + bisa bayar tahunan. Maksudnya ngukur apa? Di web labelnya "Pengelolaan". Gimana kalau listrik dipindah jadi koreksi biaya dan C7 diganti / dinamain jujur?
+8. C8 isinya parkir + ruang tamu + ruang jemur, sedangkan label di web "Lingkungan". Boleh diganti jadi "Fasilitas bersama"?
+9. fasilitas_wajib dan fasilitas_prioritas ga ada di desain UI / API. Perlu dipertahankan buat UTS? (Catatan: kalau prioritas = wajib, C5 jadi konstan dan bobotnya kebuang.)
+10. Kos "campur": kalau user pilih putri, kos campur ikut ditampilin ga? Efeknya gede: putri budget 1 jt jadi 61 kos kalau campur ga ikut, 166 kalau ikut.
+11. Buat laporan, TOPSIS-nya mau ditulis sebagai "TOPSIS dengan normalisasi min-max" (seperti di kode)? Setuju rank ga dihitung dari skor yang dibulatkan, dengan pemutus seri TOPSIS, harga, id?
+12. Kapan data di-scrape? (Buat kolom diperbarui_at dan bagian keterbatasan di laporan.)
+
+==================================================
+D. KEPUTUSAN YANG HARUS DIAMBIL BARENG GRUP
+==================================================
+- Nasib C3: hapus atau pakai data asli.
+- Kos campur ikut tampil buat pilihan putra / putri atau ga.
+- Kampus acuan jarak: Unpad, ITB, atau user bisa pilih.
+- Fitur fasilitas wajib / prioritas: dipakai atau dibuang buat UTS.
+- Nama dan isi kriteria C7 dan C8 (biar sama di data, web, dan laporan).
+
+==================================================
+E. YANG AKU KERJAIN (frontend / integrasi)
+==================================================
+- Port rumus ke TypeScript di src/lib/dss/, dites pakai audit/golden_test.json.
+- Kriteria dinamis dari satu file config.
+- UI buat hasil sedikit (kurang dari 3), jarak "belum diketahui", dan rank unik.
+- Python tetap jadi referensi di laporan. Data disiapin offline, lalu dimuat ke Supabase.
+
+URUTAN YANG DISARANKAN
+1) Jawab pertanyaan C dan putuskan bareng grup (D)
+2) Tugas 1 sampai 6 (data)
+3) Tugas 7 sampai 13 (model_dss.py)
+4) Kirim ulang kos_scored.csv yang baru ke aku
+
+CATATAN LAPORAN
+- Tulis TOPSIS sebagai "varian dengan normalisasi min-max", bukan "TOPSIS standar".
+- Skor SAW bersifat relatif ke kandidat hasil filter (min-max atas kandidat), jadi ga bisa dibandingin antar-pencarian.
+- Keterbatasan yang perlu ditulis: C6 kasar (cuma 3 level), imputasi jarak dan luas, dan sebagian data hasil dugaan.
+- Hasil sensitivitas lengkap ada di audit/AUDIT.md (bagian "Analisis sensitivitas").

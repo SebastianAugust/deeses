@@ -2,13 +2,8 @@
  * State filter + urutan prioritas disimpan di query params URL:
  *   ?budget=1200000&tipe=putri&urutan=C1,C2,C6,C5,C3,C4,C7,C8
  */
-import {
-  isKriteria,
-  isTipePenghuni,
-  type Kriteria,
-  type RankRequest,
-  type TipePenghuni,
-} from "./types";
+import { URUTAN_DEFAULT, isKriteria, type Kriteria } from "@/config/kriteria";
+import { isTipePenghuni, type RankRequest, type TipePenghuni } from "./types";
 
 export type FilterState = {
   budget: number;
@@ -20,9 +15,8 @@ export const BUDGET_MIN = 500_000;
 export const BUDGET_MAX = 3_000_000;
 export const BUDGET_STEP = 100_000;
 
-export const DEFAULT_URUTAN: readonly Kriteria[] = [
-  "C1", "C2", "C6", "C5", "C3", "C4", "C7", "C8",
-];
+/** Urutan default diturunkan dari config (`prioritasDefault`). */
+export const DEFAULT_URUTAN: readonly Kriteria[] = URUTAN_DEFAULT;
 
 export const DEFAULT_FILTER: FilterState = {
   budget: 1_200_000,
@@ -52,7 +46,7 @@ function parseBudget(raw: string | undefined): number {
 }
 
 /**
- * Urutan harus memuat ke-8 kriteria tepat satu kali. Kode tak dikenal/duplikat
+ * Urutan harus memuat semua kriteria di config tepat satu kali. Kode tak dikenal/duplikat
  * dibuang; kriteria yang hilang ditambahkan di belakang mengikuti urutan default.
  */
 function parseUrutan(raw: string | undefined): Kriteria[] {

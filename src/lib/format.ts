@@ -47,7 +47,23 @@ export function inisial(nama: string): string {
   return (kata.slice(0, 2).map((k) => k[0]).join("") || "?").toUpperCase();
 }
 
-/** 0.3 → "0,3 km" */
+/** 0.3 → "0,3 km"; di bawah 0,1 km tampil dalam meter (0.004 → "4 m", bukan "0,0 km"). */
 export function formatJarak(km: number): string {
+  if (km < 0.1) return `${Math.max(0, Math.round(km * 1000))} m`;
   return `${km.toFixed(1).replace(".", ",")} km`;
+}
+
+type DenganJarak = { jarak_km: number; jarak_imputasi?: boolean };
+
+/**
+ * "0,3 km", atau "jarak belum diketahui" kalau jarak hanya hasil imputasi (median,
+ * bukan data asli) — angka karangan tidak ditampilkan.
+ */
+export function teksJarak(kos: DenganJarak): string {
+  return kos.jarak_imputasi ? "jarak belum diketahui" : formatJarak(kos.jarak_km);
+}
+
+/** "0,3 km ke kampus", atau "jarak belum diketahui". */
+export function teksJarakKeKampus(kos: DenganJarak): string {
+  return kos.jarak_imputasi ? "jarak belum diketahui" : `${formatJarak(kos.jarak_km)} ke kampus`;
 }

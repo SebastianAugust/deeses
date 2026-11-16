@@ -1,5 +1,6 @@
 import { infoKriteria } from "./explain";
-import type { Kriteria, TipePenghuni } from "./types";
+import type { Kriteria } from "@/config/kriteria";
+import type { TipePenghuni } from "./types";
 
 const LABEL_TIPE: Record<TipePenghuni, string> = {
   putra: "Putra",

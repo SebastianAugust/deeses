@@ -2,8 +2,8 @@
 
 import { motion, type Variants } from "motion/react";
 import { PrioritasSortable } from "@/components/prioritas-sortable";
-import { DEFAULT_URUTAN } from "@/lib/query";
-import type { Kriteria } from "@/lib/types";
+import type { Kriteria } from "@/config/kriteria";
+import { useKriteria, urutanDefaultDari } from "@/lib/use-kriteria";
 import { LangkahTiles } from "./langkah-tiles";
 
 /**
@@ -24,7 +24,10 @@ export function LangkahPrioritas({
   onKembali: () => void;
   anak: Variants;
 }) {
-  const sudahDefault = urutan.join(",") === DEFAULT_URUTAN.join(",");
+  const kriteria = useKriteria();
+  const urutanDefault = kriteria.status === "success" ? urutanDefaultDari(kriteria.data) : null;
+  const jumlah = kriteria.status === "success" ? kriteria.data.length : urutan.length;
+  const sudahDefault = !urutanDefault || urutan.join(",") === urutanDefault.join(",");
 
   return (
     <>
@@ -45,10 +48,10 @@ export function LangkahPrioritas({
       <motion.div variants={anak} className="flex flex-col gap-2.5">
         <PrioritasSortable varian="besar" urutan={urutan} onChange={onUrutan} />
         <div className="flex items-center justify-between px-1.5 text-[13px] text-muted">
-          <span>{urutan.length} kriteria · bobot dihitung otomatis</span>
+          <span>{jumlah} kriteria · bobot dihitung otomatis</span>
           <button
             type="button"
-            onClick={() => onUrutan([...DEFAULT_URUTAN])}
+            onClick={() => urutanDefault && onUrutan([...urutanDefault])}
             disabled={sudahDefault}
             className="tekan tautan -my-2 min-h-9 rounded-lg px-2 font-semibold text-accent-ink"
           >

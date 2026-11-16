@@ -1,0 +1,104 @@
+
+==============================================================================
+1. Sheet di xlsx
+==============================================================================
+sheet 'Data Kos': 360 baris x 25 kolom
+kolom: ['id', 'nama_kos', 'tipe_kos', 'harga', 'jarak_ke_unpad', 'jarak_ke_itb', 'ukuran_kamar', 'termasuk_listrik', 'jendela', 'k_mandi_dalam', 'kloset duduk', 'kloset_jongkok', 'shower', 'air_panas', 'cctv', 'wifi', 'penjaga', 'ac', 'parkir_mobil', 'parkir_motor_sepeda', 'tv', 'ruang_tamu', 'ruang_jemur', 'pembayaran_per_bulan', 'pembayaran_per_tahun']
+
+==============================================================================
+2. Reproduksi prepare_data.py -> audit/out/kos_scored_rebuild.csv
+==============================================================================
+kos_scored.csv (360, 34) vs rebuild (360, 34); identik = True
+
+==============================================================================
+3. Duplikat & null
+==============================================================================
+duplikat id: 0, duplikat baris penuh: 0, duplikat nama_kos: 3
+      id              nama_kos  tipe_kos     harga ukuran_kamar
+89840015      Kost Hoop Tipe B    campur 1250000.0          3x4
+83438330      Kost Hoop Tipe B    campur  950000.0          3X2
+28172766      Kost Hoop Tipe C    campur 1250000.0          4x4
+73878364      Kost Hoop Tipe C    campur  950000.0          3X4
+17852343 Kost Pondok Sakinah 1 perempuan  800000.0          3x3
+82314475 Kost Pondok Sakinah 1    campur  750000.0      3.5x2.5
+null per kolom (xlsx): {'jarak_ke_unpad': 180, 'jarak_ke_itb': 186}
+jarak Unpad & ITB dua-duanya kosong -> C2 diimputasi median: 59 baris (16.4%); median = 1.1 km
+hanya ada jarak Unpad: 127, hanya ITB: 121, keduanya ada: 53
+   dari yang keduanya ada, C2 diambil dari ITB (lebih dekat): 15
+null per kolom (csv): {'lat': 360, 'lng': 360, 'url': 360}
+alamat unik: ['Jatinangor, Sumedang']
+
+==============================================================================
+4. Tipe penghuni
+==============================================================================
+xlsx tipe_kos: {'campur': 163, 'perempuan': 133, 'laki-laki': 64}
+csv tipe_penghuni: {'campur': 163, 'putri': 133, 'putra': 64}
+
+==============================================================================
+5. Harga
+==============================================================================
+{'count': 360.0, 'mean': 1140302.0, 'std': 502400.0, 'min': 416667.0, '25%': 750000.0, '50%': 1000000.0, '75%': 1500000.0, 'max': 3500000.0}
+outlier IQR (>2,625,000):
+      id                           nama tipe_penghuni     harga
+27797129 Kost Casa Mia Exclusive Single        campur 2750000.0
+80930985              Kost Pondok Restu        campur 3500000.0
+harga berdesimal (pola x/12 -> kemungkinan harga TAHUNAN dibagi 12): 58 baris, contoh:
+{268: 10750000.0, 270: 10000000.0, 273: 7040000.0, 274: 6500000.0, 277: 11000000.0, 279: 5000000.0}
+harga bukan kelipatan 1000 (incl. desimal): 72 baris
+bukan kos / di luar Jatinangor? :
+      id                                              nama_kos tipe_kos      harga ukuran_kamar
+20937649                  Kost Fengsui Tipe A Cileunyi Bandung   campur  425000.00          4x4
+10744712            Kost Haffair Rancaekek Jatinangor Sumedang   campur  458333.33          4x5
+10145377 Rumah Kontrakan Sweethome Fasyiha Jatinangor Sumedang   campur 1666666.67         6x10
+44117935            Rumah Kontrakan Bu Eli Jatinangor Sumedang   campur 1666666.67          3x3
+45096476       Rumah Kontrakan Cukup Besar Jatinangor Sumedang   campur 1250000.00          4x4
+
+==============================================================================
+6. Jarak (C2) dan C3 = 0.15 + 0.35*C2
+==============================================================================
+C2: {'count': 360.0, 'mean': 1.106, 'std': 0.429, 'min': 0.003, '25%': 0.88, '50%': 1.1, '75%': 1.3, 'max': 2.6}
+Pearson(C2,C3) = 0.9999993; Spearman = 0.9999885
+max |minmax(C2) - minmax(C3)| di seluruh data = 0.00059  (transformasi afin hilang total oleh min-max; sisa = pembulatan 3 desimal)
+C2 == 1.1 (nilai imputasi): 97 baris (59 imputasi + sisanya asli 1,1)
+
+==============================================================================
+7. Luas kamar (C4) - parser
+==============================================================================
+gagal parse -> imputasi median 12.0 m2: 1 baris: ['20x0']
+kena heuristik p/l > 20: 3 baris -> [('Kost Pondok Tirta Tipe B', '3x425', np.float64(12.75)), ('Kost Pondok Tirta Tipe A', '3x425', np.float64(12.75)), ('Kost Bumi Sadang Tipe A Jatinangor Sumedang', '36x6', np.float64(21.6))]
+C4: {'count': 360.0, 'mean': 12.02, 'std': 4.72, 'min': 4.0, '25%': 9.0, '50%': 12.0, '75%': 12.0, 'max': 60.0}
+5 terbesar: [['Rumah Kontrakan Sweethome Fasyiha Jatinangor Sumedang', 60.0, 1666666.67], ['Kost Pondok Azhar 3 Jatinangor Sumedang', 32.0, 916666.67], ['Kost Syalira', 30.0, 950000.0], ['Kost Pondok Pertama Sukawening Tipe C Jatinangor Sumedang', 30.0, 1000000.0], ['Kost Casa De Fiore Tipe Paviliun Jatinangor Sumedang', 30.0, 1666666.67]]
+5 terkecil: [['Kost Pondok Sakinah 2 Tipe A', 4.0, 990000.0], ['Kost Pondok Haku Tipe A', 5.22, 1100000.0], ['Kost Pondok Pa Engkos Tipe A Jatinangor Sumedang', 5.67, 500000.0], ['Kost Dzawani Tipe Standard', 6.0, 1600000.0], ['Kost Dzawani Tipe Superior', 6.0, 1600000.0]]
+
+==============================================================================
+8. C5-C8 (proporsi fasilitas)
+==============================================================================
+C5 nilai unik: {0.0: 11, 0.125: 24, 0.25: 45, 0.375: 68, 0.5: 43, 0.625: 48, 0.75: 47, 0.875: 52, 1.0: 22}
+C6 nilai unik: {0.0: 116, 0.5: 119, 1.0: 125}
+C7 nilai unik: {0.3333: 183, 0.6667: 162, 1.0: 15}
+C8 nilai unik: {0.0: 21, 0.25: 62, 0.5: 115, 0.75: 104, 1.0: 58}
+rata-rata fitur: {'termasuk_listrik': 0.075, 'pembayaran_per_bulan': 0.744, 'pembayaran_per_tahun': 0.714, 'cctv': 0.419, 'penjaga': 0.606}
+kloset duduk & jongkok dua-duanya 1: 34, dua-duanya 0: 21
+korelasi Pearson antar kriteria:
+       C1    C2    C3    C4    C5    C6    C7    C8
+C1  1.00  0.13  0.13  0.17  0.71  0.39 -0.17  0.15
+C2  0.13  1.00  1.00  0.03  0.17  0.04 -0.16  0.03
+C3  0.13  1.00  1.00  0.03  0.17  0.04 -0.16  0.03
+C4  0.17  0.03  0.03  1.00  0.02  0.03 -0.15 -0.04
+C5  0.71  0.17  0.17  0.02  1.00  0.55 -0.06  0.33
+C6  0.39  0.04  0.04  0.03  0.55  1.00 -0.03  0.32
+C7 -0.17 -0.16 -0.16 -0.15 -0.06 -0.03  1.00  0.17
+C8  0.15  0.03  0.03 -0.04  0.33  0.32  0.17  1.00
+
+==============================================================================
+9. Kecukupan data untuk UI (jumlah kandidat setelah F1+F2)
+==============================================================================
+   budget  putra  putri  campur  putra+campur  putri+campur
+  500.000      3      1      16            19            17
+  800.000     15     30      63            78            93
+1.000.000     24     61     105           129           166
+1.200.000     35     74     123           158           197
+1.500.000     41     98     144           185           242
+2.000.000     57    125     157           214           282
+3.000.000     64    133     162           226           295
+kombinasi 0 hasil: budget < harga termurah per tipe -> {'campur': 416667.0, 'putra': 500000.0, 'putri': 500000.0}

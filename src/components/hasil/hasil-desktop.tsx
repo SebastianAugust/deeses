@@ -11,7 +11,8 @@ import { IndikatorMuat } from "@/components/indikator-muat";
 import { KosDetailPanel } from "@/components/kos/kos-detail-panel";
 import { KosListCard } from "@/components/kos/kos-list-card";
 import { ErrorCard } from "@/components/status-card";
-import { JUMLAH_KRITERIA } from "@/config/kriteria";
+import { Logo } from "@/components/ui/logo";
+import { SITE_NAME } from "@/config/site";
 import { jelaskanPeringkat } from "@/lib/explain";
 import { PARAM_OK, buildHref, type FilterState } from "@/lib/query";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
@@ -19,22 +20,19 @@ import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
 import { useRank } from "@/lib/use-rank";
 import { useRankDelta } from "@/lib/use-rank-delta";
 import { useSebaranHarga } from "@/lib/use-sebaran";
+import { CatatanTanpaData } from "./catatan-tanpa-data";
 import { FilterSidebar } from "./filter-sidebar";
 import { DaftarDesktopSkeleton, DetailSkeleton } from "./hasil-skeleton";
 import { KosongCard } from "./kosong-card";
 
-function HeaderDesktop() {
+function HeaderDesktop({ jumlahKriteria }: { jumlahKriteria: number }) {
   return (
     <header className="border-b border-white/90 bg-white/55 backdrop-blur-[20px] backdrop-saturate-[1.6]">
       <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-5 px-7 py-3.5">
-        <Link
-          href="/"
-          aria-label="Kosjati, ke beranda"
-          className="logo text-[22px] font-extrabold tracking-[-0.02em] text-ink"
-        >
-          kosjati<span className="text-accent-ink">.</span>
+        <Link href="/" aria-label={`${SITE_NAME}, ke beranda`} className="logo inline-flex min-h-11 items-center">
+          <Logo ukuran="lg" />
         </Link>
-        <span className="text-[13px] text-muted">Rekomendasi kos Jatinangor · SAW {JUMLAH_KRITERIA} kriteria</span>
+        <span className="text-[13px] text-muted">Rekomendasi kos Jatinangor · SAW {jumlahKriteria} kriteria</span>
         <span className="flex-1" />
         <Link href="/#tentang" className="tautan text-sm font-semibold text-ink">
           Cara kerja perhitungan
@@ -58,6 +56,7 @@ export function HasilDesktop() {
   const rank = useRank(filter, { debounceMs: 300 });
   const { data: sebaran, memuat: memuatSebaran } = useSebaranHarga(filter.tipe);
   const daftar = rank.status === "success" ? rank.data : rank.dataTerakhir;
+  const respons = rank.status === "success" ? rank.respons : rank.responsTerakhir;
   const delta = useRankDelta(daftar);
 
   function simpan(f: FilterState, p: string | null) {
@@ -84,13 +83,13 @@ export function HasilDesktop() {
 
   let catatanTeratas: string | undefined;
   if (daftar?.[0]) {
-    const [a, b] = jelaskanPeringkat(daftar[0], filter.urutan).kelebihan;
-    catatanTeratas = `unggul ${a.singkat} & ${b.singkat}`;
+    const { kelebihan } = jelaskanPeringkat(daftar[0], filter.kriteria);
+    if (kelebihan.length > 0) catatanTeratas = `unggul ${kelebihan.map((k) => k.singkat).join(" & ")}`;
   }
 
   return (
     <div className="flex flex-1 flex-col">
-      <HeaderDesktop />
+      <HeaderDesktop jumlahKriteria={filter.kriteria.length} />
       <div className="mx-auto flex w-full max-w-[1440px] items-start gap-5 px-7 pt-[22px] pb-10">
         <div className="sticky top-[22px] w-[260px] flex-none xl:w-[300px]">
           <FilterSidebar
@@ -119,6 +118,8 @@ export function HasilDesktop() {
             <span className="text-[13px] text-muted">Urut skor SAW · diperbarui otomatis</span>
           </div>
 
+          <CatatanTanpaData respons={respons} />
+
           {daftar && pembandingTerlaluSedikit(daftar.length) ? (
             <CatatanSkorRelatif jumlah={daftar.length} />
           ) : null}
@@ -132,7 +133,7 @@ export function HasilDesktop() {
             ) : null}
             {kunciTengah === "kosong" ? (
               <div className="mx-auto max-w-[480px] pt-4">
-                <KosongCard filter={filter} terapkan={terapkan} />
+                <KosongCard filter={filter} terapkan={terapkan} tanpaData={respons?.jumlah_tanpa_data ?? 0} />
               </div>
             ) : null}
             {kunciTengah === "isi" && daftar ? (
@@ -167,7 +168,7 @@ export function HasilDesktop() {
               <KosDetailPanel
                 kos={terpilih}
                 semua={daftar}
-                urutan={filter.urutan}
+                kriteria={filter.kriteria}
                 hrefDetail={buildHref(`/kos/${terpilih.id}`, filter, PARAM_OK)}
               />
             ) : null}

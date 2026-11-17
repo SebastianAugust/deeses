@@ -1,11 +1,10 @@
-import type { KriteriaInfo } from "@/config/kriteria";
 import { buildQuery, type FilterState } from "./query";
 import type { SebaranHarga } from "./sebaran";
 import type {
   KosDetailResponse,
   KosRingkasCarousel,
   RankRequest,
-  RankResult,
+  RankResponse,
   TipePenghuni,
 } from "./types";
 
@@ -50,13 +49,6 @@ export async function fetchKosDetail(
   return (await res.json()) as KosDetailResponse;
 }
 
-/** GET /api/kriteria — daftar kriteria (dari src/config/kriteria.ts di server). */
-export async function fetchKriteria(signal?: AbortSignal): Promise<KriteriaInfo[]> {
-  const res = await fetch("/api/kriteria", { signal });
-  if (!res.ok) throw new Error(`Gagal memuat daftar kriteria (kode ${res.status}).`);
-  return (await res.json()) as KriteriaInfo[];
-}
-
 /** GET /api/kos — daftar ringkas semua kos (carousel). Pesan galat server dipakai apa adanya. */
 export async function fetchKosRingkas(signal?: AbortSignal): Promise<KosRingkasCarousel[]> {
   const res = await fetch("/api/kos", { signal });
@@ -82,7 +74,7 @@ export async function fetchSebaranHarga(
 export async function fetchRank(
   request: RankRequest,
   signal?: AbortSignal,
-): Promise<RankResult[]> {
+): Promise<RankResponse> {
   const res = await fetch("/api/rank", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -94,5 +86,5 @@ export async function fetchRank(
     throw new Error(await pesanGalat(res, `Gagal memuat rekomendasi (kode ${res.status}).`));
   }
 
-  return (await res.json()) as RankResult[];
+  return (await res.json()) as RankResponse;
 }

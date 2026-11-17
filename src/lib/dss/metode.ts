@@ -1,11 +1,18 @@
 import type { Alternatif, DefKriteria } from "./tipe";
 
+/** Nilai kriteria sebagai angka berhingga, atau null kalau kosong/NaN/tak berhingga. */
+export function nilaiBerhingga(x: number | null | undefined): number | null {
+  return typeof x === "number" && Number.isFinite(x) ? x : null;
+}
+
 /**
- * Normalisasi min-max per kriteria, dihitung atas KANDIDAT hasil filter:
+ * Normalisasi min-max per kriteria, dihitung atas KANDIDAT hasil filter yang
+ * datanya lengkap (kandidat dengan data kosong sudah dikecualikan sebelumnya):
  *   cost    : (max − x) / (max − min)
  *   benefit : (x − min) / (max − min)
  *   max = min → 1,0 untuk semua (kriteria tidak membedakan).
  * Hasil selalu searah "1 = terbaik". Skor bersifat relatif terhadap kandidat.
+ * @throws Error kalau masih ada nilai kosong (tidak pernah diimputasi diam-diam)
  */
 export function normalisasiMinMax<K extends string>(
   alternatif: readonly Alternatif<K>[],
@@ -15,17 +22,18 @@ export function normalisasiMinMax<K extends string>(
   for (const { kode, jenis } of kriteria) {
     let min = Infinity;
     let max = -Infinity;
-    for (const a of alternatif) {
-      const x = a.nilai[kode];
-      if (!Number.isFinite(x)) {
-        throw new Error(`nilai ${kode} untuk kos ${a.id} bukan angka berhingga: ${x}`);
+    const xs = alternatif.map((a) => {
+      const x = nilaiBerhingga(a.nilai[kode]);
+      if (x === null) {
+        throw new Error(`nilai ${kode} untuk kos ${a.id} bukan angka berhingga: ${a.nilai[kode]}`);
       }
       if (x < min) min = x;
       if (x > max) max = x;
-    }
+      return x;
+    });
     const rentang = max - min;
-    alternatif.forEach((a, i) => {
-      const x = a.nilai[kode];
+    alternatif.forEach((_, i) => {
+      const x = xs[i];
       hasil[i][kode] =
         rentang === 0 ? 1 : jenis === "cost" ? (max - x) / rentang : (x - min) / rentang;
     });

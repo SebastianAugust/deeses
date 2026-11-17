@@ -17,10 +17,11 @@ import { TRANSISI, jedaStagger } from "@/lib/motion";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
 import { PARAM_OK, buildHref, buildQuery, type FilterState } from "@/lib/query";
 import { labelTipe } from "@/lib/ringkasan";
-import type { RankResult } from "@/lib/types";
+import type { RankResponse, RankResult } from "@/lib/types";
 import { useFilter } from "@/lib/use-filter";
 import { useRank } from "@/lib/use-rank";
 import { useRankDelta } from "@/lib/use-rank-delta";
+import { CatatanTanpaData } from "./catatan-tanpa-data";
 import { SearchPill } from "./search-pill";
 import { HasilMobileSkeleton } from "./hasil-skeleton";
 import { KosongCard } from "./kosong-card";
@@ -57,8 +58,10 @@ function DaftarMobile({
   query,
   delta,
   memuat,
+  respons,
 }: {
   data: RankResult[];
+  respons: RankResponse | undefined;
   query: string;
   delta: Record<string, number>;
   /** Sedang memuat ulang: daftar lama tetap tampil + titik berdenyut di judul. */
@@ -82,6 +85,7 @@ function DaftarMobile({
         </h1>
         <span className="text-xs text-muted">Urut skor SAW</span>
       </div>
+      <CatatanTanpaData respons={respons} className="mx-5 mb-3 -mt-1" />
       {pembandingTerlaluSedikit(data.length) ? (
         <CatatanSkorRelatif jumlah={data.length} className="mx-5 mb-3" />
       ) : null}
@@ -201,6 +205,7 @@ export function HasilMobile() {
   // Saat memuat ulang (mis. setelah "Naikkan budget"), daftar lama tetap tampil
   // dengan indikator kecil — skeleton penuh hanya untuk muatan pertama.
   const daftar = rank.status === "success" ? rank.data : rank.dataTerakhir;
+  const respons = rank.status === "success" ? rank.respons : rank.responsTerakhir;
   const memuat = rank.status === "loading";
   const delta = useRankDelta(daftar);
 
@@ -229,11 +234,11 @@ export function HasilMobile() {
           ) : null}
           {kunci === "kosong" ? (
             <div className="px-4 pt-[18vh] pb-10">
-              <KosongCard filter={filter} terapkan={terapkan} />
+              <KosongCard filter={filter} terapkan={terapkan} tanpaData={respons?.jumlah_tanpa_data ?? 0} />
             </div>
           ) : null}
           {kunci === "isi" && daftar ? (
-            <DaftarMobile data={daftar} query={query} delta={delta} memuat={memuat} />
+            <DaftarMobile data={daftar} query={query} delta={delta} memuat={memuat} respons={respons} />
           ) : null}
         </Crossfade>
       </main>
@@ -243,7 +248,7 @@ export function HasilMobile() {
         className="tekan glass-strong tombol-kaca fixed bottom-[22px] left-1/2 z-20 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full border-white/90 px-5 text-sm font-bold whitespace-nowrap text-ink shadow-[0_10px_28px_rgba(30,45,90,.10)]"
       >
         <ArrowUpDown size={16} className="text-accent-ink" aria-hidden />
-        Ubah prioritas
+        Ubah kriteria
       </Link>
     </div>
   );

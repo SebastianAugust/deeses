@@ -1,4 +1,3 @@
-import type { KriteriaInfo } from "@/config/kriteria";
 import type { SebaranHarga } from "@/lib/sebaran";
 import type { TipePenghuni } from "@/lib/types";
 import type { Kos } from "./mapper";
@@ -13,8 +12,6 @@ export interface KosRepository {
   listKos(): Promise<Kos[]>;
   /** Satu kos; null kalau id tidak ada. */
   getKos(id: string): Promise<Kos | null>;
-  /** Kriteria (dari src/config/kriteria.ts; tidak ada tabel kriteria). */
-  getKriteria(): readonly KriteriaInfo[];
   /** Sebaran harga per Rp 100 rb untuk tipe tertentu (atau semua tipe). */
   sebaranHarga(tipe?: TipePenghuni): Promise<SebaranHarga>;
 }

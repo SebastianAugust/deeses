@@ -53,17 +53,19 @@ export function formatJarak(km: number): string {
   return `${km.toFixed(1).replace(".", ",")} km`;
 }
 
-type DenganJarak = { jarak_km: number; jarak_imputasi?: boolean };
+type DenganJarak = { jarak_km: number | null; jarak_imputasi?: boolean };
 
 /**
- * "0,3 km", atau "jarak belum diketahui" kalau jarak hanya hasil imputasi (median,
- * bukan data asli) — angka karangan tidak ditampilkan.
+ * "0,3 km", atau "jarak belum diketahui" kalau jarak kosong atau hanya hasil
+ * imputasi (median, bukan data asli) — angka karangan tidak ditampilkan.
  */
 export function teksJarak(kos: DenganJarak): string {
-  return kos.jarak_imputasi ? "jarak belum diketahui" : formatJarak(kos.jarak_km);
+  return kos.jarak_imputasi || kos.jarak_km === null ? "jarak belum diketahui" : formatJarak(kos.jarak_km);
 }
 
 /** "0,3 km ke kampus", atau "jarak belum diketahui". */
 export function teksJarakKeKampus(kos: DenganJarak): string {
-  return kos.jarak_imputasi ? "jarak belum diketahui" : `${formatJarak(kos.jarak_km)} ke kampus`;
+  return kos.jarak_imputasi || kos.jarak_km === null
+    ? "jarak belum diketahui"
+    : `${formatJarak(kos.jarak_km)} ke kampus`;
 }

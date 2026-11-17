@@ -1,27 +1,27 @@
 /**
- * State filter + urutan prioritas disimpan di query params URL:
- *   ?budget=1200000&tipe=putri&urutan=C1,C2,C6,C5,C3,C4,C7,C8
+ * State filter + kriteria terpasang (urut prioritas) disimpan di query params URL:
+ *   ?budget=1200000&tipe=putri&kriteria=harga,jarak_kampus,luas,cctv
+ * URL adalah satu-satunya sumber state yang dibagi antarhalaman (home, prioritas,
+ * hasil, detail).
  */
-import { URUTAN_DEFAULT, isKriteria, type Kriteria } from "@/config/kriteria";
+import { KRITERIA_DEFAULT, MAKS_KRITERIA, isKodeTersedia, type KodeKriteria } from "@/config/kriteria";
 import { isTipePenghuni, type RankRequest, type TipePenghuni } from "./types";
 
 export type FilterState = {
   budget: number;
   tipe: TipePenghuni;
-  urutan: Kriteria[];
+  /** Kode piece terpasang, index 0 = prioritas tertinggi. Bisa kosong saat sedang merakit. */
+  kriteria: KodeKriteria[];
 };
 
 export const BUDGET_MIN = 500_000;
 export const BUDGET_MAX = 3_000_000;
 export const BUDGET_STEP = 100_000;
 
-/** Urutan default diturunkan dari config (`prioritasDefault`). */
-export const DEFAULT_URUTAN: readonly Kriteria[] = URUTAN_DEFAULT;
-
 export const DEFAULT_FILTER: FilterState = {
   budget: 1_200_000,
   tipe: "putri",
-  urutan: [...DEFAULT_URUTAN],
+  kriteria: [...KRITERIA_DEFAULT],
 };
 
 /** Bentuk `searchParams` di Server Component (sudah di-await) atau URLSearchParams di client. */
@@ -46,17 +46,16 @@ function parseBudget(raw: string | undefined): number {
 }
 
 /**
- * Urutan harus memuat semua kriteria di config tepat satu kali. Kode tak dikenal/duplikat
- * dibuang; kriteria yang hilang ditambahkan di belakang mengikuti urutan default.
+ * Param `kriteria` tidak ada → rakitan default. Ada → kode dibaca berurutan;
+ * kode tak dikenal, belum tersedia, atau duplikat dibuang; maksimal MAKS_KRITERIA.
+ * Param ada tapi kosong → [] (pengguna sedang merakit dari nol).
  */
-function parseUrutan(raw: string | undefined): Kriteria[] {
-  const hasil: Kriteria[] = [];
-  for (const bagian of (raw ?? "").split(",")) {
-    const kode = bagian.trim().toUpperCase();
-    if (isKriteria(kode) && !hasil.includes(kode)) hasil.push(kode);
-  }
-  for (const kode of DEFAULT_URUTAN) {
-    if (!hasil.includes(kode)) hasil.push(kode);
+export function parseKriteria(raw: string | undefined): KodeKriteria[] {
+  if (raw === undefined) return [...KRITERIA_DEFAULT];
+  const hasil: KodeKriteria[] = [];
+  for (const bagian of raw.split(",")) {
+    const kode = bagian.trim().toLowerCase();
+    if (isKodeTersedia(kode) && !hasil.includes(kode) && hasil.length < MAKS_KRITERIA) hasil.push(kode);
   }
   return hasil;
 }
@@ -67,31 +66,31 @@ export function parseFilter(params: SearchParamsInput): FilterState {
   return {
     budget: parseBudget(ambil(params, "budget")),
     tipe: isTipePenghuni(tipe) ? tipe : DEFAULT_FILTER.tipe,
-    urutan: parseUrutan(ambil(params, "urutan")),
+    kriteria: parseKriteria(ambil(params, "kriteria")),
   };
 }
 
 /** Param tambahan di luar filter, mis. { pilih: "kos-melati" } (undefined/null = tidak ditulis). */
 export type ParamTambahan = Record<string, string | null | undefined>;
 
-/** FilterState → "budget=1200000&tipe=putri&urutan=C1,C2,…" (tanpa "?"). */
+/** FilterState → "budget=1200000&tipe=putri&kriteria=harga,…" (tanpa "?"). */
 export function buildQuery(state: FilterState, tambahan?: ParamTambahan): string {
-  let q = `budget=${state.budget}&tipe=${state.tipe}&urutan=${state.urutan.join(",")}`;
+  let q = `budget=${state.budget}&tipe=${state.tipe}&kriteria=${state.kriteria.join(",")}`;
   for (const [k, v] of Object.entries(tambahan ?? {})) {
     if (v) q += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
   }
   return q;
 }
 
-/** Contoh: buildHref("/hasil", state, { pilih: id }) → "/hasil?budget=…&tipe=…&urutan=…&pilih=…" */
+/** Contoh: buildHref("/hasil", state, { pilih: id }) → "/hasil?budget=…&tipe=…&kriteria=…&pilih=…" */
 export function buildHref(pathname: string, state: FilterState, tambahan?: ParamTambahan): string {
   return `${pathname}?${buildQuery(state, tambahan)}`;
 }
 
 /**
  * Penanda alur desktop: /hasil hanya boleh dibuka lewat tombol "Lihat
- * rekomendasi" di langkah prioritas (atau dari dalam /hasil sendiri).
- * Tanpa `ok=1`, /hasil desktop dialihkan ke /?langkah=prioritas.
+ * peringkat" di langkah kriteria (atau dari dalam /hasil sendiri).
+ * Tanpa `ok=1`, /hasil desktop dialihkan ke /prioritas.
  */
 export const PARAM_OK = { ok: "1" } as const;
 
@@ -99,19 +98,7 @@ export function adaPenandaOk(params: { get(name: string): string | null }): bool
   return params.get("ok") === "1";
 }
 
-/** Langkah Home desktop: / = "awal", /?langkah=prioritas = "prioritas". */
-export type LangkahHome = "awal" | "prioritas";
-
-export function parseLangkah(params: { get(name: string): string | null }): LangkahHome {
-  return params.get("langkah") === "prioritas" ? "prioritas" : "awal";
-}
-
-/** URL Home untuk langkah tertentu (langkah awal tidak menulis param). */
-export function hrefHome(state: FilterState, langkah: LangkahHome): string {
-  return buildHref("/", state, { langkah: langkah === "prioritas" ? "prioritas" : undefined });
-}
-
 /** FilterState → body untuk POST /api/rank. */
 export function toRankRequest(state: FilterState): RankRequest {
-  return { budget: state.budget, tipe: state.tipe, urutan_kriteria: state.urutan };
+  return { budget: state.budget, tipe: state.tipe, kriteria: state.kriteria };
 }

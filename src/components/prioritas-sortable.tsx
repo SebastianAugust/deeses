@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -10,10 +10,8 @@ import {
   closestCenter,
   useSensor,
   useSensors,
-  type Announcements,
   type DragEndEvent,
   type Modifier,
-  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -26,348 +24,100 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
-import { KriteriaIcon } from "@/components/kriteria-icon";
-import { Skeleton } from "@/components/ui/skeleton";
+import { infoKriteria, type KodeKriteria } from "@/config/kriteria";
+import { pengumumanUrutan, INSTRUKSI_SERET } from "@/lib/dnd-teks";
 import { TRANSISI_DND } from "@/lib/motion";
-import type { Kriteria, KriteriaInfo } from "@/config/kriteria";
-import { useKriteria } from "@/lib/use-kriteria";
 import { useDiBrowser } from "@/lib/use-media";
-import { formatPersen, rankSumWeights } from "@/lib/weights";
+import { bobotPerPosisi, formatPersen } from "@/lib/weights";
 import { cn } from "@/lib/utils";
-
-type Varian = "penuh" | "ringkas" | "besar";
-type Keadaan = "diam" | "bayangan" | "melayang";
-
-/** Varian "besar": 3 prioritas teratas tampil lebih menonjol. */
-const JUMLAH_MENONJOL = 3;
 
 const hanyaVertikal: Modifier = ({ transform }) => ({ ...transform, x: 0 });
 
-/** Info kriteria (dari GET /api/kriteria) untuk baris-baris di bawah <PrioritasSortable>. */
-const InfoKriteriaContext = createContext<Record<string, KriteriaInfo>>({});
+type Keadaan = "diam" | "bayangan" | "melayang";
 
-function useInfoKriteria(kode: string): KriteriaInfo {
-  const info = useContext(InfoKriteriaContext)[kode];
-  // Tidak mungkin terjadi: daftar urutan difilter terhadap data API sebelum dirender.
-  if (!info) throw new Error(`Kriteria ${kode} tidak ada di /api/kriteria.`);
-  return info;
-}
-
-/* ------------------------------ Tampilan baris ----------------------------- */
-
-function kelasBaris(varian: Varian, keadaan: Keadaan, menonjol = false) {
-  if (varian === "besar") {
-    return cn(
-      "relative flex items-center gap-3.5 rounded-[18px] px-[18px] select-none backdrop-blur-[20px] backdrop-saturate-[1.6]",
-      menonjol ? "h-[68px]" : "h-14",
-      keadaan === "melayang" &&
-        "cursor-grabbing border-2 border-accent bg-white shadow-[0_16px_34px_rgba(29,95,209,.25)] scale-[1.015] rotate-[-0.4deg] motion-reduce:scale-100 motion-reduce:rotate-0",
-      keadaan === "bayangan" &&
-        "border-[1.5px] border-dashed border-accent/50 bg-soft/60 [&>*]:opacity-40",
-      keadaan === "diam" &&
-        cn(
-          "group/baris cursor-grab border border-white/95",
-          menonjol
-            ? "bg-white/72 shadow-[0_8px_22px_rgba(30,45,90,.08)] hover:bg-white/90"
-            : "bg-white/50 hover:bg-white/80",
-        ),
-    );
-  }
-  const penuh = varian === "penuh";
+function kelasBaris(keadaan: Keadaan) {
   return cn(
-    "relative flex items-center select-none",
-    penuh
-      ? "h-14 gap-3 rounded-[16px] pl-2.5 backdrop-blur-[20px] backdrop-saturate-[1.6]"
-      : "h-[38px] gap-2 rounded-[11px] px-2.5",
+    "relative flex h-[38px] items-center gap-2 rounded-[11px] px-2.5 select-none",
     keadaan === "melayang" &&
-      cn(
-        "cursor-grabbing bg-white scale-[1.03] motion-reduce:scale-100",
-        penuh
-          ? "border-2 border-accent shadow-[0_14px_28px_rgba(29,95,209,.28)]"
-          : "border-[1.5px] border-accent shadow-[0_8px_18px_rgba(29,95,209,.25)]",
-      ),
-    keadaan === "bayangan" &&
-      "border-[1.5px] border-dashed border-accent/50 bg-soft/60 [&>*]:opacity-40",
+      "cursor-grabbing scale-[1.03] border-[1.5px] border-accent bg-white shadow-[0_8px_18px_rgba(29,95,209,.25)] motion-reduce:scale-100",
+    keadaan === "bayangan" && "border-[1.5px] border-dashed border-accent/50 bg-soft/60 [&>*]:opacity-40",
     keadaan === "diam" &&
-      cn(
-        "group/baris cursor-grab transition-colors duration-150 ease-out",
-        penuh
-          ? "border border-white/90 bg-white/55 shadow-[0_4px_12px_rgba(30,45,90,.10)] hover:bg-white/85"
-          : "border border-line bg-white/60 hover:bg-white/90",
-      ),
+      "group/baris cursor-grab border border-line bg-white/60 transition-colors duration-150 ease-out hover:bg-white/90",
   );
 }
 
-/** Ikon pegangan: abu, menjadi ink saat baris di-hover. */
-const KELAS_PEGANGAN = "flex-none text-[#8A91A1] transition-colors duration-150 group-hover/baris:text-ink";
-
-function IsiBaris({
-  kode,
-  posisi,
-  bobot,
-  varian,
-  keadaan,
-  pegangan,
-  menonjol = false,
-}: {
-  kode: Kriteria;
-  posisi: number;
-  bobot: number;
-  varian: Varian;
-  keadaan: Keadaan;
-  /** Elemen pegangan (tombol handle di varian penuh). */
-  pegangan?: ReactNode;
-  /** Varian besar: termasuk 3 teratas (tile accent, baris lebih tinggi). */
-  menonjol?: boolean;
-}) {
-  const info = useInfoKriteria(kode);
-  if (varian === "besar") {
-    return (
-      <>
-        <GripVertical size={16} className={KELAS_PEGANGAN} aria-hidden />
-        <span
-          className={cn(
-            "w-[22px] text-sm font-extrabold",
-            menonjol ? "text-accent-ink" : "text-[#8A91A1]",
-          )}
-        >
-          <AnimatedText value={posisi + 1} />
-        </span>
-        <span
-          className={cn(
-            "flex flex-none items-center justify-center rounded-[12px] transition-colors duration-200",
-            menonjol ? "size-[42px] bg-accent text-white" : "size-9 bg-soft text-accent-ink",
-          )}
-        >
-          <KriteriaIcon nama={info.ikon} size={20} />
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className={cn("truncate font-bold", menonjol ? "text-base" : "text-[15px]")}>
-            {info.nama}
-          </span>
-          <span className="truncate text-xs text-muted">
-            {keadaan === "melayang" ? "Sedang diseret…" : info.hint}
-          </span>
-        </div>
-        <span
-          className={cn(
-            "text-[15px] font-extrabold",
-            menonjol ? "text-accent-ink" : "text-muted",
-          )}
-        >
-          <AnimatedText value={formatPersen(bobot)} />
-        </span>
-      </>
-    );
-  }
-  if (varian === "ringkas") {
-    return (
-      <>
-        <span className="w-3.5 text-xs font-bold text-muted tabular-nums">
-          <AnimatedText value={posisi + 1} />
-        </span>
-        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{info.nama}</span>
-        <span className="rounded-md bg-soft px-1.5 py-0.5 text-[11px] font-bold text-accent-ink">
-          <AnimatedText value={formatPersen(bobot)} />
-        </span>
-        <GripVertical size={12} className={KELAS_PEGANGAN} aria-hidden />
-      </>
-    );
-  }
+function IsiBaris({ kode, posisi, bobot }: { kode: KodeKriteria; posisi: number; bobot: number }) {
   return (
     <>
-      <span className="flex size-9 flex-none items-center justify-center rounded-[10px] bg-soft text-accent-ink">
-        <KriteriaIcon nama={info.ikon} size={18} />
+      <span className="w-4 text-xs font-bold text-muted tabular-nums">
+        <AnimatedText value={posisi + 1} />
       </span>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="flex truncate text-sm font-bold">
-          <AnimatedText value={posisi + 1} />. {info.nama}
-        </span>
-        <span className="truncate text-[11px] text-muted">
-          {keadaan === "melayang" ? "Sedang dipindah…" : info.hint}
-        </span>
-      </div>
-      <span className="rounded-lg bg-soft px-2 py-1 text-xs font-bold text-accent-ink">
+      <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{infoKriteria(kode).nama}</span>
+      <span className="rounded-md bg-soft px-1.5 py-0.5 text-[11px] font-bold text-accent-ink">
         <AnimatedText value={formatPersen(bobot)} />
       </span>
-      {pegangan ?? (
-        <span className="flex size-11 flex-none items-center justify-center text-muted">
-          <GripVertical size={18} aria-hidden />
-        </span>
-      )}
+      <GripVertical
+        size={12}
+        className="flex-none text-[#6B7383] transition-colors duration-150 group-hover/baris:text-ink"
+        aria-hidden
+      />
     </>
   );
 }
 
-/* ------------------------------ Baris sortable ----------------------------- */
-
 function BarisSortable({
   kode,
   bobotPosisi,
-  varian,
   animasi,
 }: {
-  kode: Kriteria;
-  /** Bobot per posisi (indeks 0 = prioritas tertinggi). */
+  kode: KodeKriteria;
   bobotPosisi: number[];
-  varian: Varian;
   animasi: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-    isSorting,
-    index,
-    newIndex,
-  } = useSortable({ id: kode, transition: animasi ? TRANSISI_DND : null });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isSorting, index, newIndex } =
+    useSortable({ id: kode, transition: animasi ? TRANSISI_DND : null });
   // Selama menyeret, nomor & bobot mengikuti posisi sementara tiap baris.
   const posisi = isSorting ? newIndex : index;
-  const total = bobotPosisi.length;
-  const info = useInfoKriteria(kode);
-  const keadaan: Keadaan = isDragging ? "bayangan" : "diam";
-  const style = { transform: CSS.Translate.toString(transform), transition };
-
-  if (varian === "ringkas" || varian === "besar") {
-    // Seluruh baris jadi pegangan (fokus keyboard + seret).
-    // Tinggi baris (menonjol) mengikuti posisi tersimpan, bukan posisi
-    // sementara saat diseret, supaya ukuran tidak berubah di tengah drag.
-    const menonjol = varian === "besar" && index < JUMLAH_MENONJOL;
-    return (
-      <li
-        ref={setNodeRef}
-        style={style}
-        className={cn(kelasBaris(varian, keadaan, menonjol), "tekan touch-none")}
-        {...attributes}
-        {...listeners}
-        aria-label={`${info.nama}, prioritas ${posisi + 1} dari ${total}, bobot ${formatPersen(bobotPosisi[posisi])}`}
-      >
-        <IsiBaris
-          kode={kode}
-          posisi={posisi}
-          bobot={bobotPosisi[posisi]}
-          varian={varian}
-          keadaan={keadaan}
-          menonjol={menonjol}
-        />
-      </li>
-    );
-  }
-
   return (
-    <li ref={setNodeRef} style={style} className={kelasBaris(varian, keadaan)} {...listeners}>
-      <IsiBaris
-        kode={kode}
-        posisi={posisi}
-        bobot={bobotPosisi[posisi]}
-        varian={varian}
-        keadaan={keadaan}
-        pegangan={
-          <button
-            ref={setActivatorNodeRef}
-            type="button"
-            aria-label={`Pindahkan ${info.nama}, posisi ${posisi + 1} dari ${total}`}
-            className="tekan flex size-11 flex-none cursor-grab touch-none items-center justify-center rounded-[12px] text-muted group-hover/baris:text-ink hover:bg-white/70 active:cursor-grabbing"
-            {...attributes}
-          >
-            <GripVertical size={18} aria-hidden />
-          </button>
-        }
-      />
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={cn(kelasBaris(isDragging ? "bayangan" : "diam"), "tekan touch-none")}
+      {...attributes}
+      {...listeners}
+      aria-label={`${infoKriteria(kode).nama}, prioritas ${posisi + 1} dari ${bobotPosisi.length}, bobot ${formatPersen(bobotPosisi[posisi])}`}
+    >
+      <IsiBaris kode={kode} posisi={posisi} bobot={bobotPosisi[posisi]} />
     </li>
   );
 }
 
-/* --------------------------------- Daftar --------------------------------- */
-
-type PrioritasSortableProps = {
-  urutan: Kriteria[];
-  onChange: (urutan: Kriteria[]) => void;
-  /**
-   * "penuh" = halaman /prioritas (baris 56px), "ringkas" = sidebar /hasil (38px),
-   * "besar" = langkah prioritas di Home desktop (3 teratas 68px, sisanya 56px).
-   */
-  varian?: Varian;
-  className?: string;
-};
-
 /**
- * Daftar semua kriteria (dari config) yang bisa diurutkan (dnd-kit): pointer + keyboard
- * (spasi/Enter angkat, panah pindah, Escape batal), DragOverlay melayang,
- * baris lain bergeser halus, bobot rank-sum ikut berubah, getar 10 ms saat drop.
- * Perubahan diumumkan lewat live region dnd-kit.
+ * Daftar ringkas kriteria terpasang yang bisa diurutkan ulang (sidebar /hasil
+ * desktop). Pointer + keyboard (spasi/Enter angkat, panah pindah, Escape batal),
+ * bobot rank-sum ikut berubah, perubahan diumumkan lewat live region dnd-kit.
+ * Memasang/melepas piece dilakukan di /prioritas.
  */
-export function PrioritasSortable(props: PrioritasSortableProps) {
-  const kriteria = useKriteria();
-  const { urutan, varian = "penuh", className } = props;
-
-  if (kriteria.status === "loading") {
-    const tinggi = varian === "ringkas" ? "h-[38px]" : "h-14";
-    return (
-      <ol
-        className={cn("flex flex-col", varian === "ringkas" ? "gap-1.5" : "gap-2", className)}
-        aria-busy="true"
-        aria-label="Memuat kriteria"
-      >
-        {urutan.map((kode) => (
-          <li key={kode}>
-            <Skeleton className={cn("w-full rounded-[18px] bg-line", tinggi)} />
-          </li>
-        ))}
-      </ol>
-    );
-  }
-
-  if (kriteria.status === "error") {
-    return (
-      <div role="alert" className={cn("flex flex-col items-start gap-2 text-[13px] text-muted", className)}>
-        <p>{kriteria.error}</p>
-        <button
-          type="button"
-          onClick={kriteria.cobaLagi}
-          className="tekan tautan min-h-11 rounded-lg font-bold text-accent-ink"
-        >
-          Coba lagi
-        </button>
-      </div>
-    );
-  }
-
-  const info = Object.fromEntries(kriteria.data.map((k) => [k.kode, k]));
-  const urutanValid = props.urutan.filter((k) => k in info);
-  return (
-    <InfoKriteriaContext.Provider value={info}>
-      <DaftarSortable {...props} urutan={urutanValid} />
-    </InfoKriteriaContext.Provider>
-  );
-}
-
-function DaftarSortable({
-  urutan,
+export function PrioritasSortable({
+  kriteria,
   onChange,
-  varian = "penuh",
   className,
-}: PrioritasSortableProps) {
-  const infoMap = useContext(InfoKriteriaContext);
-  const nama = (id: UniqueIdentifier) => infoMap[id as string]?.nama ?? String(id);
+}: {
+  kriteria: KodeKriteria[];
+  onChange: (kriteria: KodeKriteria[]) => void;
+  className?: string;
+}) {
   const reduced = useReducedMotion() ?? false;
   const diBrowser = useDiBrowser();
   const dndId = useId();
-  const [aktif, setAktif] = useState<Kriteria | null>(null);
-  const [atas, setAtas] = useState<Kriteria | null>(null);
+  const [aktif, setAktif] = useState<KodeKriteria | null>(null);
+  const [atas, setAtas] = useState<KodeKriteria | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-
-  const bobot = rankSumWeights(urutan);
-  const bobotPosisi = urutan.map((k) => bobot[k]);
-  const posisi = (id: UniqueIdentifier) => urutan.indexOf(id as Kriteria) + 1;
+  const bobotPosisi = bobotPerPosisi(kriteria.length);
 
   // Kursor "grabbing" di seluruh halaman selama drag (globals.css: body.sedang-menyeret).
   useEffect(() => {
@@ -384,35 +134,14 @@ function DaftarSortable({
   function onDragEnd({ active, over }: DragEndEvent) {
     selesai();
     if (!over || active.id === over.id) return;
-    const dari = urutan.indexOf(active.id as Kriteria);
-    const ke = urutan.indexOf(over.id as Kriteria);
+    const dari = kriteria.indexOf(active.id as KodeKriteria);
+    const ke = kriteria.indexOf(over.id as KodeKriteria);
     if (dari < 0 || ke < 0) return;
-    onChange(arrayMove(urutan, dari, ke));
-    // Getar singkat di HP (diabaikan browser yang tidak mendukung).
-    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-      navigator.vibrate(10);
-    }
+    onChange(arrayMove(kriteria, dari, ke));
   }
 
-  const announcements: Announcements = {
-    onDragStart: ({ active }) => `${nama(active.id)} diangkat dari posisi ${posisi(active.id)}.`,
-    onDragOver: ({ active, over }) =>
-      over
-        ? `${nama(active.id)} dipindah ke posisi ${posisi(over.id)} dari ${urutan.length}.`
-        : undefined,
-    onDragEnd: ({ active, over }) =>
-      over
-        ? `${nama(active.id)} diletakkan di posisi ${posisi(over.id)} dari ${urutan.length}.`
-        : `${nama(active.id)} diletakkan.`,
-    onDragCancel: ({ active }) =>
-      `Pemindahan dibatalkan. ${nama(active.id)} kembali ke posisi ${posisi(active.id)}.`,
-  };
-
-  const posisiMelayang = aktif ? urutan.indexOf(atas ?? aktif) : 0;
-  const overlayMenonjol = varian === "besar" && aktif !== null && urutan.indexOf(aktif) < JUMLAH_MENONJOL;
-
-  // Portal ke body: kartu kaca (backdrop-filter) menjadi containing block
-  // untuk elemen fixed, jadi overlay harus di luar kartu.
+  const posisiMelayang = aktif ? kriteria.indexOf(atas ?? aktif) : 0;
+  // Portal ke body: kartu kaca (backdrop-filter) menjadi containing block untuk elemen fixed.
   const overlay = (
     <DragOverlay
       modifiers={[hanyaVertikal]}
@@ -420,15 +149,8 @@ function DaftarSortable({
       zIndex={60}
     >
       {aktif ? (
-        <div className={kelasBaris(varian, "melayang", overlayMenonjol)}>
-          <IsiBaris
-            kode={aktif}
-            posisi={posisiMelayang}
-            bobot={bobotPosisi[posisiMelayang]}
-            varian={varian}
-            keadaan="melayang"
-            menonjol={overlayMenonjol}
-          />
+        <div className={kelasBaris("melayang")}>
+          <IsiBaris kode={aktif} posisi={posisiMelayang} bobot={bobotPosisi[posisiMelayang]} />
         </div>
       ) : null}
     </DragOverlay>
@@ -440,35 +162,19 @@ function DaftarSortable({
       sensors={sensors}
       collisionDetection={closestCenter}
       modifiers={[hanyaVertikal]}
-      onDragStart={({ active }) => setAktif(active.id as Kriteria)}
-      onDragOver={({ over }) => setAtas((over?.id as Kriteria | undefined) ?? null)}
+      onDragStart={({ active }) => setAktif(active.id as KodeKriteria)}
+      onDragOver={({ over }) => setAtas((over?.id as KodeKriteria | undefined) ?? null)}
       onDragEnd={onDragEnd}
       onDragCancel={selesai}
       accessibility={{
-        announcements,
-        screenReaderInstructions: {
-          draggable:
-            "Tekan spasi atau Enter untuk mengangkat kriteria. Gunakan panah atas dan bawah untuk memindahkan, spasi atau Enter untuk meletakkan, Escape untuk membatalkan.",
-        },
+        announcements: pengumumanUrutan(kriteria),
+        screenReaderInstructions: { draggable: INSTRUKSI_SERET },
       }}
     >
-      <SortableContext items={urutan} strategy={verticalListSortingStrategy}>
-        <ol
-          className={cn(
-            "flex flex-col",
-            varian === "ringkas" ? "gap-1.5" : varian === "besar" ? "gap-2.5" : "gap-2",
-            className,
-          )}
-          aria-label="Urutan prioritas kriteria"
-        >
-          {urutan.map((kode) => (
-            <BarisSortable
-              key={kode}
-              kode={kode}
-              bobotPosisi={bobotPosisi}
-              varian={varian}
-              animasi={!reduced}
-            />
+      <SortableContext items={kriteria} strategy={verticalListSortingStrategy}>
+        <ol className={cn("flex flex-col gap-1.5", className)} aria-label="Urutan prioritas kriteria">
+          {kriteria.map((kode) => (
+            <BarisSortable key={kode} kode={kode} bobotPosisi={bobotPosisi} animasi={!reduced} />
           ))}
         </ol>
       </SortableContext>

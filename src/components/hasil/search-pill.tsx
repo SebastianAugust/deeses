@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { formatRupiahSingkat } from "@/lib/format";
 import { buildHref, type FilterState } from "@/lib/query";
-import { duaPrioritasTeratas } from "@/lib/ringkasan";
+import { prioritasTeratas } from "@/lib/ringkasan";
 
 /** Search pill kaca (mobile): ringkasan filter, klik → /filter. */
 export function SearchPill({ filter }: { filter: FilterState }) {
@@ -18,7 +18,7 @@ export function SearchPill({ filter }: { filter: FilterState }) {
           Kos {filter.tipe} · Jatinangor
         </span>
         <span className="truncate text-xs leading-tight text-muted">
-          Maks {formatRupiahSingkat(filter.budget)} · {duaPrioritasTeratas(filter.urutan)} utama
+          Maks {formatRupiahSingkat(filter.budget)} · {prioritasTeratas(filter.kriteria)} utama
         </span>
       </span>
       <span className="flex size-[38px] flex-none items-center justify-center rounded-full border border-line bg-white/78">

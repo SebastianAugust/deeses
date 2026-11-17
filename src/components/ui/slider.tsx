@@ -1,7 +1,7 @@
 import { Slider as SliderPrimitive } from "@base-ui/react/slider"
 import { cn } from "cn"
 
-// Disesuaikan untuk Kosjati: track 6px warna line, isi accent, thumb 24px
+// Disesuaikan untuk aplikasi ini: track 6px warna line, isi accent, thumb 24px
 // dengan area sentuh 44px (after:-inset-2.5). Track bisa diklik (pointer),
 // thumb grab/grabbing; focus-visible ring 2px accent (bukan outline-hidden).
 function Slider({

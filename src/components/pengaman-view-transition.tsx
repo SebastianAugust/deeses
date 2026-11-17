@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { SITE_SLUG } from "@/config/site";
 
-const DITANDAI = Symbol.for("kosjati.pengamanViewTransition");
+const DITANDAI = Symbol.for(`${SITE_SLUG}.pengamanViewTransition`);
 
 /**
  * React <ViewTransition> (lihat components/halaman.tsx) memanggil

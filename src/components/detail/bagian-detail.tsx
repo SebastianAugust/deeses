@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Bath, Check, Maximize, Users, Zap, type LucideIcon } from "lucide-react";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { ScoreBar } from "@/components/score-bar";
-import { infoKriteria, jelaskanPeringkat } from "@/lib/explain";
+import { jelaskanPeringkat, skorKriteria } from "@/lib/explain";
 import { formatJarakMeter, formatSkor, formatTanggal, teksJarak } from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
-import type { Kriteria } from "@/config/kriteria";
+import { infoKriteria, type KodeKriteria } from "@/config/kriteria";
 import type { KosDetail, KosDetailResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +55,7 @@ export function JudulKos({
       </h1>
       <p className="text-sm text-muted lg:text-[15px]">
         {kos.alamat ?? "Alamat belum ada data"} ·{" "}
-        {kos.jarak_imputasi ? (
+        {kos.jarak_imputasi || kos.jarak_km === null ? (
           "jarak ke kampus belum diketahui"
         ) : (
           <>
@@ -147,8 +147,8 @@ const KARTU_KECIL =
 export function AturanSekitar({ kos }: { kos: KosDetail }) {
   const sekitar = [
     {
-      nama: "Kampus (gerbang utama)",
-      jarak: kos.jarak_imputasi ? "Belum diketahui" : teksJarak(kos),
+      nama: "Kampus terdekat (Unpad/ITB)",
+      jarak: kos.jarak_imputasi || kos.jarak_km === null ? "Belum diketahui" : teksJarak(kos),
     },
     ...(kos.sekitar ?? []).map((s) => ({ nama: s.nama, jarak: formatJarakMeter(s.jarak_m) })),
   ];
@@ -194,17 +194,18 @@ export function KenapaDirekomendasikan({
   kos,
   peringkat,
   pembanding,
-  urutan,
+  kriteria,
   hrefUbahPrioritas,
 }: {
   kos: KosDetail;
   peringkat: KosDetailResponse["peringkat"];
   /** Jumlah kos yang jadi dasar normalisasi skor (KosDetailResponse.pembanding). */
   pembanding: number;
-  urutan: Kriteria[];
+  /** Kriteria terpasang urut prioritas (sama dengan pencarian). */
+  kriteria: KodeKriteria[];
   hrefUbahPrioritas: string;
 }) {
-  const penjelasan = jelaskanPeringkat(kos, urutan);
+  const penjelasan = jelaskanPeringkat(kos, kriteria);
   const sedikit = pembandingTerlaluSedikit(pembanding);
   return (
     <section
@@ -225,7 +226,7 @@ export function KenapaDirekomendasikan({
       ) : (
         <>
           <div className="grid gap-x-7 gap-y-2.5 lg:grid-cols-2">
-            {urutan.map((kode, i) => (
+            {kriteria.map((kode, i) => (
               <ScoreBar
                 key={kode}
                 index={i}
@@ -233,7 +234,7 @@ export function KenapaDirekomendasikan({
                 lebarLabel={120}
                 className="text-[13px]"
                 label={infoKriteria(kode).nama}
-                nilai={kos.skor_kriteria[kode]}
+                nilai={skorKriteria(kos, kode)}
               />
             ))}
           </div>
@@ -241,9 +242,9 @@ export function KenapaDirekomendasikan({
         </>
       )}
       <p className="text-xs text-muted">
-        Urutan kriteria mengikuti prioritasmu.{" "}
+        Dinilai dari {kriteria.length} kriteria yang kamu pasang, urut prioritasmu.{" "}
         <Link href={hrefUbahPrioritas} className="tautan font-semibold text-accent-ink">
-          Ubah prioritas
+          Ubah kriteria
         </Link>
       </p>
     </section>

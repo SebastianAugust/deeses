@@ -16,13 +16,15 @@ type KosongCardProps = {
   filter: FilterState;
   /** Terapkan filter baru (mobile: router.replace; desktop: state + URL). */
   terapkan: (filter: FilterState) => void;
+  /** Kos yang lolos budget & tipe tetapi disembunyikan karena datanya kosong. */
+  tanpaData?: number;
 };
 
 /**
  * State "Belum ada kos yang cocok". Tombol langsung menerapkan perubahan, lalu
  * menampilkan toast dengan "Batalkan" yang mengembalikan filter sebelumnya.
  */
-export function KosongCard({ filter, terapkan }: KosongCardProps) {
+export function KosongCard({ filter, terapkan, tanpaData = 0 }: KosongCardProps) {
   const toast = useToast();
   const budgetBaru = Math.min(BUDGET_MAX, filter.budget + KENAIKAN_BUDGET);
   const bisaNaik = budgetBaru > filter.budget;
@@ -52,7 +54,7 @@ export function KosongCard({ filter, terapkan }: KosongCardProps) {
       <h1 className="text-[22px] font-extrabold tracking-[-0.01em]">Belum ada kos yang cocok</h1>
       <p className="text-sm leading-[1.55] text-muted">
         Tidak ada kos {filter.tipe} dengan harga sampai {formatRupiah(filter.budget)} per bulan di
-        data kami. Coba longgarkan salah satu filter.
+        data kami{tanpaData > 0 ? ` yang datanya lengkap untuk kriteria yang kamu pasang (${tanpaData} kos disembunyikan karena datanya belum ada)` : ""}. Coba longgarkan salah satu filter.
       </p>
       <div className="mt-1.5 flex w-full flex-col gap-2.5">
         {bisaNaik ? (

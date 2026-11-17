@@ -1,12 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   IKUTKAN_CAMPUR_DEFAULT,
-  JUMLAH_KRITERIA,
-  KODE_KRITERIA,
-  KRITERIA,
-  URUTAN_DEFAULT,
-  rentangKodeKriteria,
-  type Kriteria,
+  KRITERIA_DEFAULT,
+  KRITERIA_TERSEDIA,
+  MAKS_KRITERIA,
+  type KodeKriteria,
 } from "@/config/kriteria";
 import {
   UrutanTidakValidError,
@@ -15,11 +13,13 @@ import {
   cekUrutan,
   filterKos,
   hitungPeringkat,
+  normalisasiMinMax,
   spearman,
   type Alternatif,
   type DefKriteria,
   type HasilPeringkat,
 } from "@/lib/dss";
+import { defKriteria } from "@/lib/peringkat";
 import type { TipePenghuni } from "@/lib/types";
 import { formatPersen, rankSumWeights } from "@/lib/weights";
 import golden from "./fixtures/golden-dss.json";
@@ -51,6 +51,20 @@ const K3: DefKriteria<"K1" | "K2" | "K3">[] = [
 type K3 = "K1" | "K2" | "K3";
 const URUT_K3: K3[] = ["K1", "K3", "K2"];
 
+/**
+ * Input engine sekarang = daftar kriteria TERURUT prioritas (sistem lego).
+ * Kasus golden lama (kriteria + urutan terpisah) dikonversi di sini tanpa
+ * mengubah data maupun nilai harapannya.
+ */
+function terurut<K extends string>(kriteria: readonly DefKriteria<K>[], urutan: readonly K[]): DefKriteria<K>[] {
+  return urutan.map((kode) => {
+    const k = kriteria.find((d) => d.kode === kode);
+    if (!k) throw new Error(`kode ${kode} tidak ada di kasus`);
+    return k;
+  });
+}
+const DEF_K3 = terurut(K3, URUT_K3);
+
 function alt(id: string, harga: number, k2: number, k3: number): Alternatif<K3> {
   return { id, harga, nilai: { K1: harga, K2: k2, K3: k3 } };
 }
@@ -77,13 +91,17 @@ function cekInvarian<K extends string>(h: HasilPeringkat<K>) {
     expect(Number.isNaN(h.spearman)).toBe(false);
     expect(Math.abs(h.spearman)).toBeLessThanOrEqual(1);
   }
+  dekat(
+    h.kriteria_dipakai.reduce((s, k) => s + k.bobot, 0),
+    1,
+  );
 }
 
 // ---------------------------------------------------------------------------
 describe("golden test (audit model Python)", () => {
   for (const [nama, k] of Object.entries(KASUS)) {
     it(`${nama}: ${k.keterangan}`, () => {
-      const h = hitungPeringkat(k.alternatif, k.kriteria, k.urutan);
+      const h = hitungPeringkat(k.alternatif, terurut(k.kriteria, k.urutan));
       const e = k.expected;
 
       for (const [kode, w] of Object.entries(e.bobot)) dekat(h.bobot[kode], w);
@@ -96,12 +114,14 @@ describe("golden test (audit model Python)", () => {
         expect(x.rank_topsis).toBe(e.rank_topsis[x.id]);
         for (const [kode, r] of Object.entries(e.skor_kriteria[x.id])) dekat(x.skor_kriteria[kode], r);
       }
+      expect(h.jumlah_tanpa_data).toBe(0);
       cekInvarian(h);
     });
   }
 
   it("utama_3x3 cocok dengan hitungan tangan dalam pecahan (19/36, 1/2, 5/12)", () => {
-    const h = hitungPeringkat(KASUS.utama_3x3.alternatif, KASUS.utama_3x3.kriteria, KASUS.utama_3x3.urutan);
+    const k = KASUS.utama_3x3;
+    const h = hitungPeringkat(k.alternatif, terurut(k.kriteria, k.urutan));
     const saw = Object.fromEntries(h.hasil.map((x) => [x.id, x.skor_saw]));
     dekat(saw.A, 19 / 36);
     dekat(saw.B, 1 / 2);
@@ -111,10 +131,10 @@ describe("golden test (audit model Python)", () => {
 
 // ---------------------------------------------------------------------------
 describe("bobot rank-sum", () => {
-  it("jumlah = 1 untuk n = 3..10 dan sesuai rumus 2(n−r+1)/(n(n+1))", () => {
-    for (let n = 3; n <= 10; n++) {
+  it("jumlah = 1 untuk n = 1..12 dan sesuai rumus 2(n−r+1)/(n(n+1))", () => {
+    for (let n = 1; n <= MAKS_KRITERIA; n++) {
       const kode = Array.from({ length: n }, (_, i) => `K${i + 1}`);
-      const w = bobotRankSum(kode, kode);
+      const w = bobotRankSum(kode);
       const total = Object.values(w).reduce((s, x) => s + x, 0);
       expect(Math.abs(total - 1)).toBeLessThan(1e-12);
       kode.forEach((k, i) => dekat(w[k], (2 * (n - (i + 1) + 1)) / (n * (n + 1))));
@@ -123,50 +143,61 @@ describe("bobot rank-sum", () => {
     }
   });
 
-  it("n = 8: 22,2 / 19,4 / 16,7 / 13,9 / 11,1 / 8,3 / 5,6 / 2,8 %", () => {
-    const kode = Array.from({ length: 8 }, (_, i) => `K${i + 1}`);
-    const w = bobotRankSum(kode, kode);
-    expect(kode.map((k) => formatPersen(w[k]))).toEqual([
-      "22,2%", "19,4%", "16,7%", "13,9%", "11,1%", "8,3%", "5,6%", "2,8%",
-    ]);
+  it("n = 1, 2, 4, 8, 12: nilai persis dan jumlah = 1", () => {
+    const persen = (n: number) => {
+      const kode = Array.from({ length: n }, (_, i) => `K${i + 1}`);
+      const w = bobotRankSum(kode);
+      dekat(
+        Object.values(w).reduce((s, x) => s + x, 0),
+        1,
+      );
+      return kode.map((k) => formatPersen(w[k]));
+    };
+    expect(persen(1)).toEqual(["100,0%"]);
+    expect(persen(2)).toEqual(["66,7%", "33,3%"]);
+    expect(persen(4)).toEqual(["40,0%", "30,0%", "20,0%", "10,0%"]);
+    expect(persen(8)).toEqual(["22,2%", "19,4%", "16,7%", "13,9%", "11,1%", "8,3%", "5,6%", "2,8%"]);
+    const w12 = persen(12);
+    expect(w12).toHaveLength(12);
+    expect(w12[0]).toBe("15,4%"); // 24/156
+    expect(w12[11]).toBe("1,3%"); // 2/156
   });
 
-  it("bobot UI (weights.ts) = bobot DSS untuk urutan default dari config", () => {
-    const ui = rankSumWeights([...URUTAN_DEFAULT]);
-    const dss = bobotRankSum(URUTAN_DEFAULT, KODE_KRITERIA);
-    for (const k of KODE_KRITERIA) expect(ui[k]).toBe(dss[k]);
+  it("bobot UI (weights.ts) = bobot DSS untuk rakitan default dari config", () => {
+    const ui = rankSumWeights([...KRITERIA_DEFAULT]);
+    const dss = bobotRankSum(KRITERIA_DEFAULT);
+    for (const k of KRITERIA_DEFAULT) expect(ui[k]).toBe(dss[k]);
   });
 
-  it("menolak urutan tidak valid", () => {
-    const kode = ["K1", "K2", "K3"];
-    const salah: string[][] = [
-      ["K1", "K2"], // kurang
-      ["K1", "K2", "K3", "K4"], // lebih
-      ["K1", "K1", "K3"], // duplikat
-      ["K1", "K2", "k3"], // kode tak dikenal (huruf kecil)
-      [],
-    ];
+  // Disesuaikan (format input lama): dulu engine mewajibkan permutasi PENUH dari
+  // semua kode config, sehingga daftar yang "kurang"/"lebih" ditolak. Sekarang
+  // n = panjang daftar terpasang; engine menolak daftar kosong, duplikat, atau
+  // bukan string. Kode tak dikenal/tidak tersedia & batas 12 ditolak di validasi API.
+  it("menolak urutan tidak valid (kosong, duplikat, bukan string)", () => {
+    const salah: unknown[][] = [["K1", "K1", "K3"], [], ["K1", ""], [1, 2, 3]];
     for (const u of salah) {
-      expect(() => bobotRankSum(u, kode)).toThrow(UrutanTidakValidError);
-      expect(cekUrutan(u, kode)).not.toBeNull();
-      expect(() => hitungPeringkat([], K3, u as K3[])).toThrow(UrutanTidakValidError);
+      expect(() => bobotRankSum(u as string[])).toThrow(UrutanTidakValidError);
+      expect(cekUrutan(u)).not.toBeNull();
+      expect(() => hitungPeringkat([], (u as K3[]).map((kode) => ({ kode, jenis: "cost" as const })))).toThrow(
+        UrutanTidakValidError,
+      );
     }
-    expect(cekUrutan(["K3", "K1", "K2"], kode)).toBeNull();
-    expect(cekUrutan([1, 2, 3], kode)).not.toBeNull();
+    expect(cekUrutan(["K3", "K1", "K2"])).toBeNull();
+    expect(cekUrutan(["K2"])).toBeNull();
   });
 });
 
 // ---------------------------------------------------------------------------
 describe("kasus tepi", () => {
   it("0 kandidat → hasil kosong, Spearman null", () => {
-    const h = hitungPeringkat([], K3, URUT_K3);
+    const h = hitungPeringkat([], DEF_K3);
     expect(h.hasil).toEqual([]);
     expect(h.spearman).toBeNull();
     dekat(Object.values(h.bobot).reduce((s, x) => s + x, 0), 1);
   });
 
   it("1 kandidat → semua skor 1, rank 1, Spearman null", () => {
-    const h = hitungPeringkat([alt("A", 900_000, 0.7, 0.4)], K3, URUT_K3);
+    const h = hitungPeringkat([alt("A", 900_000, 0.7, 0.4)], DEF_K3);
     expect(h.hasil).toHaveLength(1);
     const [x] = h.hasil;
     expect([x.rank, x.rank_topsis]).toEqual([1, 1]);
@@ -177,7 +208,7 @@ describe("kasus tepi", () => {
   });
 
   it("2 kandidat → skor_kriteria hanya 0/1, rank unik, Spearman null (bukan NaN)", () => {
-    const h = hitungPeringkat([alt("A", 900_000, 0.5, 0.2), alt("B", 700_000, 1.5, 0.8)], K3, URUT_K3);
+    const h = hitungPeringkat([alt("A", 900_000, 0.5, 0.2), alt("B", 700_000, 1.5, 0.8)], DEF_K3);
     cekInvarian(h);
     for (const x of h.hasil) {
       for (const v of Object.values(x.skor_kriteria)) expect([0, 1]).toContain(v);
@@ -190,19 +221,15 @@ describe("kasus tepi", () => {
 
   it("kolom konstan → norm 1 untuk semua, ranking ditentukan kriteria lain", () => {
     const data = [alt("A", 900_000, 0.5, 0.5), alt("B", 700_000, 1, 0.5), alt("C", 1_100_000, 1.5, 0.5)];
-    const h = hitungPeringkat(data, K3, ["K3", "K1", "K2"]);
+    const h = hitungPeringkat(data, terurut(K3, ["K3", "K1", "K2"]));
     for (const x of h.hasil) expect(x.skor_kriteria.K3).toBe(1);
     expect(h.hasil.map((x) => x.id)).toEqual(["B", "A", "C"]);
     cekInvarian(h);
   });
 
   it("seri persis (kos identik) → dipecah harga lalu id, rank tetap unik", () => {
-    const data = [
-      alt("Z", 800_000, 1, 0.5),
-      alt("A", 800_000, 1, 0.5),
-      alt("M", 800_000, 1, 0.5),
-    ];
-    const h = hitungPeringkat(data, K3, URUT_K3);
+    const data = [alt("Z", 800_000, 1, 0.5), alt("A", 800_000, 1, 0.5), alt("M", 800_000, 1, 0.5)];
+    const h = hitungPeringkat(data, DEF_K3);
     expect(h.hasil.map((x) => x.id)).toEqual(["A", "M", "Z"]);
     expect(h.hasil.map((x) => x.rank_topsis)).toEqual([1, 2, 3]);
     for (const x of h.hasil) {
@@ -214,7 +241,7 @@ describe("kasus tepi", () => {
 
   it("SAW seri hanya beda galat float (0,49999999999999994 vs 0,5) dianggap seri", () => {
     const k = KASUS.seri_saw;
-    const h = hitungPeringkat(k.alternatif, k.kriteria, k.urutan);
+    const h = hitungPeringkat(k.alternatif, terurut(k.kriteria, k.urutan));
     const saw = h.hasil.map((x) => x.skor_saw);
     expect(saw.some((s) => s !== 0.5)).toBe(true); // memang ada galat float
     expect(h.hasil.map((x) => x.id)).toEqual(["B", "C", "A"]); // dipecah TOPSIS, bukan galat
@@ -227,17 +254,81 @@ describe("kasus tepi", () => {
       { id: "murah", harga: 700_000, nilai: { K1: 800_000, K2: 1, K3: 0.5 } },
       alt("lain", 1_000_000, 2, 0.1),
     ];
-    const h = hitungPeringkat(data, K3, URUT_K3);
+    const h = hitungPeringkat(data, DEF_K3);
     expect(h.hasil.map((x) => x.id)).toEqual(["murah", "mahal", "lain"]);
   });
 
-  it("nilai tidak berhingga ditolak", () => {
-    expect(() => hitungPeringkat([alt("A", 1, Number.NaN, 0)], K3, URUT_K3)).toThrow();
+  // Disesuaikan (perilaku baru, Bagian B): nilai kosong/NaN dulu melempar error;
+  // sekarang kandidatnya dikecualikan dan dihitung (tanpa imputasi).
+  // normalisasiMinMax tetap menolak nilai kosong kalau dipanggil langsung.
+  it("nilai tidak berhingga → kandidat dikecualikan, bukan diimputasi", () => {
+    const h = hitungPeringkat([alt("A", 1, Number.NaN, 0), alt("B", 2, 1, 1)], DEF_K3);
+    expect(h.hasil.map((x) => x.id)).toEqual(["B"]);
+    expect(h.jumlah_tanpa_data).toBe(1);
+    expect(h.tanpa_data_per_kriteria).toEqual({ K1: 0, K3: 0, K2: 1 });
+    expect(() => normalisasiMinMax([alt("A", 1, Number.NaN, 0)], DEF_K3)).toThrow();
   });
 
   it("bulatkanTampilan hanya 4 desimal", () => {
     expect(bulatkanTampilan(0.123456)).toBe(0.1235);
     expect(bulatkanTampilan(19 / 36)).toBe(0.5278);
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("kriteria dinamis (lego)", () => {
+  const data: Alternatif<K3>[] = [
+    alt("murah-jauh", 600_000, 2.0, 0.2),
+    alt("mahal-dekat", 1_400_000, 0.2, 0.9),
+    alt("tengah", 1_000_000, 1.0, 0.5),
+  ];
+
+  it("urutan prioritas memengaruhi hasil", () => {
+    // Kriteria sama (K1 harga, K2 jarak), hanya urutannya ditukar.
+    const hargaDulu = hitungPeringkat(data, terurut(K3, ["K1", "K2"]));
+    const jarakDulu = hitungPeringkat(data, terurut(K3, ["K2", "K1"]));
+    expect(hargaDulu.hasil[0].id).toBe("murah-jauh");
+    expect(jarakDulu.hasil[0].id).toBe("mahal-dekat");
+    expect(hargaDulu.kriteria_dipakai.map((k) => k.kode)).toEqual(["K1", "K2"]);
+    dekat(hargaDulu.bobot.K1, 2 / 3);
+    dekat(jarakDulu.bobot.K1, 1 / 3);
+    dekat(hargaDulu.hasil[0].skor_saw, 2 / 3);
+  });
+
+  it("n = 1: hanya satu kriteria, bobot 1, skor = skor kriteria itu", () => {
+    const h = hitungPeringkat(data, terurut(K3, ["K3"]));
+    expect(h.kriteria_dipakai).toEqual([{ kode: "K3", bobot: 1 }]);
+    expect(h.hasil.map((x) => x.id)).toEqual(["mahal-dekat", "tengah", "murah-jauh"]);
+    for (const x of h.hasil) {
+      expect(Object.keys(x.skor_kriteria)).toEqual(["K3"]);
+      dekat(x.skor_saw, x.skor_kriteria.K3);
+    }
+  });
+
+  it("kandidat dengan data kosong di kriteria TERPASANG dikecualikan dan dihitung per kriteria", () => {
+    const campur: Alternatif<K3>[] = [
+      ...data,
+      { id: "tanpa-k3", harga: 700_000, nilai: { K1: 700_000, K2: 0.5, K3: null } },
+      { id: "tanpa-k2-k3", harga: 800_000, nilai: { K1: 800_000 } },
+    ];
+    const h = hitungPeringkat(campur, DEF_K3);
+    expect(h.hasil.map((x) => x.id).sort()).toEqual(["mahal-dekat", "murah-jauh", "tengah"]);
+    expect(h.jumlah_tanpa_data).toBe(2);
+    expect(h.tanpa_data_per_kriteria).toEqual({ K1: 0, K3: 2, K2: 1 });
+    // Min-max hanya atas kandidat tersisa: hasil sama dengan tanpa kos yang kosong.
+    const tanpa = hitungPeringkat(data, DEF_K3);
+    expect(h.hasil).toEqual(tanpa.hasil);
+    // Kalau K3 tidak dipasang, kos tanpa K3 ikut dinilai.
+    const tanpaK3 = hitungPeringkat(campur, terurut(K3, ["K1", "K2"]));
+    expect(tanpaK3.jumlah_tanpa_data).toBe(1);
+    expect(tanpaK3.hasil.map((x) => x.id)).toContain("tanpa-k3");
+  });
+
+  it("semua kandidat kosong → hasil [], Spearman null", () => {
+    const h = hitungPeringkat([{ id: "x", harga: 1, nilai: {} }] as Alternatif<K3>[], DEF_K3);
+    expect(h.hasil).toEqual([]);
+    expect(h.spearman).toBeNull();
+    expect(h.jumlah_tanpa_data).toBe(1);
   });
 });
 
@@ -273,21 +364,24 @@ describe("properti acak: rank selalu unik, Spearman tidak pernah NaN", () => {
     };
   }
 
-  it("500 skenario acak dengan banyak nilai seri (kriteria config)", () => {
+  it("500 skenario acak: rakitan 1..12 piece tersedia, urutan acak, banyak nilai seri", () => {
     const rnd = prng(42);
     const pilih = <T,>(xs: readonly T[]) => xs[Math.floor(rnd() * xs.length)];
+    const kodeTersedia = KRITERIA_TERSEDIA.map((k) => k.kode);
     for (let t = 0; t < 500; t++) {
       const n = Math.floor(rnd() * 12); // 0..11 kandidat
-      const kandidat: Alternatif<Kriteria>[] = Array.from({ length: n }, (_, i) => {
+      const kandidat: Alternatif<KodeKriteria>[] = Array.from({ length: n }, (_, i) => {
         const harga = pilih([500_000, 750_000, 1_000_000]);
         const nilai = Object.fromEntries(
-          KODE_KRITERIA.map((k) => [k, k === "C1" ? harga : pilih([0, 0.25, 0.5, 1])]),
-        ) as Record<Kriteria, number>;
+          kodeTersedia.map((k) => [k, k === "harga" ? harga : pilih([0, 0.25, 0.5, 1])]),
+        ) as Record<KodeKriteria, number>;
         return { id: `kos-${t}-${i}`, harga, nilai };
       });
-      const urutan = [...KODE_KRITERIA].sort(() => rnd() - 0.5);
-      const h = hitungPeringkat(kandidat, KRITERIA, urutan);
+      const jumlah = 1 + Math.floor(rnd() * Math.min(MAKS_KRITERIA, kodeTersedia.length));
+      const rakitan = [...kodeTersedia].sort(() => rnd() - 0.5).slice(0, jumlah);
+      const h = hitungPeringkat(kandidat, defKriteria(rakitan));
       expect(h.hasil).toHaveLength(n);
+      expect(h.kriteria_dipakai.map((k) => k.kode)).toEqual(rakitan);
       cekInvarian(h);
       if (n < 3) expect(h.spearman).toBeNull();
     }
@@ -320,24 +414,5 @@ describe("filter F1 + F2", () => {
   it("default ikutkanCampur dari config", () => {
     const hasil = id(filterKos(daftar, { budget: 1_000_000, tipe: "putri" }));
     expect(hasil.includes("d")).toBe(IKUTKAN_CAMPUR_DEFAULT);
-  });
-});
-
-// ---------------------------------------------------------------------------
-describe("config kriteria", () => {
-  it("n dibaca dari config dan konsisten", () => {
-    expect(JUMLAH_KRITERIA).toBe(KRITERIA.length);
-    expect(KODE_KRITERIA).toHaveLength(JUMLAH_KRITERIA);
-    expect(new Set(KODE_KRITERIA).size).toBe(JUMLAH_KRITERIA);
-    expect(cekUrutan(URUTAN_DEFAULT, KODE_KRITERIA)).toBeNull();
-  });
-
-  it("C3 ditandai sementara", () => {
-    expect(KRITERIA.find((k) => k.kode === "C3")?.sementara).toBe(true);
-    expect(KRITERIA.filter((k) => k.sementara).map((k) => k.kode)).toEqual(["C3"]);
-  });
-
-  it("pesan rentang kode mengikuti config", () => {
-    expect(rentangKodeKriteria()).toBe(`${KODE_KRITERIA[0]}–${KODE_KRITERIA[JUMLAH_KRITERIA - 1]}`);
   });
 });

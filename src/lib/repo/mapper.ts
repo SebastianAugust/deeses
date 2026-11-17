@@ -1,13 +1,13 @@
 /**
  * Mapper baris tabel public.kos → tipe aplikasi. Fungsi MURNI (tanpa I/O),
- * dites di tests/mapper.test.ts dengan fixture baris.
+ * dites di tests/data.test.ts dengan fixture baris.
  *
- * Catatan data (lihat dss-model-kos-jatinangor/audit/AUDIT.md):
- * - C3 saat ini proksi SINTETIS 0,15 + 0,35·C2, bukan data asli (ditandai
- *   `sementara: true` di src/config/kriteria.ts).
- * - Nilai yang tidak ada TIDAK dikarang: diisi null.
+ * Nilai kriteria dibaca dari kolom mentah yang ditunjuk katalog
+ * (src/config/kriteria.ts, field `sumber`). Kolom komposit C3, C5–C8 tidak dipakai.
+ * Nilai yang tidak ada TIDAK dikarang: diisi null (kos lalu dikecualikan di DSS
+ * hanya bila kriteria itu dipasang).
  */
-import { KODE_KRITERIA, type Kriteria } from "@/config/kriteria";
+import { KRITERIA_TERSEDIA, type KodeKriteria, type SumberKriteria } from "@/config/kriteria";
 import { isTipePenghuni, type KosInfo, type TipePenghuni } from "@/lib/types";
 
 export const KOLOM_FASILITAS = [
@@ -83,8 +83,8 @@ export type Kos = {
   tipe: TipePenghuni | null;
   tipe_asli: string | null;
   harga: number | null;
-  /** Nilai mentah per kriteria (C1..Cn dari config). null = tidak ada / bukan angka. */
-  nilai: Record<Kriteria, number | null>;
+  /** Nilai mentah per kriteria tersedia (kolom dari katalog). null = tidak ada / bukan angka. */
+  nilai: Partial<Record<KodeKriteria, number | null>>;
   /** = C2. */
   jarak_km: number | null;
   /** Heuristik sementara: C2 persis 1,1 (median imputasi). */
@@ -144,12 +144,20 @@ export function keBoolean(v: unknown): boolean | null {
   return null;
 }
 
+/** Nilai mentah satu kriteria dari baris, sesuai `sumber` di katalog. */
+export function bacaSumber(baris: BarisKos, sumber: SumberKriteria): number | null {
+  const v = kolom(baris, sumber.kolom);
+  if (sumber.tipe === "angka") return angka(v);
+  const b = keBoolean(v);
+  return b === null ? null : b ? 1 : 0;
+}
+
 export function petakanBaris(baris: BarisKos): Kos {
   const idMentah = kolom(baris, "id");
   const id = typeof idMentah === "number" || typeof idMentah === "bigint" ? String(idMentah) : (teks(idMentah) ?? "");
 
-  const nilai = {} as Record<Kriteria, number | null>;
-  for (const k of KODE_KRITERIA) nilai[k] = angka(kolom(baris, k));
+  const nilai: Kos["nilai"] = {};
+  for (const k of KRITERIA_TERSEDIA) if (k.sumber) nilai[k.kode] = bacaSumber(baris, k.sumber);
 
   const fasilitas = {} as Record<Fasilitas, boolean | null>;
   for (const f of KOLOM_FASILITAS) fasilitas[f] = keBoolean(kolom(baris, f));
@@ -174,16 +182,22 @@ export function petakanBaris(baris: BarisKos): Kos {
   };
 }
 
-/** Kos yang bisa dihitung DSS: tipe valid, harga dan semua nilai kriteria berupa angka. */
-export type KosLengkap = Kos & { tipe: TipePenghuni; harga: number; nilai: Record<Kriteria, number> };
+/**
+ * Kos yang bisa masuk filter DSS: id, tipe valid, dan harga ada. Kelengkapan
+ * nilai kriteria dicek per permintaan (hanya kriteria yang dipasang) di src/lib/dss.
+ */
+export type KosLengkap = Kos & { tipe: TipePenghuni; harga: number };
 
 export function isKosLengkap(k: Kos): k is KosLengkap {
-  return (
-    k.id !== "" &&
-    k.tipe !== null &&
-    k.harga !== null &&
-    KODE_KRITERIA.every((kode) => k.nilai[kode] !== null)
-  );
+  return k.id !== "" && k.tipe !== null && k.harga !== null;
+}
+
+/** Kode kriteria (dari `kriteria`) yang nilainya kosong untuk kos ini. */
+export function kriteriaTanpaData(k: Kos, kriteria: readonly KodeKriteria[]): KodeKriteria[] {
+  return kriteria.filter((kode) => {
+    const v = k.nilai[kode];
+    return typeof v !== "number" || !Number.isFinite(v);
+  });
 }
 
 /** 12 → "12 m²", 12.75 → "12,75 m²". */
@@ -238,6 +252,9 @@ export function diagnostikData(semua: readonly Kos[]) {
     alamat_terisi: semua.filter((k) => k.alamat !== null).length,
     koordinat_terisi: semua.filter((k) => k.lat !== null && k.lng !== null).length,
     jarak_imputasi: semua.filter((k) => k.jarak_imputasi).length,
+    kosong_per_kriteria: Object.fromEntries(
+      KRITERIA_TERSEDIA.map((kr) => [kr.kode, semua.filter((k) => kriteriaTanpaData(k, [kr.kode]).length > 0).length]),
+    ),
     tipe_di_luar_daftar: Object.fromEntries(tipeLain),
   };
 }

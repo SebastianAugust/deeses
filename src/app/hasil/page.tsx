@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Halaman } from "@/components/halaman";
 import { HasilView } from "./hasil-view";
 
-export const metadata: Metadata = { title: "Hasil — Kosjati" };
+export const metadata: Metadata = { title: "Peringkat" };
 
 export default function HasilPage() {
   // HasilView membaca query params (useSearchParams) → wajib di dalam Suspense.

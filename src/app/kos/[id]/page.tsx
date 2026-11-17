@@ -20,7 +20,7 @@ import { DetailSkeleton, DetailView } from "./detail-view";
 export async function generateMetadata({ params }: PageProps<"/kos/[id]">): Promise<Metadata> {
   const { id } = await params;
   const kos = await ambilKos(id);
-  if (!kos) return { title: "Kos tidak ditemukan · kosjati" };
+  if (!kos) return { title: "Kos tidak ditemukan" };
   return {
     title: kos.nama,
     description: `${kos.nama} di Jatinangor — harga, fasilitas, aturan, dan kenapa direkomendasikan untukmu.`,

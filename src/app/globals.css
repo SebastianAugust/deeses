@@ -5,11 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ---------------------------------------------------------------------------
- * Token Kosjati (palet "Laut") — sumber: design/DESIGN.md
+ * Token aplikasi (palet "Laut") — sumber: design/DESIGN.md
  * Dipakai sebagai class: bg-base, text-ink, text-muted, border-line, bg-accent,
  * text-accent-ink, bg-soft, shadow-glass, shadow-glow, dst.
  *
- * Catatan: `accent` dan `muted` di sini adalah token Kosjati, BUKAN token
+ * Catatan: `accent` dan `muted` di sini adalah token aplikasi, BUKAN token
  * shadcn bernama sama. Komponen di src/components/ui sudah disesuaikan
  * (bg-muted → bg-secondary / bg-line) supaya tidak bentrok.
  * ------------------------------------------------------------------------- */
@@ -74,7 +74,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Variabel shadcn, diarahkan ke palet Kosjati. */
+/* Variabel shadcn, diarahkan ke palet Laut. */
 :root {
   --background: #f3f6fb;
   --foreground: #1a1d24;

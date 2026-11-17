@@ -2,10 +2,10 @@
 
 import { AnimatedText } from "@/components/animated-text";
 import { ScoreBar } from "@/components/score-bar";
-import { infoKriteria, jelaskanPeringkat } from "@/lib/explain";
+import { jelaskanPeringkat, skorKriteria } from "@/lib/explain";
 import { formatSkor } from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
-import type { Kriteria } from "@/config/kriteria";
+import { infoKriteria, type KodeKriteria } from "@/config/kriteria";
 import type { RankResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -73,13 +73,13 @@ export function SkorTiles({
 
 export function SkorKriteriaList({
   kos,
-  urutan,
+  kriteria,
   ringkas = false,
   judul = true,
 }: {
   kos: RankResult;
-  /** Urutan prioritas pengguna (bar diurutkan sesuai ini). */
-  urutan: Kriteria[];
+  /** Kriteria terpasang urut prioritas (bar diurutkan sesuai ini). */
+  kriteria: KodeKriteria[];
   ringkas?: boolean;
   judul?: boolean;
 }) {
@@ -89,13 +89,13 @@ export function SkorKriteriaList({
       className={cn("flex flex-col", ringkas ? "gap-[7px]" : "gap-2")}
     >
       {judul ? <h2 className="text-[15px] font-extrabold">Skor per kriteria</h2> : null}
-      {urutan.map((kode, i) => (
+      {kriteria.map((kode, i) => (
         <ScoreBar
           key={kode}
           index={i}
           ringkas={ringkas}
           label={infoKriteria(kode).nama}
-          nilai={kos.skor_kriteria[kode]}
+          nilai={skorKriteria(kos, kode)}
         />
       ))}
     </section>
@@ -104,16 +104,16 @@ export function SkorKriteriaList({
 
 export function KenapaBox({
   kos,
-  urutan,
+  kriteria,
   ringkas = false,
   className,
 }: {
   kos: RankResult;
-  urutan: Kriteria[];
+  kriteria: KodeKriteria[];
   ringkas?: boolean;
   className?: string;
 }) {
-  const penjelasan = jelaskanPeringkat(kos, urutan);
+  const penjelasan = jelaskanPeringkat(kos, kriteria);
   return (
     <section
       className={cn(

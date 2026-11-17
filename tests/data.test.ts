@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { KODE_KRITERIA, URUTAN_DEFAULT } from "@/config/kriteria";
-import { detailKos, keRankResult, urutkanKos } from "@/lib/peringkat";
+import { KRITERIA_DEFAULT } from "@/config/kriteria";
+import { detailKos, keRankResponse, keRankResult, urutkanKos } from "@/lib/peringkat";
 import { PETUNJUK_RLS, KosDataError, galatKeBody, keKosDataError } from "@/lib/repo/galat";
 import {
   KOLOM_FASILITAS,
@@ -11,6 +11,7 @@ import {
   keKoordinat,
   keKosInfo,
   keTipe,
+  kriteriaTanpaData,
   petakanBaris,
   type BarisKos,
 } from "@/lib/repo/mapper";
@@ -43,7 +44,24 @@ describe("mapper baris → Kos", () => {
     expect(k.harga).toBe(745000);
     expect(k.jarak_km).toBe(0.108);
     expect(k.luas_m2).toBe(8.16);
-    expect(k.nilai).toEqual({ C1: 745000, C2: 0.108, C3: 0.188, C4: 8.16, C5: 0.5, C6: 0.5, C7: 0.6667, C8: 0.75 });
+    // Nilai kriteria dari KOLOM MENTAH sesuai katalog (bukan komposit C3, C5–C8).
+    expect(k.nilai).toEqual({
+      harga: 745000,
+      listrik: 0,
+      jarak_kampus: 0.108,
+      luas: 8.16,
+      km_dalam: 1,
+      ac: 0,
+      air_panas: 0,
+      jendela: 1,
+      cctv: 0,
+      penjaga: 1,
+      parkir_motor: 1,
+      parkir_mobil: 0,
+      wifi: 1,
+      ruang_tamu: 1,
+      ruang_jemur: 1,
+    });
     expect(k.jarak_imputasi).toBe(false);
     expect(isKosLengkap(k)).toBe(true);
   });
@@ -100,15 +118,20 @@ describe("mapper baris → Kos", () => {
     for (const [k, v] of Object.entries(ANNISA)) kecil[/^C\d+$/.test(k) ? k.toLowerCase() : k] = v;
     const k = petakanBaris(kecil);
     expect(k.id).toBe("53376778");
-    expect(k.nilai.C3).toBe(0.188);
+    expect(k.nilai.luas).toBe(8.16); // dari kolom c4
+    expect(k.nilai.jarak_kampus).toBe(0.108); // dari kolom c2
     expect(isKosLengkap(k)).toBe(true);
   });
 
-  it("nilai kosong tidak dikarang: harga/kriteria null → tidak lengkap untuk DSS", () => {
+  it("nilai kosong tidak dikarang: harga null → tidak lengkap; kriteria null → kosong hanya untuk kriteria itu", () => {
     expect(isKosLengkap(petakanBaris(ubah(ANNISA, { harga: null })))).toBe(false);
-    const tanpaC5 = petakanBaris(ubah(ANNISA, { C5: null }));
-    expect(tanpaC5.nilai.C5).toBeNull();
-    expect(isKosLengkap(tanpaC5)).toBe(false);
+    const tanpaLuas = petakanBaris(ubah(ANNISA, { C4: null }));
+    expect(tanpaLuas.nilai.luas).toBeNull();
+    expect(isKosLengkap(tanpaLuas)).toBe(true); // kelengkapan kriteria dicek per permintaan
+    expect(kriteriaTanpaData(tanpaLuas, ["harga", "luas", "ac"])).toEqual(["luas"]);
+    expect(kriteriaTanpaData(tanpaLuas, ["harga", "ac"])).toEqual([]);
+    // kolom biner di luar 0/1 → null, bukan ditebak
+    expect(petakanBaris(ubah(ANNISA, { ac: 2 })).nilai.ac).toBeNull();
     expect(petakanBaris(ubah(ANNISA, { nama: "  " })).nama).toBe("Kos tanpa nama");
   });
 
@@ -159,25 +182,25 @@ describe("mapper baris → Kos", () => {
 
 // ---------------------------------------------------------------------------
 describe("validasi input", () => {
-  const urutan = [...URUTAN_DEFAULT];
+  const kriteria = [...KRITERIA_DEFAULT];
 
   it("body /api/rank valid", () => {
-    const r = validasiRankRequest({ budget: 1_000_000, tipe: "putri", urutan_kriteria: urutan });
-    expect(r).toEqual({ ok: true, data: { budget: 1_000_000, tipe: "putri", urutan_kriteria: urutan } });
+    const r = validasiRankRequest({ budget: 1_000_000, tipe: "putri", kriteria });
+    expect(r).toEqual({ ok: true, data: { budget: 1_000_000, tipe: "putri", kriteria } });
   });
 
   it("body /api/rank tidak valid → pesan jelas", () => {
     const salah: [unknown, RegExp][] = [
       [null, /objek JSON/],
       [[1, 2], /objek JSON/],
-      [{ budget: -1, tipe: "putri", urutan_kriteria: urutan }, /budget/],
-      [{ budget: "1000000", tipe: "putri", urutan_kriteria: urutan }, /budget/],
-      [{ budget: Number.POSITIVE_INFINITY, tipe: "putri", urutan_kriteria: urutan }, /budget/],
-      [{ budget: 1e6, tipe: "perempuan", urutan_kriteria: urutan }, /tipe/],
-      [{ budget: 1e6, tipe: "putri", urutan_kriteria: urutan.slice(1) }, /urutan_kriteria/],
-      [{ budget: 1e6, tipe: "putri", urutan_kriteria: [urutan[0], ...urutan.slice(0, -1)] }, /urutan_kriteria/],
-      [{ budget: 1e6, tipe: "putri", urutan_kriteria: "C1,C2" }, /urutan_kriteria/],
-      [{ budget: 1e6, tipe: "putri" }, /urutan_kriteria/],
+      [{ budget: -1, tipe: "putri", kriteria }, /budget/],
+      [{ budget: "1000000", tipe: "putri", kriteria }, /budget/],
+      [{ budget: Number.POSITIVE_INFINITY, tipe: "putri", kriteria }, /budget/],
+      [{ budget: 1e6, tipe: "perempuan", kriteria }, /tipe/],
+      [{ budget: 1e6, tipe: "putri", kriteria: "harga,luas" }, /kriteria/],
+      [{ budget: 1e6, tipe: "putri" }, /kriteria/],
+      // Format lama tidak dipertahankan.
+      [{ budget: 1e6, tipe: "putri", urutan_kriteria: ["C1", "C2"] }, /kriteria/],
     ];
     for (const [body, pola] of salah) {
       const r = validasiRankRequest(body);
@@ -186,19 +209,15 @@ describe("validasi input", () => {
     }
   });
 
-  it("pesan urutan menyebut rentang kode dari config", () => {
-    const r = validasiRankRequest({ budget: 1e6, tipe: "putri", urutan_kriteria: [] });
-    expect(!r.ok && r.error).toContain(`${KODE_KRITERIA[0]}–${KODE_KRITERIA[KODE_KRITERIA.length - 1]}`);
-  });
-
   it("query detail: kosong → default, valid → dipakai, tidak valid → error", () => {
     const def = validasiQueryDetail(new URLSearchParams(""));
-    expect(def.ok && def.data.urutan_kriteria).toEqual(urutan);
-    const isi = validasiQueryDetail(new URLSearchParams(`budget=800000&tipe=Putra&urutan=${[...urutan].reverse().join(",").toLowerCase()}`));
-    expect(isi).toEqual({ ok: true, data: { budget: 800_000, tipe: "putra", urutan_kriteria: [...urutan].reverse() } });
+    expect(def.ok && def.data.kriteria).toEqual(kriteria);
+    const isi = validasiQueryDetail(new URLSearchParams("budget=800000&tipe=Putra&kriteria=LUAS, harga"));
+    expect(isi).toEqual({ ok: true, data: { budget: 800_000, tipe: "putra", kriteria: ["luas", "harga"] } });
     expect(validasiQueryDetail(new URLSearchParams("budget=abc")).ok).toBe(false);
     expect(validasiQueryDetail(new URLSearchParams("tipe=x")).ok).toBe(false);
-    expect(validasiQueryDetail(new URLSearchParams("urutan=C1,C2")).ok).toBe(false);
+    expect(validasiQueryDetail(new URLSearchParams("kriteria=C1,C2")).ok).toBe(false);
+    expect(validasiQueryDetail(new URLSearchParams("kriteria=harga,harga")).ok).toBe(false);
   });
 
   it("query sebaran & id kos", () => {
@@ -244,14 +263,16 @@ describe("sebaran harga", () => {
 describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])", () => {
   const semua = [
     ...ASLI,
-    ubah(ANNISA, { id: 2, nama: "uji-murah", harga: 600_000, C1: 600_000, C2: 0.9, C3: 0.465 }),
-    ubah(ANNISA, { id: 3, nama: "uji-mahal", harga: 1_400_000, C1: 1_400_000, C5: 1, C6: 1 }),
+    ubah(ANNISA, { id: 2, nama: "uji-murah", harga: 600_000, C1: 600_000, C2: 0.9 }),
+    ubah(ANNISA, { id: 3, nama: "uji-mahal", harga: 1_400_000, C1: 1_400_000, cctv: 1, ac: 1 }),
     ubah(ANNISA, { id: 4, nama: "uji-tanpa-harga", harga: null }),
+    ubah(ANNISA, { id: 5, nama: "uji-tanpa-luas", C4: null }),
   ].map(petakanBaris);
-  const req: RankRequest = { budget: 1_500_000, tipe: "putri", urutan_kriteria: [...URUTAN_DEFAULT] };
+  const req: RankRequest = { budget: 1_500_000, tipe: "putri", kriteria: [...KRITERIA_DEFAULT] };
 
   it("/api/rank: hanya kos lengkap yang lolos filter, rank unik, skor dibulatkan 4 desimal", () => {
-    const hasil = urutkanKos(semua, req).map(keRankResult);
+    const urut = urutkanKos(semua, req);
+    const hasil = urut.daftar.map(keRankResult);
     expect(hasil.map((r) => r.id).sort()).toEqual(["2", "3", "53376778"]);
     expect(hasil.map((r) => r.rank)).toEqual([1, 2, 3]);
     expect([...hasil.map((r) => r.rank_topsis)].sort()).toEqual([1, 2, 3]);
@@ -260,12 +281,29 @@ describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])"
       expect(r.url).toBeNull();
       expect(r.foto_url).toBeNull();
       expect(Number(r.skor_saw.toFixed(4))).toBe(r.skor_saw);
+      expect(Object.keys(r.skor_kriteria)).toEqual([...KRITERIA_DEFAULT]);
     }
-    expect(urutkanKos(semua, { ...req, budget: 100_000 })).toEqual([]);
+    // id 5 lolos filter tetapi luas kosong → disembunyikan & dihitung
+    expect(urut.jumlah_tanpa_data).toBe(1);
+    expect(urut.tanpa_data_per_kriteria).toEqual({ harga: 0, jarak_kampus: 0, luas: 1, cctv: 0 });
+    expect(urutkanKos(semua, { ...req, budget: 100_000 }).daftar).toEqual([]);
+    // Tanpa kriteria luas, kos 5 ikut dinilai.
+    const tanpaLuas = urutkanKos(semua, { ...req, kriteria: ["harga", "cctv"] });
+    expect(tanpaLuas.jumlah_tanpa_data).toBe(0);
+    expect(tanpaLuas.daftar.map((t) => t.kos.id)).toContain("5");
+  });
+
+  it("respons /api/rank membawa kriteria_dipakai (Σ bobot = 1) dan hitungan tanpa data", () => {
+    const r = keRankResponse(urutkanKos(semua, req));
+    expect(r.kriteria_dipakai.map((k) => k.kode)).toEqual([...KRITERIA_DEFAULT]);
+    expect(Math.abs(r.kriteria_dipakai.reduce((s, k) => s + k.bobot, 0) - 1)).toBeLessThan(1e-12);
+    expect(r.jumlah_tanpa_data).toBe(1);
+    expect(r.hasil).toHaveLength(3);
+    expect(r.spearman === null || Number.isFinite(r.spearman)).toBe(true);
   });
 
   it("/api/kos/[id] memakai rank & skor yang sama dengan /api/rank", () => {
-    const daftar = urutkanKos(semua, req).map(keRankResult);
+    const daftar = urutkanKos(semua, req).daftar.map(keRankResult);
     for (const r of daftar) {
       const d = detailKos(semua, r.id, req);
       expect(d.status).toBe("ada");
@@ -284,11 +322,13 @@ describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])"
     expect(luar.status).toBe("ada");
     if (luar.status === "ada") {
       expect(luar.data.peringkat).toBeNull();
-      expect(luar.data.pembanding).toBe(urutkanKos(semua, req).length + 1);
+      expect(luar.data.pembanding).toBe(urutkanKos(semua, req).daftar.length + 1);
       expect(Number.isFinite(luar.data.kos.skor_saw)).toBe(true);
     }
     expect(detailKos(semua, "999", req).status).toBe("tidak-ada");
     expect(detailKos(semua, "4", req).status).toBe("tidak-lengkap");
+    expect(detailKos(semua, "5", req)).toEqual({ status: "tanpa-data", kriteria: ["luas"] });
+    expect(detailKos(semua, "5", { ...req, kriteria: ["harga"] }).status).toBe("ada");
   });
 });
 

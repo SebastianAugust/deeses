@@ -19,7 +19,9 @@ import { KontakBarMobile, KontakCard, KosBerikutnya } from "@/components/detail/
 import { Lightbox } from "@/components/detail/lightbox";
 import { PrimaryButton } from "@/components/primary-button";
 import { ErrorCard, InfoCard } from "@/components/status-card";
+import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SITE_NAME } from "@/config/site";
 import { PARAM_OK, adaPenandaOk, buildHref, type FilterState } from "@/lib/query";
 import type { KosDetailResponse } from "@/lib/types";
 import { useFilter } from "@/lib/use-filter";
@@ -30,12 +32,8 @@ function HeaderDetail({ hrefHasil }: { hrefHasil: string }) {
   return (
     <header className="hidden border-b border-white/90 bg-white/55 backdrop-blur-[20px] backdrop-saturate-[1.6] lg:block">
       <div className="mx-auto flex max-w-[1220px] flex-wrap items-center gap-5 px-8 py-3.5">
-        <Link
-          href="/"
-          aria-label="Kosjati, ke beranda"
-          className="logo text-[22px] font-extrabold tracking-[-0.02em] text-ink"
-        >
-          kosjati<span className="text-accent-ink">.</span>
+        <Link href="/" aria-label={`${SITE_NAME}, ke beranda`} className="logo inline-flex min-h-11 items-center">
+          <Logo ukuran="lg" />
         </Link>
         {/* router.back() kalau halaman sebelumnya memang /hasil (state & scroll terjaga). */}
         <BackLink
@@ -131,7 +129,7 @@ function IsiDetail({
             kos={kos}
             peringkat={peringkat}
             pembanding={data.pembanding}
-            urutan={filter.urutan}
+            kriteria={filter.kriteria}
             hrefUbahPrioritas={buildHref("/prioritas", filter)}
           />
           <CatatanSumber kos={kos} />

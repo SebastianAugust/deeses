@@ -1,13 +1,14 @@
-import type { Kriteria } from "@/config/kriteria";
+import type { KodeKriteria } from "@/config/kriteria";
 
 export type TipePenghuni = "putra" | "putri" | "campur";
 
 export const TIPE_PENGHUNI: readonly TipePenghuni[] = ["putra", "putri", "campur"];
 
+/** Body POST /api/rank. `kriteria` = kode piece terpasang, urut prioritas (1..MAKS_KRITERIA). */
 export type RankRequest = {
   budget: number;
   tipe: TipePenghuni;
-  urutan_kriteria: Kriteria[];
+  kriteria: KodeKriteria[];
 };
 
 export type RankResult = {
@@ -15,8 +16,8 @@ export type RankResult = {
   nama: string;
   rank: number;
   harga: number;
-  /** = C2 (km). */
-  jarak_km: number;
+  /** = kolom C2 (km); null kalau kosong di data. */
+  jarak_km: number | null;
   /** true = jarak hasil imputasi (heuristik sementara, lihat src/lib/repo/mapper.ts). */
   jarak_imputasi?: boolean;
   tipe: TipePenghuni;
@@ -27,7 +28,22 @@ export type RankResult = {
   skor_topsis: number;
   /** Peringkat TOPSIS (unik) di hasil yang sama; dihitung server (src/lib/dss). */
   rank_topsis?: number;
-  skor_kriteria: Record<Kriteria, number>;
+  /** Skor ternormalisasi 0..1 untuk tiap kriteria TERPASANG (kunci = kode). */
+  skor_kriteria: Partial<Record<KodeKriteria, number>>;
+};
+
+/** Respons POST /api/rank. */
+export type RankResponse = {
+  /** Urut rank SAW (unik 1..n); kosong → []. */
+  hasil: RankResult[];
+  /** Kriteria terpasang urut prioritas + bobot rank-sum (Σ = 1). */
+  kriteria_dipakai: { kode: KodeKriteria; bobot: number }[];
+  /** Kos yang lolos filter tetapi disembunyikan karena datanya kosong di ≥ 1 kriteria terpasang. */
+  jumlah_tanpa_data: number;
+  /** Per kriteria terpasang: jumlah kos (lolos filter) yang datanya kosong. */
+  tanpa_data_per_kriteria: Partial<Record<KodeKriteria, number>>;
+  /** Spearman SAW vs TOPSIS; null kalau < 3 kos atau skor konstan. */
+  spearman: number | null;
 };
 
 /** Item ringkas GET /api/kos (carousel). Nilai yang tidak ada di data = null. */
@@ -79,7 +95,7 @@ export type KosDetail = RankResult & KosInfo;
 /** Ringkasan kos untuk pintasan "Berikutnya". */
 export type KosRingkas = Pick<RankResult, "id" | "nama" | "rank" | "skor_saw" | "foto_url">;
 
-/** Respons GET /api/kos/[id]?budget&tipe&urutan. */
+/** Respons GET /api/kos/[id]?budget&tipe&kriteria. */
 export type KosDetailResponse = {
   kos: KosDetail;
   /**

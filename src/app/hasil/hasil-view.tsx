@@ -1,9 +1,10 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { HasilDesktop } from "@/components/hasil/hasil-desktop";
 import { HasilMobile } from "@/components/hasil/hasil-mobile";
-import { adaPenandaOk, hrefHome } from "@/lib/query";
+import { adaPenandaOk, buildHref } from "@/lib/query";
 import { useFilter } from "@/lib/use-filter";
 import { useDesktopRedirect, useIsDesktop } from "@/lib/use-media";
 
@@ -12,15 +13,25 @@ import { useDesktopRedirect, useIsDesktop } from "@/lib/use-media";
  * di bawahnya alur mobile bertahap. Hanya satu versi yang dirender supaya
  * tidak ada dua state/DnD yang berjalan bersamaan.
  *
- * Aturan alur desktop: tanpa penanda `ok=1` (dari tombol "Lihat rekomendasi"),
- * /hasil dialihkan ke /?langkah=prioritas dengan params yang sama.
+ * Aturan alur:
+ * - Tanpa kriteria terpasang → kembali ke /prioritas (semua layar).
+ * - Desktop tanpa penanda `ok=1` (dari tombol "Lihat peringkat") → /prioritas
+ *   dengan params yang sama.
  */
 export function HasilView() {
   const desktop = useIsDesktop();
   const filter = useFilter();
+  const router = useRouter();
   const ok = adaPenandaOk(useSearchParams());
-  const dialihkan = useDesktopRedirect(hrefHome(filter, "prioritas"), !ok);
+  const tanpaKriteria = filter.kriteria.length === 0;
+  const hrefPrioritas = buildHref("/prioritas", filter);
+  const dialihkan = useDesktopRedirect(hrefPrioritas, !ok && !tanpaKriteria);
 
+  useEffect(() => {
+    if (tanpaKriteria) router.replace(hrefPrioritas);
+  }, [tanpaKriteria, hrefPrioritas, router]);
+
+  if (tanpaKriteria) return null;
   if (!desktop) return <HasilMobile />;
   return dialihkan ? null : <HasilDesktop />;
 }

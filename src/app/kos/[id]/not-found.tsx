@@ -5,7 +5,7 @@ import { InfoCard } from "@/components/status-card";
 
 /**
  * Tampil saat /kos/[id] memanggil notFound() (id tidak ada di data).
- * Judul tab "Kos tidak ditemukan · kosjati" diatur generateMetadata di page.tsx.
+ * Judul tab "Kos tidak ditemukan" (+ template nama aplikasi dari layout) diatur generateMetadata di page.tsx.
  */
 export default function KosTidakDitemukan() {
   return (

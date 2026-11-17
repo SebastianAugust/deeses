@@ -9,15 +9,15 @@ import { rankTopsis } from "@/lib/explain";
 import { formatRupiah, teksJarakKeKampus } from "@/lib/format";
 import { TRANSISI_CEPAT } from "@/lib/motion";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
-import type { Kriteria } from "@/config/kriteria";
+import type { KodeKriteria } from "@/config/kriteria";
 import type { RankResult } from "@/lib/types";
 import { DetailBadges, KenapaBox, SkorKriteriaList, SkorTiles } from "./detail-parts";
 
 type KosDetailPanelProps = {
   kos: RankResult;
   semua: RankResult[];
-  urutan: Kriteria[];
-  /** /kos/[id] dengan semua query params hasil saat ini (budget, tipe, urutan, ok). */
+  kriteria: KodeKriteria[];
+  /** /kos/[id] dengan semua query params hasil saat ini (budget, tipe, kriteria, ok). */
   hrefDetail: string;
 };
 
@@ -25,7 +25,7 @@ type KosDetailPanelProps = {
  * Panel detail kanan di /hasil desktop. Berganti kos → isi lama memudar keluar,
  * isi baru masuk (fade + geser 8px) tanpa pindah halaman.
  */
-export function KosDetailPanel({ kos, semua, urutan, hrefDetail }: KosDetailPanelProps) {
+export function KosDetailPanel({ kos, semua, kriteria, hrefDetail }: KosDetailPanelProps) {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.section
@@ -59,9 +59,9 @@ export function KosDetailPanel({ kos, semua, urutan, hrefDetail }: KosDetailPane
         ) : (
           <>
             <div className="px-1.5">
-              <SkorKriteriaList kos={kos} urutan={urutan} ringkas judul={false} />
+              <SkorKriteriaList kos={kos} kriteria={kriteria} ringkas judul={false} />
             </div>
-            <KenapaBox kos={kos} urutan={urutan} ringkas className="mx-1.5" />
+            <KenapaBox kos={kos} kriteria={kriteria} ringkas className="mx-1.5" />
           </>
         )}
         <PrimaryButton href={hrefDetail} className="mx-1.5 mb-1.5 h-12 rounded-[14px]">

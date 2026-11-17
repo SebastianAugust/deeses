@@ -37,16 +37,6 @@ export function useDesktopRedirect(href: string, aktif = true): boolean {
   return desktop && aktif;
 }
 
-/** Kebalikan useDesktopRedirect: hanya di layar < lg. */
-export function useMobileRedirect(href: string, aktif = true): boolean {
-  const desktop = useIsDesktop();
-  const router = useRouter();
-  useEffect(() => {
-    if (aktif && !layarDesktop()) router.replace(href);
-  }, [aktif, desktop, href, router]);
-  return !desktop && aktif;
-}
-
 const noop = () => () => {};
 
 /** true setelah berjalan di browser (untuk portal ke document.body). */

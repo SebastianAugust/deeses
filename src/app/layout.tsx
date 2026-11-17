@@ -5,6 +5,7 @@ import { MotionProvider } from "@/components/motion-provider";
 import { NavigationTracker } from "@/components/navigation-tracker";
 import { PengamanViewTransition } from "@/components/pengaman-view-transition";
 import { ToastProvider } from "@/components/toast";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/config/site";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -15,9 +16,19 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Kosjati — Rekomendasi Kos Jatinangor",
-  description:
-    "Atur budget dan prioritasmu, lalu Kosjati mengurutkan kos di Jatinangor yang paling cocok.",
+  title: {
+    default: `${SITE_NAME} — Rekomendasi Kos Jatinangor`,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_NAME,
+    locale: "id_ID",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

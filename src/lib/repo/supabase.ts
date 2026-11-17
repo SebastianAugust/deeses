@@ -1,6 +1,5 @@
 import "server-only";
 import { cacheLife } from "next/cache";
-import { KRITERIA, type KriteriaInfo } from "@/config/kriteria";
 import { hargaUntukSebaran, hitungSebaran, type SebaranHarga } from "@/lib/sebaran";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { TipePenghuni } from "@/lib/types";
@@ -70,9 +69,6 @@ export class SupabaseKosRepository implements KosRepository {
     return semua.find((k) => k.id === id) ?? null;
   }
 
-  getKriteria(): readonly KriteriaInfo[] {
-    return KRITERIA;
-  }
 
   async sebaranHarga(tipe?: TipePenghuni): Promise<SebaranHarga> {
     return hitungSebaran(hargaUntukSebaran(await this.listKos(), tipe));

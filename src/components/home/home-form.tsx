@@ -2,28 +2,13 @@
 
 import { useId } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { ArrowRight } from "lucide-react";
 import { BudgetHistogramSlider } from "@/components/BudgetHistogramSlider";
 import { GlassCard } from "@/components/glass-card";
 import { PrimaryButton } from "@/components/primary-button";
-import { TinggiHalus } from "@/components/tinggi-halus";
 import { TipeSegmented } from "@/components/tipe-segmented";
-import { TRANSISI_CEPAT } from "@/lib/motion";
-import {
-  BUDGET_MAX,
-  BUDGET_MIN,
-  BUDGET_STEP,
-  PARAM_OK,
-  buildHref,
-  type FilterState,
-  type LangkahHome,
-} from "@/lib/query";
+import { BUDGET_MAX, BUDGET_MIN, BUDGET_STEP, buildHref, type FilterState } from "@/lib/query";
 import type { SebaranHarga } from "@/lib/sebaran";
-import type { RankResult } from "@/lib/types";
-import type { RankState } from "@/lib/use-rank";
-import { useSibukSingkat } from "@/lib/use-sibuk";
-import { KosTumpuk } from "./kos-tumpuk";
 
 type HomeFormProps = {
   filter: FilterState;
@@ -31,35 +16,15 @@ type HomeFormProps = {
   sebaran?: SebaranHarga;
   /** Sebaran untuk tipe baru sedang dimuat (indikator kecil di hitungan). */
   memuatSebaran?: boolean;
-  rank: RankState & { dataTerakhir?: RankResult[] };
-  langkah: LangkahHome;
-  /** Desktop: pindah ke langkah prioritas (tanpa pindah route). */
-  onLanjut: () => void;
-  /** Desktop: kembali ke langkah awal. */
-  onKembali: () => void;
 };
 
 /**
- * Kartu kaca Home: budget + tipe (selalu sama, tidak di-unmount), lalu bagian
- * bawah yang berganti sesuai langkah dengan animasi tinggi halus.
- * - awal: "Lanjut atur prioritas" (mobile → /prioritas, desktop → langkah prioritas).
- * - prioritas (desktop): "Kembali", tumpukan foto "N kos siap diurutkan",
- *   tombol besar "Lihat rekomendasi" → /hasil dengan penanda ok.
+ * Kartu kaca Home: budget + tipe, lalu "Lanjut rakit kriteria" → /prioritas
+ * (membawa budget, tipe, dan kriteria yang sudah ada di URL).
  */
-export function HomeForm({
-  filter,
-  onChange,
-  sebaran,
-  memuatSebaran,
-  rank,
-  langkah,
-  onLanjut,
-  onKembali,
-}: HomeFormProps) {
+export function HomeForm({ filter, onChange, sebaran, memuatSebaran }: HomeFormProps) {
   const idBudget = useId();
   const idTipe = useId();
-  // Cegah klik ganda saat pindah langkah.
-  const [sibuk, jalankan] = useSibukSingkat();
 
   return (
     <GlassCard
@@ -97,66 +62,18 @@ export function HomeForm({
         />
       </div>
 
-      <TinggiHalus>
-        <AnimatePresence mode="wait" initial={false}>
-          {langkah === "awal" ? (
-            <motion.div
-              key="awal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={TRANSISI_CEPAT}
-              className="flex flex-col items-center gap-1 pt-1"
-            >
-              <PrimaryButton href={buildHref("/prioritas", filter)} block className="text-base lg:hidden">
-                Lanjut atur prioritas
-              </PrimaryButton>
-              <PrimaryButton
-                onClick={() => jalankan(onLanjut)}
-                memuat={sibuk}
-                block
-                className="hidden text-base lg:flex"
-              >
-                Lanjut atur prioritas
-                <ArrowRight size={18} strokeWidth={2.4} aria-hidden />
-              </PrimaryButton>
-              <Link
-                href={buildHref("/filter", filter)}
-                className="tekan tautan inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-semibold text-accent-ink lg:hidden"
-              >
-                Atur filter lebih detail
-              </Link>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="prioritas"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={TRANSISI_CEPAT}
-              className="flex flex-col gap-3.5 pt-1"
-            >
-              <button
-                type="button"
-                onClick={onKembali}
-                className="tekan tautan -my-1 -ml-1 inline-flex min-h-9 items-center gap-1 self-start rounded-lg px-1.5 text-[13px] font-semibold text-accent-ink"
-              >
-                <ChevronLeft size={16} strokeWidth={2.4} aria-hidden />
-                Kembali
-              </button>
-              <KosTumpuk rank={rank} filter={filter} />
-              <PrimaryButton
-                href={buildHref("/hasil", filter, PARAM_OK)}
-                block
-                className="h-[60px] rounded-[18px] text-lg shadow-[0_12px_26px_rgba(29,95,209,.30)] hover:shadow-[0_16px_32px_rgba(29,95,209,.36)]"
-              >
-                Lihat rekomendasi
-                <ArrowRight size={20} strokeWidth={2.4} aria-hidden />
-              </PrimaryButton>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </TinggiHalus>
+      <div className="flex flex-col items-center gap-1 pt-1">
+        <PrimaryButton href={buildHref("/prioritas", filter)} block className="text-base">
+          Lanjut rakit kriteria
+          <ArrowRight size={18} strokeWidth={2.4} aria-hidden />
+        </PrimaryButton>
+        <Link
+          href={buildHref("/filter", filter)}
+          className="tekan tautan inline-flex min-h-11 items-center rounded-lg px-2 text-[13px] font-semibold text-accent-ink lg:hidden"
+        >
+          Atur filter lebih detail
+        </Link>
+      </div>
     </GlassCard>
   );
 }

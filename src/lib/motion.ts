@@ -1,5 +1,5 @@
 /**
- * Konstanta animasi Kosjati. Semua animasi pendek (150–250 ms) dan ease-out.
+ * Konstanta animasi aplikasi. Semua animasi pendek (150–250 ms) dan ease-out.
  * Nilai CSS yang setara ada di globals.css (.tekan, .kartu-angkat, view transition).
  *
  * prefers-reduced-motion: <MotionProvider> memakai reducedMotion="user", jadi

@@ -1,14 +1,15 @@
 import type { NextRequest } from "next/server";
+import { infoKriteria } from "@/config/kriteria";
 import { detailKos } from "@/lib/peringkat";
 import { kosRepository } from "@/lib/repo";
 import { galatKeBody } from "@/lib/repo/galat";
 import { validasiIdKos, validasiQueryDetail } from "@/lib/validasi";
 
 /**
- * GET /api/kos/[id]?budget=…&tipe=…&urutan=C1,…
+ * GET /api/kos/[id]?budget=…&tipe=…&kriteria=harga,luas,…
  * → { kos: KosDetail, peringkat: { rank, total, rank_topsis, berikutnya } | null }
  *
- * Rank & skor dihitung dengan filter yang sama seperti POST /api/rank.
+ * Rank & skor dihitung dengan filter DAN kriteria yang sama seperti POST /api/rank.
  * `peringkat` null kalau kos tidak lolos filter. Field detail yang tidak ada di
  * tabel (kontak, aturan, sekitar, deposit, foto_urls, sumber_url, diperbarui_at) = null.
  */
@@ -34,7 +35,14 @@ export async function GET(request: NextRequest, ctx: RouteContext<"/api/kos/[id]
   }
   if (hasil.status === "tidak-lengkap") {
     return Response.json(
-      { error: "Data kos ini belum lengkap (harga/tipe/nilai kriteria kosong), jadi belum bisa dinilai." },
+      { error: "Data kos ini belum lengkap (harga/tipe kosong), jadi belum bisa dinilai." },
+      { status: 422 },
+    );
+  }
+  if (hasil.status === "tanpa-data") {
+    const nama = hasil.kriteria.map((k) => infoKriteria(k).nama.toLowerCase()).join(", ");
+    return Response.json(
+      { error: `Data kos ini belum ada untuk kriteria: ${nama}. Kos ini tidak dinilai dengan kriteria tersebut.` },
       { status: 422 },
     );
   }

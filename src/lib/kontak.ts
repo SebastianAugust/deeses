@@ -1,6 +1,8 @@
+import { SITE_NAME } from "@/config/site";
+
 /** Pesan pembuka WhatsApp yang terisi otomatis. */
 export function pesanWa(namaKos: string): string {
-  return `Halo, saya lihat ${namaKos} di kosjati, masih ada kamar kosong?`;
+  return `Halo, saya lihat ${namaKos} di ${SITE_NAME}, masih ada kamar kosong?`;
 }
 
 /** https://wa.me/<nomor>?text=… (nomor dibersihkan jadi digit saja; awalan 0 → 62). */

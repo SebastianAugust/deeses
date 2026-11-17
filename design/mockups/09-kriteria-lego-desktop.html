@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Layout G gabungan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1A1D24;background:#F3F6FB}
+button{font-family:inherit;cursor:pointer}
+a{text-decoration:none}
+.card{transition:border-color .15s ease,background .15s ease,opacity .15s ease,transform .15s ease}
+.card:hover{border-color:#1D5FD1 !important;transform:translateY(-1px)}
+.chip:hover{background:#E3ECFD !important}
+.ib:hover{background:#E3ECFD !important}
+.cta:hover{background:#1750B3 !important}
+button:focus-visible,a:focus-visible{outline:3px solid #1D5FD1;outline-offset:2px}
+</style>
+</helmet>
+<div style="min-height:1800px;background:linear-gradient(180deg,#E9F0FD 0%,#F3F6FB 320px);padding:28px 40px 64px;box-sizing:border-box;display:flex;justify-content:center">
+<div style="width:100%;max-width:1280px;display:flex;flex-direction:column;gap:24px">
+
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:8px;background:#1D5FD1"></div><span style="font-weight:800;font-size:17px">[NAMA PROYEK]</span></div>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#4E5463">
+<span style="padding:6px 12px;border-radius:99px;background:#fff;border:1px solid #E3E7EE">1 Budget &amp; tipe</span>
+<span style="padding:6px 12px;border-radius:99px;background:#1D5FD1;color:#fff">2 Kriteria</span>
+<span style="padding:6px 12px;border-radius:99px;background:#fff;border:1px solid #E3E7EE">3 Peringkat</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:6px">
+<h1 style="margin:0;font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-0.02em">Rakit kriteria yang kamu pedulikan</h1>
+<p style="margin:0;font-size:16px;color:#4E5463;max-width:780px;line-height:1.5">Klik kartu atau seret ke rakitan. Urutan di rakitan menentukan bobot: yang paling atas paling berpengaruh.</p>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+
+<section onDragOver="{{catOver}}" onDrop="{{catDrop}}" style="flex:999 1 620px;min-width:0;display:flex;flex-direction:column;gap:22px">
+
+<nav aria-label="Lompat ke kategori" style="position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;background:rgba(243,246,251,0.94)">
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="6">
+<a class="chip" href="{{c.href}}" onClick="{{c.pick}}" aria-current="{{c.isActive}}" style="{{c.style}}">
+<span>{{c.name}}</span>
+<sc-if value="{{c.hasCount}}" hint-placeholder-val="{{ true }}"><span style="{{c.badgeStyle}}">{{c.count}}</span></sc-if>
+</a>
+</sc-for>
+</nav>
+
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="3">
+<div id="{{s.anchor}}" style="display:flex;flex-direction:column;gap:12px;scroll-margin-top:72px">
+<div style="display:flex;align-items:baseline;gap:10px">
+<h2 style="margin:0;font-size:20px;font-weight:800">{{s.name}}</h2>
+<span style="font-size:13px;font-weight:600;color:#4E5463">{{s.countLabel}}</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+<sc-for list="{{s.cards}}" as="p" hint-placeholder-count="3">
+<button class="card" draggable="{{p.draggable}}" onDragStart="{{p.dragStart}}" onDragEnd="{{p.dragEnd}}" onClick="{{p.toggle}}" aria-pressed="{{p.picked}}" style="{{p.style}}">
+<div style="display:flex;align-items:flex-start;gap:8px;width:100%">
+<span style="{{p.gripStyle}}" aria-hidden="true"><svg width="14" height="20" viewBox="0 0 16 24" fill="currentColor"><circle cx="5" cy="6" r="1.6"/><circle cx="11" cy="6" r="1.6"/><circle cx="5" cy="12" r="1.6"/><circle cx="11" cy="12" r="1.6"/><circle cx="5" cy="18" r="1.6"/><circle cx="11" cy="18" r="1.6"/></svg></span>
+<span style="flex:1 1 auto;font-size:15px;font-weight:700;text-align:left;line-height:1.3">{{p.name}}</span>
+<span style="{{p.markStyle}}" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{p.markPath}}"/></svg></span>
+</div>
+<span style="font-size:12.5px;color:#4E5463;text-align:left;line-height:1.45;padding-left:22px">{{p.desc}}</span>
+<div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:22px;margin-top:auto">
+<span style="font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:#F3F6FB;color:#4E5463;border:1px solid #E3E7EE">{{p.dir}}</span>
+<span style="{{p.dataStyle}}">{{p.dataLabel}}</span>
+</div>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</section>
+
+<aside style="flex:1 1 380px;max-width:440px;min-width:0;position:sticky;top:16px;display:flex;flex-direction:column;gap:12px">
+<div onDragOver="{{zoneOver}}" onDrop="{{zoneDrop}}" style="{{zoneStyle}}">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+<h2 style="margin:0;font-size:19px;font-weight:800">Rakitanmu</h2>
+<span style="font-size:13px;font-weight:600;color:#4E5463">{{nLabel}}</span>
+</div>
+
+<sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+<div style="min-height:200px;border:1.5px dashed #9DB5E3;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:#4E5463;font-size:14.5px;line-height:1.5;padding:0 20px;background:#F3F7FE">Klik atau seret kartu ke sini</div>
+</sc-if>
+
+<sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;height:10px;border-radius:99px;overflow:hidden;gap:2px;background:#E3ECFD" aria-hidden="true">
+<sc-for list="{{tray}}" as="t" hint-placeholder-count="4"><div style="{{t.segStyle}}"></div></sc-for>
+</div>
+<ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+<sc-for list="{{tray}}" as="t" hint-placeholder-count="4">
+<li onDragOver="{{t.over}}" onDrop="{{t.drop}}" style="margin:0;padding:0">
+<div style="{{t.lineStyle}}" aria-hidden="true"></div>
+<div draggable="true" onDragStart="{{t.dragStart}}" onDragEnd="{{t.dragEnd}}" style="{{t.style}}">
+<span style="color:#9AA4B8;flex:none;display:flex" aria-hidden="true"><svg width="14" height="20" viewBox="0 0 16 24" fill="currentColor"><circle cx="5" cy="6" r="1.6"/><circle cx="11" cy="6" r="1.6"/><circle cx="5" cy="12" r="1.6"/><circle cx="11" cy="12" r="1.6"/><circle cx="5" cy="18" r="1.6"/><circle cx="11" cy="18" r="1.6"/></svg></span>
+<span style="width:26px;height:26px;border-radius:8px;background:#E3ECFD;color:#1D5FD1;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none">{{t.rank}}</span>
+<div style="min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:1px"><span style="font-size:14.5px;font-weight:700;line-height:1.25">{{t.name}}</span><span style="font-size:12px;color:#4E5463">{{t.cat}}</span></div>
+<span style="font-size:15px;font-weight:800;color:#1D5FD1;min-width:48px;text-align:right">{{t.pct}}%</span>
+<button class="ib" aria-label="Naikkan prioritas" onClick="{{t.up}}" style="{{t.upStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
+<button class="ib" aria-label="Turunkan prioritas" onClick="{{t.down}}" style="{{t.downStyle}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+<button class="ib" aria-label="Lepas dari rakitan" onClick="{{t.remove}}" style="width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:#4E5463;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+</li>
+</sc-for>
+</ol>
+<div style="{{endLineStyle}}" aria-hidden="true"></div>
+</sc-if>
+</div>
+
+<sc-if value="{{warnMany}}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFF4E0;color:#7A4300;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45">Kriteria paling bawah hanya dapat bobot {{lastPct}}%, hampir tidak berpengaruh.</div>
+</sc-if>
+<div style="background:#F3F6FB;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#4E5463;line-height:1.5">Kos yang datanya kosong di salah satu kriteria terpasang disembunyikan, dan jumlahnya ditampilkan di halaman peringkat.</div>
+<button class="cta" style="{{ctaStyle}}">Lihat peringkat dengan {{n}} kriteria</button>
+</aside>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":1800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: ['harga', 'jarak_unpad', 'luas', 'cctv'], cat: 'biaya', drag: null, over: null };
+    this.CATS = [
+      { id: 'biaya', name: 'Biaya' }, { id: 'lokasi', name: 'Lokasi' }, { id: 'kamar', name: 'Kamar' },
+      { id: 'keamanan', name: 'Keamanan' }, { id: 'bersama', name: 'Fasilitas bersama' }, { id: 'aturan', name: 'Aturan' }
+    ];
+    const C = 'Makin kecil makin baik', B = 'Makin besar makin baik';
+    this.P = [
+      { id: 'harga', cat: 'biaya', name: 'Harga sewa', desc: 'Biaya sewa per bulan.', dir: C, ada: true },
+      { id: 'deposit', cat: 'biaya', name: 'Deposit', desc: 'Uang jaminan di awal sewa.', dir: C, ada: false },
+      { id: 'listrik', cat: 'biaya', name: 'Listrik sudah termasuk', desc: 'Tanpa token atau tagihan terpisah.', dir: B, ada: true },
+      { id: 'jarak_unpad', cat: 'lokasi', name: 'Jarak ke Unpad', desc: 'Jarak rute ke gerbang kampus Unpad.', dir: C, ada: true },
+      { id: 'jarak_itb', cat: 'lokasi', name: 'Jarak ke ITB', desc: 'Jarak rute ke gerbang ITB Jatinangor.', dir: C, ada: true },
+      { id: 'minimarket', cat: 'lokasi', name: 'Jarak ke minimarket', desc: 'Minimarket terdekat dari kos.', dir: C, ada: false },
+      { id: 'pasar', cat: 'lokasi', name: 'Jarak ke pasar', desc: 'Pasar atau supermarket terdekat.', dir: C, ada: false },
+      { id: 'luas', cat: 'kamar', name: 'Luas kamar', desc: 'Ukuran kamar dalam meter persegi.', dir: B, ada: true },
+      { id: 'km_dalam', cat: 'kamar', name: 'Kamar mandi dalam', desc: 'Kamar mandi ada di dalam kamar.', dir: B, ada: true },
+      { id: 'ac', cat: 'kamar', name: 'AC', desc: 'Kamar dilengkapi pendingin ruangan.', dir: B, ada: true },
+      { id: 'furnitur', cat: 'kamar', name: 'Furnitur lengkap', desc: 'Kasur, lemari, dan meja tersedia.', dir: B, ada: true },
+      { id: 'cctv', cat: 'keamanan', name: 'CCTV', desc: 'Ada kamera pengawas di area kos.', dir: B, ada: true },
+      { id: 'penjaga', cat: 'keamanan', name: 'Penjaga kos', desc: 'Ada penjaga atau pengelola di lokasi.', dir: B, ada: true },
+      { id: 'akses24', cat: 'keamanan', name: 'Akses 24 jam', desc: 'Bebas keluar masuk kapan saja.', dir: B, ada: false },
+      { id: 'parkir_motor', cat: 'bersama', name: 'Parkir motor', desc: 'Tersedia lahan parkir motor.', dir: B, ada: true },
+      { id: 'parkir_mobil', cat: 'bersama', name: 'Parkir mobil', desc: 'Tersedia lahan parkir mobil.', dir: B, ada: true },
+      { id: 'dapur', cat: 'bersama', name: 'Dapur bersama', desc: 'Dapur yang bisa dipakai penghuni.', dir: B, ada: true },
+      { id: 'wifi', cat: 'bersama', name: 'Wifi', desc: 'Internet sudah disediakan kos.', dir: B, ada: true },
+      { id: 'jam_malam', cat: 'aturan', name: 'Jam malam', desc: 'Makin ketat, makin kurang bebas.', dir: C, ada: false },
+      { id: 'tamu', cat: 'aturan', name: 'Aturan tamu', desc: 'Seberapa ketat aturan menerima tamu.', dir: C, ada: false }
+    ];
+  }
+  put(id, beforeId) {
+    const s = this.state.sel.filter((x) => x !== id);
+    const k = beforeId ? s.indexOf(beforeId) : -1;
+    if (k >= 0) s.splice(k, 0, id); else s.push(id);
+    this.setState({ sel: s, drag: null, over: null });
+  }
+  move(i, d) {
+    const s = this.state.sel.slice(); const j = i + d;
+    if (j < 0 || j >= s.length) return;
+    const t = s[i]; s[i] = s[j]; s[j] = t; this.setState({ sel: s });
+  }
+  renderVals() {
+    const sel = this.state.sel; const n = sel.length; const self = this;
+    const byId = {}; this.P.forEach((p) => { byId[p.id] = p; });
+    const catName = {}; this.CATS.forEach((c) => { catName[c.id] = c.name; });
+    const dragging = !!this.state.drag;
+    const start = (id) => (e) => {
+      try { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; } catch (x) {}
+      self.setState({ drag: id });
+    };
+    const end = () => self.setState({ drag: null, over: null });
+    const allow = (key) => (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      if (self.state.over !== key) self.setState({ over: key });
+    };
+
+    const cats = this.CATS.map((c) => {
+      const count = sel.filter((id) => byId[id].cat === c.id).length;
+      const active = this.state.cat === c.id;
+      return {
+        name: c.name, count: count, hasCount: count > 0, isActive: active,
+        href: '#sec-' + c.id,
+        pick: () => this.setState({ cat: c.id }),
+        style: 'display:flex;align-items:center;gap:8px;padding:9px 16px;min-height:44px;box-sizing:border-box;border-radius:99px;font-size:14px;font-weight:700;border:1.5px solid ' + (active ? '#1D5FD1' : '#E3E7EE') + ';background:' + (active ? '#1D5FD1' : '#fff') + ';color:' + (active ? '#fff' : '#1A1D24'),
+        badgeStyle: 'min-width:20px;height:20px;border-radius:99px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 6px;box-sizing:border-box;background:' + (active ? '#fff' : '#E3ECFD') + ';color:#1D5FD1'
+      };
+    });
+
+    const sections = this.CATS.map((c) => {
+      const items = this.P.filter((p) => p.cat === c.id);
+      const cnt = items.filter((p) => sel.indexOf(p.id) >= 0).length;
+      return {
+        anchor: 'sec-' + c.id, name: c.name, countLabel: cnt + ' dari ' + items.length + ' dipasang',
+        cards: items.map((p) => {
+          const picked = sel.indexOf(p.id) >= 0;
+          const isDragged = this.state.drag === p.id;
+          return {
+            name: p.name, desc: p.desc, dir: p.dir, picked: picked,
+            draggable: picked ? 'false' : 'true',
+            dragStart: start(p.id), dragEnd: end,
+            toggle: () => { const s = this.state.sel; this.setState({ sel: picked ? s.filter((x) => x !== p.id) : s.concat([p.id]) }); },
+            style: 'display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:14px;min-height:128px;box-sizing:border-box;border-radius:16px;color:#1A1D24;opacity:' + (isDragged ? '0.45' : '1') + ';cursor:' + (picked ? 'pointer' : 'grab') + ';border:1.5px solid ' + (picked ? '#1D5FD1' : '#E3E7EE') + ';background:' + (picked ? '#E3ECFD' : '#fff'),
+            gripStyle: 'flex:none;display:flex;margin-top:2px;color:' + (picked ? '#9DB5E3' : '#9AA4B8'),
+            markStyle: 'width:22px;height:22px;border-radius:99px;flex:none;display:flex;align-items:center;justify-content:center;' + (picked ? 'background:#1D5FD1;color:#fff' : 'background:#F3F6FB;color:#4E5463;border:1px solid #E3E7EE;box-sizing:border-box'),
+            markPath: picked ? 'M5 12l5 5 9-10' : 'M12 6v12M6 12h12',
+            dataLabel: p.ada ? 'Data tersedia' : 'Butuh data baru',
+            dataStyle: 'font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;' + (p.ada ? 'background:#E3F4EA;color:#14693A' : 'background:#FFF1DC;color:#7A4300')
+          };
+        })
+      };
+    });
+
+    const pctOf = (i) => (2 * (n - i)) / (n * (n + 1)) * 100;
+    const tray = sel.map((id, i) => {
+      const pct = pctOf(i);
+      const alpha = n <= 1 ? 1 : 1 - (i / (n - 1)) * 0.65;
+      const overMe = this.state.over === id && dragging && this.state.drag !== id;
+      const btn = (ok) => 'width:34px;height:34px;border:0;border-radius:10px;background:transparent;display:flex;align-items:center;justify-content:center;flex:none;color:' + (ok ? '#4E5463' : '#C4CAD6') + ';cursor:' + (ok ? 'pointer' : 'default');
+      return {
+        rank: i + 1, name: byId[id].name, cat: catName[byId[id].cat], pct: pct.toFixed(1).replace('.', ','),
+        segStyle: 'height:100%;border-radius:2px;background:#1D5FD1;opacity:' + alpha.toFixed(2) + ';flex:' + pct.toFixed(2) + ' 1 0',
+        lineStyle: 'height:4px;border-radius:99px;margin:' + (overMe ? '2px 0' : '0') + ';background:' + (overMe ? '#1D5FD1' : 'transparent'),
+        style: 'display:flex;align-items:center;gap:10px;padding:10px 8px 10px 10px;margin:4px 0;border:1px solid #E3E7EE;border-radius:14px;background:#F9FBFE;cursor:grab;opacity:' + (this.state.drag === id ? '0.45' : '1'),
+        dragStart: start(id), dragEnd: end,
+        over: (e) => { allow(id)(e); },
+        drop: (e) => { if (e && e.preventDefault) e.preventDefault(); if (e && e.stopPropagation) e.stopPropagation(); const d = self.state.drag; if (d) self.put(d, id); },
+        up: () => this.move(i, -1), down: () => this.move(i, 1),
+        upStyle: btn(i > 0), downStyle: btn(i < n - 1),
+        remove: () => this.setState({ sel: sel.filter((x) => x !== id) })
+      };
+    });
+
+    const zoneActive = dragging && this.state.over && this.state.over !== 'cat';
+    return {
+      cats: cats, sections: sections, tray: tray, n: n,
+      nLabel: n + ' dipasang', empty: n === 0, hasSel: n > 0, warnMany: n > 8,
+      lastPct: n > 0 ? pctOf(n - 1).toFixed(1).replace('.', ',') : '0',
+      endLineStyle: 'height:4px;border-radius:99px;margin-top:2px;background:' + (this.state.over === 'zone' && dragging ? '#1D5FD1' : 'transparent'),
+      catOver: (e) => { if (e && e.preventDefault) e.preventDefault(); },
+      catDrop: (e) => { if (e && e.preventDefault) e.preventDefault(); const d = self.state.drag; if (d) self.setState({ sel: sel.filter((x) => x !== d), drag: null, over: null }); },
+      zoneOver: (e) => { allow('zone')(e); },
+      zoneDrop: (e) => { if (e && e.preventDefault) e.preventDefault(); const d = self.state.drag; if (d) self.put(d, null); },
+      zoneStyle: 'background:' + (zoneActive ? '#EEF4FE' : '#fff') + ';border:2px ' + (dragging ? 'dashed #1D5FD1' : 'solid #E3E7EE') + ';border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 30px rgba(29,95,209,0.08);min-height:300px;box-sizing:border-box',
+      ctaStyle: 'height:52px;border:0;border-radius:14px;font-size:16px;font-weight:800;color:#fff;cursor:pointer;background:' + (n > 0 ? '#1D5FD1' : '#9DB5E3')
+    };
+  }
+}
+</script>
+</body>
+</html>

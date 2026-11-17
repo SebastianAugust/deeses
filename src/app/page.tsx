@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/glass-card";
-import { JUMLAH_KRITERIA } from "@/config/kriteria";
+import { Logo } from "@/components/ui/logo";
+import { KRITERIA_TERSEDIA, MAKS_KRITERIA } from "@/config/kriteria";
+import { SITE_NAME } from "@/config/site";
 import { Halaman } from "@/components/halaman";
 import { HomeUtama } from "@/components/home/home-utama";
 import { HomeUtamaFromUrl } from "@/components/home/home-utama-url";
@@ -11,21 +13,16 @@ import { DEFAULT_FILTER } from "@/lib/query";
 /*
  * Home.
  * Mobile: hero → kartu form → cara kerja → carousel (alur bertahap).
- * Desktop (lg): satu halaman dua langkah — / (awal) dan /?langkah=prioritas.
- * Kolom kiri berganti sesuai langkah, kartu form di kanan tetap. Carousel
- * "Kos di data kami" tampil di kedua langkah.
+ * Desktop (lg): hero + cara kerja di kiri, kartu form (budget & tipe) di kanan.
+ * Langkah berikutnya (rakit kriteria) ada di /prioritas.
  */
 export default function HomePage() {
   return (
     <Halaman>
       <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-10 lg:max-w-[1220px] lg:px-8">
         <header className="flex items-center justify-between px-5 py-2.5 lg:px-0 lg:py-[22px]">
-          <Link
-            href="/"
-            aria-label="Kosjati, ke beranda"
-            className="logo text-xl font-extrabold tracking-[-0.02em] lg:text-2xl"
-          >
-            kosjati<span className="text-accent-ink">.</span>
+          <Link href="/" aria-label={`${SITE_NAME}, ke beranda`} className="logo inline-flex min-h-11 items-center">
+            <Logo ukuran="lg" />
           </Link>
           <a
             href="#tentang"
@@ -37,7 +34,7 @@ export default function HomePage() {
 
         {/* Langkah & nilai awal dari query params → useSearchParams → wajib di
             dalam Suspense. Fallback = langkah awal dengan nilai default (HTML statis). */}
-        <Suspense fallback={<HomeUtama initial={DEFAULT_FILTER} langkah="awal" />}>
+        <Suspense fallback={<HomeUtama initial={DEFAULT_FILTER} />}>
           <HomeUtamaFromUrl />
         </Suspense>
 
@@ -53,8 +50,9 @@ export default function HomePage() {
               Tentang
             </h2>
             <p className="text-[13px] leading-normal text-muted">
-              Kosjati mengurutkan kos dengan metode SAW (Simple Additive Weighting) pada {JUMLAH_KRITERIA} kriteria.
-              Bobot tiap kriteria dihitung dari urutan prioritasmu (rank-sum), dan TOPSIS ditampilkan
+              {SITE_NAME} mengurutkan kos dengan metode SAW (Simple Additive Weighting) memakai kriteria
+              yang kamu rakit sendiri: 1 sampai {MAKS_KRITERIA} dari {KRITERIA_TERSEDIA.length} kriteria yang datanya
+              tersedia. Bobot tiap kriteria dihitung dari urutan prioritasmu (rank-sum), dan TOPSIS ditampilkan
               sebagai pembanding di detail kos. Data sementara: sebagian kos belum punya foto,
               alamat, atau kontak.
             </p>

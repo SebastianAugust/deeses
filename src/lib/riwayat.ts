@@ -1,7 +1,7 @@
 /**
  * Penanda navigasi internal untuk sesi JS ini (diisi <NavigationTracker />).
  * Dipakai tombol back: router.back() hanya aman kalau entri sebelumnya
- * memang halaman Kosjati (bukan situs lain / tab baru) — dan, bila diminta,
+ * memang halaman aplikasi ini (bukan situs lain / tab baru) — dan, bila diminta,
  * memang halaman tertentu (mis. /hasil). Reset saat halaman dimuat ulang.
  */
 let sudahNavigasi = false;

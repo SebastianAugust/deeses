@@ -13,7 +13,6 @@ import {
   BUDGET_MIN,
   BUDGET_STEP,
   buildHref,
-  hrefHome,
   type FilterState,
 } from "@/lib/query";
 import type { TipePenghuni } from "@/lib/types";
@@ -42,8 +41,8 @@ export function FilterForm() {
   const rank = useRank(filter, { debounceMs: 300 });
   const { data: sebaran, memuat: memuatSebaran } = useSebaranHarga(filter.tipe);
 
-  // Di desktop, budget & tipe ada di Home (langsung ke langkah prioritas).
-  const keDesktop = useDesktopRedirect(hrefHome(filter, "prioritas"));
+  // Di desktop, budget & tipe ada di kartu Home.
+  const keDesktop = useDesktopRedirect(buildHref("/", filter));
 
   function ubah(patch: Partial<FilterState>) {
     const baru = { ...filter, ...patch };
@@ -55,7 +54,7 @@ export function FilterForm() {
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-32">
-      <StepHeader backHref={buildHref("/", filter)} backLabel="Kembali ke beranda" langkah={1} total={2} />
+      <StepHeader backHref={buildHref("/", filter)} backLabel="Kembali ke beranda" langkah={1} total={3} />
 
       <div className="flex flex-col gap-1.5 px-5 pt-5">
         <h1 className="text-[26px] font-extrabold tracking-[-0.02em]">Mulai dari batasmu</h1>
@@ -135,7 +134,7 @@ export function FilterForm() {
           <span className="text-xs text-muted">Perkiraan</span>
           <PerkiraanCocok rank={rank} varian="angka" className="text-base font-extrabold" />
         </div>
-        <PrimaryButton href={buildHref("/prioritas", filter)}>Lanjut ke prioritas</PrimaryButton>
+        <PrimaryButton href={buildHref("/prioritas", filter)}>Lanjut rakit kriteria</PrimaryButton>
       </StickyBottomBar>
     </main>
   );

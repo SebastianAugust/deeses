@@ -1,13 +1,14 @@
-import { keRankResult, urutkanKos } from "@/lib/peringkat";
+import { keRankResponse, urutkanKos } from "@/lib/peringkat";
 import { kosRepository } from "@/lib/repo";
 import { galatKeBody } from "@/lib/repo/galat";
-import type { RankResult } from "@/lib/types";
 import { validasiRankRequest } from "@/lib/validasi";
 
 /**
- * POST /api/rank  { budget, tipe, urutan_kriteria }
- * → RankResult[] urut rank SAW (unik 1..n); hasil kosong → [].
- * Data: tabel public.kos (Supabase, cache 5 menit) → F1/F2 → SAW + TOPSIS (src/lib/dss).
+ * POST /api/rank  { budget, tipe, kriteria: string[] }   (kriteria = kode piece, urut prioritas, 1..12)
+ * → { hasil: RankResult[] (urut rank SAW, unik 1..n), kriteria_dipakai: [{kode, bobot}],
+ *     jumlah_tanpa_data, tanpa_data_per_kriteria: {kode: jumlah}, spearman }
+ * Data: tabel public.kos (Supabase, cache 5 menit) → F1/F2 → kecualikan data kosong
+ * di kriteria terpasang → SAW + TOPSIS (src/lib/dss).
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -28,6 +29,5 @@ export async function POST(request: Request) {
     return Response.json(galat, { status });
   }
 
-  const data: RankResult[] = urutkanKos(semua, input.data).map(keRankResult);
-  return Response.json(data);
+  return Response.json(keRankResponse(urutkanKos(semua, input.data)));
 }

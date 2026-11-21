@@ -1,5 +1,12 @@
+import json
+import time
+import urllib.request
 import numpy as np
 import pandas as pd
+from pathlib import Path
+
+UNPAD_LAT, UNPAD_LNG = -6.926132, 107.774689
+ITB_LAT, ITB_LNG = -6.928088, 107.769118
 
 FITUR_COLS = [
     "termasuk_listrik", "jendela", "k_mandi_dalam", "kloset_duduk",
@@ -8,81 +15,91 @@ FITUR_COLS = [
     "ruang_jemur", "pembayaran_per_bulan", "pembayaran_per_tahun"
 ]
 
+def jarak_rute_osrm(lat1: float, lng1: float, lat2: float, lng2: float, mode: str = "driving") -> float:
+    url = f"http://router.project-osrm.org/route/v1/{mode}/{lng1},{lat1};{lng2},{lat2}?overview=false"
+    for _ in range(3):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                res = json.loads(resp.read().decode("utf-8"))
+            if res.get("code") == "Ok" and res.get("routes"):
+                return round(res["routes"][0]["distance"] / 1000.0, 3)
+        except Exception:
+            time.sleep(1)
+    return np.nan
 
-def parse_luas_kamar(ukuran_str: str) -> float:
-    s = str(ukuran_str).strip().lower().replace(" ", "")
-    parts = s.split("x")
-    if len(parts) != 2:
-        return np.nan
-    try:
-        p, l = float(parts[0]), float(parts[1])
-        if p <= 0 or l <= 0:
-            return np.nan
-        if p > 20:
-            p = p / 10.0 if p < 100 else p / 100.0
-        if l > 20:
-            l = l / 10.0 if l < 100 else l / 100.0
-        return round(p * l, 2)
-    except ValueError:
-        return np.nan
+def build_kos_scored():
+    base_dir = Path(__file__).parent
+    csv_in = base_dir / "dataset_kos_v1.csv"
+    if not csv_in.exists():
+        csv_in = base_dir.parent / "dataset" / "dataset_kos_v1.csv"
 
+    df = pd.read_csv(csv_in)
 
-def build_kos_scored(input_xlsx: str = "dataset_kos_mamikos.xlsx", output_csv: str = "kos_scored.csv"):
-    df = pd.read_excel(input_xlsx, sheet_name="Data Kos")
-
+    # 1. Hapus duplikat ID & keluarkan 3 Rumah Kontrakan
     df = df.drop_duplicates(subset=["id"]).copy()
-    df = df.rename(columns={"kloset duduk": "kloset_duduk"})
+    df = df[~df["nama_kos"].str.contains("kontrakan", case=False, na=False)].copy()
 
-    df["id"] = df["id"].astype(str)
-    df["nama"] = df["nama_kos"].astype(str).str.strip()
+    # 2. Rapikan nama kolom sesuai Supabase
+    df = df.rename(columns={
+        "nama_kos": "nama",
+        "kloset duduk": "kloset_duduk",
+    })
+    df["id"] = df["id"].astype(int)
+    df["nama"] = df["nama"].astype(str).str.strip()
+    df["alamat"] = None
+    df["lat"] = df["lat"].astype(str)
+    df["lng"] = df["lng"].astype(str)
+
+    # 3. Tipe penghuni (putra / putri / campur)
     df["tipe_penghuni"] = (
-        df["tipe_kos"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
+        df["tipe_kos"].astype(str).str.strip().str.lower()
         .replace({"laki-laki": "putra", "perempuan": "putri"})
     )
 
-    # C1: Biaya sewa (Cost)
-    df["harga"] = df["harga"].astype(float)
+    # 4. Harga bulanan langsung
+    df["harga"] = np.round(df["harga"].astype(str).str.replace(",", "").astype(float), 2)
+
+    # 5. Hitung jarak rute jalan asli OSRM ke Unpad & ITB
+    print(f"Menghitung jarak rute jalan OSRM untuk {len(df)} kos...")
+    jarak_unpad, jarak_itb = [], []
+    for idx, (_, row) in enumerate(df.iterrows(), start=1):
+        d_u = jarak_rute_osrm(float(row["lat"]), float(row["lng"]), UNPAD_LAT, UNPAD_LNG)
+        time.sleep(0.15)
+        d_i = jarak_rute_osrm(float(row["lat"]), float(row["lng"]), ITB_LAT, ITB_LNG)
+        time.sleep(0.15)
+        jarak_unpad.append(d_u)
+        jarak_itb.append(d_i)
+        if idx % 50 == 0 or idx == len(df):
+            print(f"Progres: {idx}/{len(df)} kos selesai...")
+
+    df["jarak_unpad_km"] = jarak_unpad
+    df["jarak_itb_km"] = jarak_itb
+
+    # 6. Kolom C1-C8 & Luas Kamar (sesuai struktur tabel Supabase)
     df["C1"] = df["harga"]
+    df["C2"] = np.minimum(df["jarak_unpad_km"], df["jarak_itb_km"])
+    df["C3"] = None
+    df["C4"] = df["luas_kamar_m2"].astype(float)
+    df["C5"] = None
+    df["C6"] = None
+    df["C7"] = None
+    df["C8"] = None
 
-    # C2: Jarak ke kampus terdekat Unpad/ITB (Cost)
-    jarak_kampus = df[["jarak_ke_unpad", "jarak_ke_itb"]].min(axis=1)
-    df["C2"] = np.round(jarak_kampus.fillna(jarak_kampus.median()), 3)
+    df["luas_kamar_m2"] = df["luas_kamar_m2"].astype(float)
+    df["url_gambar1"] = None
 
-    # C3: Jarak ke layanan (Cost)
-    df["C3"] = np.round(0.15 + 0.35 * df["C2"], 3)
-
-    # C4: Luas kamar m2 (Benefit)
-    luas = df["ukuran_kamar"].apply(parse_luas_kamar)
-    df["C4"] = luas.fillna(luas.median())
-
-    # C5 - C8: Skor proporsi default 0-1 (Benefit)
-    c5_cols = ["k_mandi_dalam", "kloset_duduk", "shower", "air_panas", "ac", "wifi", "jendela", "tv"]
-    c6_cols = ["cctv", "penjaga"]
-    c7_cols = ["termasuk_listrik", "pembayaran_per_bulan", "pembayaran_per_tahun"]
-    c8_cols = ["parkir_motor_sepeda", "parkir_mobil", "ruang_tamu", "ruang_jemur"]
-
-    df["C5"] = np.round(df[c5_cols].mean(axis=1), 4)
-    df["C6"] = np.round(df[c6_cols].mean(axis=1), 4)
-    df["C7"] = np.round(df[c7_cols].mean(axis=1), 4)
-    df["C8"] = np.round(df[c8_cols].mean(axis=1), 4)
-
-    df["alamat"] = "Jatinangor, Sumedang"
-    df["lat"] = ""
-    df["lng"] = ""
-    df["url"] = ""
-
-    kontrak_cols = [
+    kolom_supabase = [
         "id", "nama", "alamat", "lat", "lng", "tipe_penghuni", "harga",
-        "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "url"
+        "jarak_unpad_km", "jarak_itb_km",
+        "luas_kamar_m2",
+        "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8",
+        "url_gambar1"
     ] + FITUR_COLS
 
-    kos_scored = df[kontrak_cols]
-    kos_scored.to_csv(output_csv, index=False)
-    print(f"Berhasil membuat '{output_csv}' ({len(kos_scored)} baris) beserta kolom fasilitas.")
-
+    out_path = base_dir / "kos_scored.csv"
+    df[kolom_supabase].to_csv(out_path, index=False)
+    print(f"BERHASIL! '{out_path.name}' ({len(df)} baris) siap di-import ke Supabase.")
 
 if __name__ == "__main__":
     build_kos_scored()

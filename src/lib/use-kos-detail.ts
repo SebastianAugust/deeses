@@ -9,6 +9,8 @@ export type KosDetailState =
   | { status: "loading" }
   | { status: "success"; data: KosDetailResponse }
   | { status: "notfound" }
+  /** 422: data kos belum lengkap / kosong di kriteria terpasang — mengulang tidak membantu. */
+  | { status: "belum-lengkap"; pesan: string }
   | { status: "error"; error: string };
 
 type Tersimpan = { kunci: string; state: KosDetailState };
@@ -27,10 +29,10 @@ export function useKosDetail(id: string, filter: FilterState) {
       .then((data) => setTersimpan({ kunci, state: { status: "success", data } }))
       .catch((e: unknown) => {
         if (ctrl.signal.aborted) return;
-        const state: KosDetailState =
-          e instanceof ApiError && e.status === 404
-            ? { status: "notfound" }
-            : { status: "error", error: e instanceof Error ? e.message : "Gagal memuat detail kos." };
+        let state: KosDetailState;
+        if (e instanceof ApiError && e.status === 404) state = { status: "notfound" };
+        else if (e instanceof ApiError && e.status === 422) state = { status: "belum-lengkap", pesan: e.message };
+        else state = { status: "error", error: e instanceof Error ? e.message : "Gagal memuat detail kos." };
         setTersimpan({ kunci, state });
       });
     return () => ctrl.abort();

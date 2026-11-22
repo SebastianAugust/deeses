@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
+import { CariKos } from "@/components/cari-kos";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { Crossfade } from "@/components/crossfade";
 import { IndikatorMuat } from "@/components/indikator-muat";
@@ -25,15 +26,21 @@ import { FilterSidebar } from "./filter-sidebar";
 import { DaftarDesktopSkeleton, DetailSkeleton } from "./hasil-skeleton";
 import { KosongCard } from "./kosong-card";
 
-function HeaderDesktop({ jumlahKriteria }: { jumlahKriteria: number }) {
+function HeaderDesktop({ filter }: { filter: FilterState }) {
   return (
-    <header className="border-b border-white/90 bg-white/55 backdrop-blur-[20px] backdrop-saturate-[1.6]">
+    // z-30: dropdown pencarian nama harus tampil di atas sidebar/daftar/panel di bawah header.
+    <header className="relative z-30 border-b border-white/90 bg-white/55 backdrop-blur-[20px] backdrop-saturate-[1.6]">
       <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-5 px-7 py-3.5">
         <Link href="/" aria-label={`${SITE_NAME}, ke beranda`} className="logo inline-flex min-h-11 items-center">
           <Logo ukuran="lg" />
         </Link>
-        <span className="text-[13px] text-muted">Rekomendasi kos Jatinangor · SAW {jumlahKriteria} kriteria</span>
-        <span className="flex-1" />
+        <span className="hidden text-[13px] text-muted xl:inline">
+          Rekomendasi kos Jatinangor · SAW {filter.kriteria.length} kriteria
+        </span>
+        {/* Pintasan ke kos mana pun (tidak terikat filter); detail dibuka dengan filter saat ini. */}
+        <div className="flex min-w-[260px] flex-1 justify-center">
+          <CariKos filter={filter} paramTambahan={PARAM_OK} kompak className="w-full max-w-[460px]" />
+        </div>
         <Link href="/#tentang" className="tautan text-sm font-semibold text-ink">
           Cara kerja perhitungan
         </Link>
@@ -89,7 +96,7 @@ export function HasilDesktop() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <HeaderDesktop jumlahKriteria={filter.kriteria.length} />
+      <HeaderDesktop filter={filter} />
       <div className="mx-auto flex w-full max-w-[1440px] items-start gap-5 px-7 pt-[22px] pb-10">
         <div className="sticky top-[22px] w-[260px] flex-none xl:w-[300px]">
           <FilterSidebar

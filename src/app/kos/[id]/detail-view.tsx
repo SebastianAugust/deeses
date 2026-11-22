@@ -201,6 +201,18 @@ export function DetailView() {
           </main>
         ) : null}
 
+        {detail.status === "belum-lengkap" ? (
+          <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5 lg:pt-10">
+            <TombolKembaliMobile href={hrefHasil} />
+            <InfoCard judul="Kos ini belum bisa dinilai">
+              <p className="text-sm leading-[1.55] text-muted">{detail.pesan}</p>
+              <PrimaryButton href={hrefHasil} block className="mt-1.5">
+                Lihat hasil rekomendasi
+              </PrimaryButton>
+            </InfoCard>
+          </main>
+        ) : null}
+
         {detail.status === "success" ? (
           <IsiDetail
             key={id}

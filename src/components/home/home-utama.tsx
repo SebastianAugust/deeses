@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, type Variants } from "motion/react";
 import { STAGGER_DETIK, TRANSISI } from "@/lib/motion";
-import { buildHref, type FilterState } from "@/lib/query";
+import { CariKos } from "@/components/cari-kos";
+import { DEFAULT_FILTER, buildHref, type FilterState } from "@/lib/query";
 import { gantiUrl } from "@/lib/use-filter";
 import { useSebaranHarga } from "@/lib/use-sebaran";
 import { HomeForm } from "./home-form";
@@ -55,7 +56,7 @@ export function HomeUtama({ initial }: { initial: FilterState }) {
       >
         <motion.div
           variants={anak}
-          className="order-1 flex flex-col gap-2.5 px-5 pt-2.5 lg:gap-4 lg:px-0 lg:pt-0"
+          className="relative z-30 order-1 flex flex-col gap-2.5 px-5 pt-2.5 lg:gap-4 lg:px-0 lg:pt-0"
         >
           <h1 className="text-[30px] leading-[1.15] font-extrabold tracking-[-0.02em] lg:text-[46px] lg:leading-[1.08]">
             Cari kos di Jatinangor yang paling pas buatmu
@@ -64,6 +65,9 @@ export function HomeUtama({ initial }: { initial: FilterState }) {
             Atur budget, pilih kriteria yang kamu pedulikan, lalu kami urutkan kos yang cocok dari skor
             tertinggi.
           </p>
+          {/* Pintasan ke kos tertentu berdasarkan nama, tanpa mengisi budget. z-30 di
+              pembungkus hero supaya dropdown tampil di atas kartu form / "Cara kerjanya". */}
+          <CariKos filter={DEFAULT_FILTER} className="mt-1.5 lg:max-w-[520px]" />
         </motion.div>
 
         <motion.section

@@ -1,8 +1,9 @@
 /**
  * State filter + kriteria terpasang (urut prioritas) disimpan di query params URL:
- *   ?budget=1200000&tipe=putri&kriteria=harga,jarak_kampus,luas,cctv
- * URL adalah satu-satunya sumber state yang dibagi antarhalaman (home, prioritas,
- * hasil, detail).
+ *   ?budget=1200000&tipe=putri
+ * Kriteria terpasang (urut prioritas) disimpan di sessionStorage per tab
+ * (src/lib/kriteria-tersimpan.ts), bukan di URL, supaya link pendek. Link lama
+ * yang masih membawa `&kriteria=a,b,c` tetap dibaca dan menang atas rakitan sesi.
  */
 import { KRITERIA_DEFAULT, MAKS_KRITERIA, isKodeTersedia, type KodeKriteria } from "@/config/kriteria";
 import { isTipePenghuni, type RankRequest, type TipePenghuni } from "./types";
@@ -60,29 +61,43 @@ export function parseKriteria(raw: string | undefined): KodeKriteria[] {
   return hasil;
 }
 
-/** Baca filter dari query params; param kosong/tidak valid → nilai default. */
-export function parseFilter(params: SearchParamsInput): FilterState {
+/**
+ * Baca filter dari query params; param kosong/tidak valid → nilai default.
+ * Kriteria: `?kriteria=` di URL (link lama/dibagikan) menang; kalau tidak ada,
+ * pakai rakitan sesi (`kriteriaTersimpan`, lihat kriteria-tersimpan.ts); kalau
+ * itu pun tidak ada → default.
+ */
+export function parseFilter(params: SearchParamsInput, kriteriaTersimpan?: string | null): FilterState {
   const tipe = ambil(params, "tipe")?.toLowerCase();
   return {
     budget: parseBudget(ambil(params, "budget")),
     tipe: isTipePenghuni(tipe) ? tipe : DEFAULT_FILTER.tipe,
-    kriteria: parseKriteria(ambil(params, "kriteria")),
+    kriteria: parseKriteria(ambil(params, "kriteria") ?? kriteriaTersimpan ?? undefined),
   };
 }
 
 /** Param tambahan di luar filter, mis. { pilih: "kos-melati" } (undefined/null = tidak ditulis). */
 export type ParamTambahan = Record<string, string | null | undefined>;
 
-/** FilterState → "budget=1200000&tipe=putri&kriteria=harga,…" (tanpa "?"). */
+/**
+ * FilterState → "budget=1200000&tipe=putri" (tanpa "?") untuk URL HALAMAN.
+ * Kriteria sengaja tidak ikut: rakitan disimpan di sessionStorage
+ * (kriteria-tersimpan.ts) supaya URL tetap pendek.
+ */
 export function buildQuery(state: FilterState, tambahan?: ParamTambahan): string {
-  let q = `budget=${state.budget}&tipe=${state.tipe}&kriteria=${state.kriteria.join(",")}`;
+  let q = `budget=${state.budget}&tipe=${state.tipe}`;
   for (const [k, v] of Object.entries(tambahan ?? {})) {
     if (v) q += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
   }
   return q;
 }
 
-/** Contoh: buildHref("/hasil", state, { pilih: id }) → "/hasil?budget=…&tipe=…&kriteria=…&pilih=…" */
+/** Query untuk GET /api/kos/[id]: kontrak API tetap membawa kriteria ("budget=…&tipe=…&kriteria=a,b"). */
+export function buildApiQuery(state: FilterState): string {
+  return `${buildQuery(state)}&kriteria=${state.kriteria.join(",")}`;
+}
+
+/** Contoh: buildHref("/hasil", state, { pilih: id }) → "/hasil?budget=…&tipe=…&pilih=…" */
 export function buildHref(pathname: string, state: FilterState, tambahan?: ParamTambahan): string {
   return `${pathname}?${buildQuery(state, tambahan)}`;
 }

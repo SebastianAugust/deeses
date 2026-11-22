@@ -1,16 +1,29 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { parseFilter, type FilterState } from "./query";
+import { simpanKriteria, useKriteriaTersimpan } from "./kriteria-tersimpan";
+import { parseFilter, parseKriteria, type FilterState } from "./query";
 
 /**
- * Filter + kriteria terpasang (urut prioritas) dari query params URL (dengan default).
- * Komponen pemakai harus berada di dalam <Suspense>.
+ * Filter + kriteria terpasang (urut prioritas): budget & tipe dari query params
+ * URL, kriteria dari rakitan sesi (sessionStorage) — atau dari `?kriteria=` bila
+ * link lama/dibagikan memilikinya. Komponen pemakai harus berada di dalam <Suspense>.
  */
 export function useFilter(): FilterState {
   const kunci = useSearchParams().toString();
-  return useMemo(() => parseFilter(new URLSearchParams(kunci)), [kunci]);
+  const tersimpan = useKriteriaTersimpan();
+  const filter = useMemo(() => parseFilter(new URLSearchParams(kunci), tersimpan), [kunci, tersimpan]);
+
+  // Link yang membawa ?kriteria= jadi rakitan sesi, supaya halaman berikutnya
+  // (URL tanpa kriteria) memakai rakitan yang sama. Hanya dijalankan saat URL
+  // berubah, bukan saat rakitan berubah, agar tidak menimpa edit terbaru.
+  useEffect(() => {
+    const mentah = new URLSearchParams(kunci).get("kriteria");
+    if (mentah !== null) simpanKriteria(parseKriteria(mentah));
+  }, [kunci]);
+
+  return filter;
 }
 
 /**

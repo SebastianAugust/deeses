@@ -59,4 +59,4 @@ Palet alternatif (opsional, belum final): Mint `#0E7C66`, Peach `#C0391D`, Sakur
 - TOPSIS hanya tampil di halaman Detail.
 - Tanpa peta.
 - Semua nama kos & angka di mockup = DATA CONTOH.
-- State filter + kriteria terpasang (urut prioritas) lewat query params URL: `?budget=…&tipe=…&kriteria=harga,luas,…`.
+- State filter lewat query params URL: `?budget=…&tipe=…` (pendek). Kriteria terpasang (urut prioritas) disimpan di sessionStorage per tab (`src/lib/kriteria-tersimpan.ts`): bertahan saat refresh/pindah halaman, hilang saat browser ditutup. Link lama dengan `&kriteria=a,b,c` tetap dibaca dan menang atas rakitan sesi.

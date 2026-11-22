@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useToast } from "@/components/toast";
 import { MAKS_KRITERIA, infoKriteria, isKodeTersedia, type KodeKriteria } from "@/config/kriteria";
+import { simpanKriteria } from "./kriteria-tersimpan";
 import { buildHref, type FilterState } from "./query";
 import { gantiUrl } from "./use-filter";
 
@@ -23,8 +24,8 @@ export type Rakitan = {
 
 /**
  * SATU sumber state kriteria terpasang di halaman /prioritas (desktop & mobile).
- * Setiap perubahan langsung ditulis ke URL (?kriteria=…) tanpa navigasi, jadi
- * hasil, detail, dan tombol Back memakai rakitan yang sama.
+ * Setiap perubahan langsung ditulis ke sessionStorage (rakitan sesi, bukan URL
+ * supaya link pendek), jadi hasil, detail, dan tombol Back memakai rakitan yang sama.
  */
 export function useRakitan(filter: FilterState, pathname = "/prioritas"): Rakitan {
   const [kriteria, setKriteria] = useState<KodeKriteria[]>(filter.kriteria);
@@ -34,6 +35,7 @@ export function useRakitan(filter: FilterState, pathname = "/prioritas"): Rakita
   const simpan = useCallback(
     (baru: KodeKriteria[]) => {
       setKriteria(baru);
+      simpanKriteria(baru);
       gantiUrl(buildHref(pathname, { budget, tipe, kriteria: baru }));
     },
     [budget, tipe, pathname],

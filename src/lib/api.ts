@@ -1,4 +1,4 @@
-import { buildQuery, type FilterState } from "./query";
+import { buildApiQuery, type FilterState } from "./query";
 import type { SebaranHarga } from "./sebaran";
 import type {
   KosDetailResponse,
@@ -37,7 +37,7 @@ export async function fetchKosDetail(
   filter: FilterState,
   signal?: AbortSignal,
 ): Promise<KosDetailResponse> {
-  const res = await fetch(`/api/kos/${encodeURIComponent(id)}?${buildQuery(filter)}`, { signal });
+  const res = await fetch(`/api/kos/${encodeURIComponent(id)}?${buildApiQuery(filter)}`, { signal });
   if (!res.ok) {
     throw new ApiError(
       res.status === 404

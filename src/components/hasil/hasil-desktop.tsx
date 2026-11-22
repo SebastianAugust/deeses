@@ -15,6 +15,7 @@ import { ErrorCard } from "@/components/status-card";
 import { Logo } from "@/components/ui/logo";
 import { SITE_NAME } from "@/config/site";
 import { jelaskanPeringkat } from "@/lib/explain";
+import { simpanKriteria } from "@/lib/kriteria-tersimpan";
 import { PARAM_OK, buildHref, type FilterState } from "@/lib/query";
 import { gantiUrl, useFilter } from "@/lib/use-filter";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
@@ -67,6 +68,7 @@ export function HasilDesktop() {
   const delta = useRankDelta(daftar);
 
   function simpan(f: FilterState, p: string | null) {
+    simpanKriteria(f.kriteria);
     gantiUrl(buildHref("/hasil", f, { ...PARAM_OK, pilih: p }));
   }
   function terapkan(baru: FilterState) {

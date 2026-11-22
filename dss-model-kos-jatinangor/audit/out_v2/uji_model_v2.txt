@@ -1,0 +1,99 @@
+
+==============================================================================
+A. Inspeksi statis model_dss.py
+==============================================================================
+fungsi publik: ['__annotate__', 'filter_kos', 'hitung_bobot_ranksum', 'hitung_saw', 'hitung_topsis_minmax', 'normalisasi_minmax', 'rank_kos']
+signature rank_kos: (df_kos: pandas.DataFrame, budget: float, tipe: str, urutan_kriteria: list[str], fasilitas_wajib: list[str] | None = None, allow_campur: bool = False) -> dict
+signature filter_kos: (df: pandas.DataFrame, budget: float, tipe: str, fasilitas_wajib: list[str] | None = None, allow_campur: bool = False) -> pandas.DataFrame
+'fasilitas_prioritas' ada di model_dss.py?: False
+KATALOG_KRITERIA: 25 entri; cost: ['harga', 'C1', 'jarak_unpad_km', 'jarak_itb_km', 'C2']
+alias ganda di katalog (satu data, dua nama): [('harga', 'C1'), ('jarak_unpad_km/jarak_itb_km', 'C2=min'), ('luas_kamar_m2', 'C4')]
+kolom katalog yang SEMUA NaN di kos_scored.csv: tidak ada
+kolom C3,C5,C6,C7,C8 ada di katalog model?: tidak (benar)
+
+==============================================================================
+B. Validasi input & kasus tepi
+==============================================================================
+budget=None: ValueError: Budget harus lebih dari 0.
+budget=0: ValueError: Budget harus lebih dari 0.
+budget=-5: ValueError: Budget harus lebih dari 0.
+tipe='': ValueError: Tipe penghuni wajib diisi (putra / putri / campur).
+tipe=None: ValueError: Tipe penghuni wajib diisi (putra / putri / campur).
+tipe='perempuan': OK -> 61
+tipe='laki-laki': OK -> 24
+tipe='Putri ' (spasi/kapital): OK -> 61
+tipe='xyz': ValueError: Tipe penghuni tidak valid: 'xyz'.
+F3 ['kamar mandi dalam']: ValueError: Nama fasilitas tidak dikenal: 'kamar mandi dalam'.
+F3 ['wifii']: ValueError: Nama fasilitas tidak dikenal: 'wifii'.
+F3 ['harga']: ValueError: Nama fasilitas tidak dikenal: 'harga'.
+F3 ['k_mandi_dalam','ac']: OK -> 2
+F3 ['AC']  (kapital): OK -> 2
+allow_campur putri<=1jt: False=61, True=166
+allow_campur diteruskan lewat rank_kos: False=61, True=166 -> YA
+urutan [] : ValueError: Minimal 1 kriteria harus dipilih.
+urutan duplikat: ValueError: Kriteria tidak boleh ada yang ganda/duplikat.
+kriteria 'C3': ValueError: Kriteria 'C3' tidak ada di katalog.
+kriteria 'alamat': ValueError: Kriteria 'alamat' tidak ada di katalog.
+kriteria 'harga','C1' (alias ganda, satu data dihitung dua kali): OK -> {'harga': 0.6666666666666666, 'C1': 0.3333333333333333}
+kriteria 'C2','jarak_unpad_km','jarak_itb_km' (min + dua komponennya): OK -> {'C2': 0.5, 'jarak_unpad_km': 0.3333333333333333, 'jarak_itb_km': 0.16666666666666666}
+kriteria huruf kecil 'c1': ValueError: Kriteria 'c1' tidak ada di katalog.
+
+==============================================================================
+C. Bobot rank-sum dinamis (n = jumlah terpasang)
+==============================================================================
+n= 1: jumlah bobot=1.000000000000000; maks selisih vs eksak=0.0e+00; bobot di output rank_kos (dibulatkan 4 desimal) jumlah=1.0000; OK
+n= 2: jumlah bobot=1.000000000000000; maks selisih vs eksak=0.0e+00; bobot di output rank_kos (dibulatkan 4 desimal) jumlah=1.0000; OK
+n= 3: jumlah bobot=1.000000000000000; maks selisih vs eksak=0.0e+00; bobot di output rank_kos (dibulatkan 4 desimal) jumlah=1.0000; OK
+n= 4: jumlah bobot=1.000000000000000; maks selisih vs eksak=0.0e+00; bobot di output rank_kos (dibulatkan 4 desimal) jumlah=1.0000; OK
+n= 8: jumlah bobot=1.000000000000000; maks selisih vs eksak=0.0e+00; bobot di output rank_kos (dibulatkan 4 desimal) jumlah=1.0000; OK
+n=12: jumlah bobot=1.000000000000000; maks selisih vs eksak=0.0e+00; bobot di output rank_kos (dibulatkan 4 desimal) jumlah=0.9999; OK
+n=12 bobot: [0.153846, 0.141026, 0.128205, 0.115385, 0.102564, 0.089744, 0.076923, 0.064103, 0.051282, 0.038462, 0.025641, 0.012821]
+SEMUA n lulus: True
+
+==============================================================================
+D. Model vs mesin independen (Decimal 60 digit): grid skenario
+==============================================================================
+hasil agregat: {"skenario": 144, "cocok_jumlah": 144, "maks_saw": 0.0, "maks_top": 0.0, "maks_norm": 5e-05, "urutan_beda": 16, "rank_beda": 0, "spearman_maks": 0.004133249753, "spearman_n": 143, "json_ok": 144, "rank_unik_ok": 144, "urutan_beda_id_str": 32, "tie_penuh": 78, "kosong_spearman_null": 0, "beda_akibat_noise_float": 16}
+-> skenario: 144; jumlah kandidat sama: 144; JSON valid (allow_nan=False): 144; rank unik 1..n: 144
+-> maks |SAW model - SAW eksak| (mentah float) = 2.22e-16; TOPSIS = 2.22e-16; skor 4 desimal vs eksak = 5.00e-05
+-> urutan id BEDA antara model (sort float mentah) dan mesin eksak (round 9 desimal): 16 skenario
+   contoh: (800000, 'putra', ['kloset_duduk', 'parkir_motor', 'bayar_tahunan', 'shower', 'bayar_bulanan', 'ac', 'tv', 'penjaga', 'wifi', 'cctv', 'listrik', 'harga'], False, 'posisi 10', 86682592, 33353294, '|selisih SAW mentah|=1.11e-16')
+   contoh: (800000, 'putri', ['shower', 'km_dalam', 'parkir_motor', 'luas', 'jendela', 'listrik', 'parkir_mobil', 'air_panas'], True, 'posisi 15', 18641054, 41650127, '|selisih SAW mentah|=1.11e-16')
+   contoh: (1000000, 'putra', ['kloset_duduk', 'bayar_tahunan', 'luas', 'wifi', 'bayar_bulanan', 'jendela', 'harga', 'ac', 'km_dalam', 'ruang_tamu'], False, 'posisi 8', 63060167, 84658937, '|selisih SAW mentah|=1.11e-16')
+   contoh: (1200000, 'putra', ['wifi', 'parkir_mobil', 'bayar_tahunan', 'bayar_bulanan'], False, 'posisi 7', 57900148, 96231200, '|selisih SAW mentah|=1.11e-16')
+   contoh: (1200000, 'campur', ['air_panas', 'tv', 'jendela', 'ruang_jemur', 'penjaga', 'bayar_tahunan', 'shower', 'kloset_duduk', 'ac', 'parkir_motor'], False, 'posisi 105', 40027164, 75681604, '|selisih SAW mentah|=2.78e-17')
+   contoh: (1500000, 'putri', ['penjaga', 'kloset_duduk', 'listrik', 'parkir_motor', 'luas', 'bayar_tahunan'], True, 'posisi 69', 94411849, 41699654, '|selisih SAW mentah|=1.11e-16')
+-> skenario dgn seri penuh (SAW, TOPSIS, harga sama): 78; di antaranya urutan berubah bila id dibanding sbg STRING (TS) vs ANGKA (Python/eksak): 32
+-> Spearman: maks selisih = 4.13e-03 (n=143); skenario Spearman beda lebih dari 1e-3 / null tak cocok: 7
+   contoh: (1000000, 'putra', ['kloset_duduk', 'bayar_tahunan', 'luas', 'wifi', 'bayar_bulanan', 'jendela', 'harga', 'ac', 'km_dalam', 'ruang_tamu'], 0.9791, 0.9819526216040857, 24)
+   contoh: (1000000, 'putri', ['listrik', 'ruang_tamu', 'bayar_tahunan', 'ruang_jemur', 'shower', 'jendela'], 0.9881, 0.9859844479647266, 61)
+   contoh: (1000000, 'putri', ['kloset_duduk', 'luas', 'bayar_bulanan', 'ruang_jemur', 'parkir_motor', 'bayar_tahunan', 'listrik', 'jendela', 'km_dalam', 'harga'], 0.9704, 0.9691632370778794, 61)
+   contoh: (1200000, 'putra', ['wifi', 'parkir_mobil', 'bayar_tahunan', 'bayar_bulanan'], 0.9965, 1.0, 35)
+   contoh: (1500000, 'putri', ['penjaga', 'kloset_duduk', 'listrik', 'parkir_motor', 'luas', 'bayar_tahunan'], 0.9963, 0.9975817792992734, 241)
+   contoh: (1500000, 'campur', ['parkir_motor', 'kloset_duduk', 'air_panas', 'listrik'], 0.9808, 0.9849332497529543, 143)
+
+==============================================================================
+E. Seri floating point: apakah sort pada skor mentah stabil lintas bahasa?
+==============================================================================
+skenario dengan pasangan SAW 'hampir sama tapi tidak identik' (0 < selisih < 1e-9) pada skor mentah float: 11
+   contoh: (800000, 'putri', ['shower', 'penjaga', 'harga', 'ruang_jemur'], 2, 5.551115123125783e-17)
+   contoh: (1000000, 'campur', ['jendela', 'penjaga', 'km_dalam', 'harga', 'ac', 'parkir_motor', 'cctv', 'air_panas'], 2, 1.1102230246251565e-16)
+   contoh: (1200000, 'putra', ['parkir_motor', 'cctv', 'tv', 'jendela'], 2, 1.1102230246251565e-16)
+
+==============================================================================
+F. Kasus tepi Spearman, 0/1/2 kandidat, kolom konstan
+==============================================================================
+campur <= 300,000: kandidat=0 spearman=None skor_saw=[] json_ok=True
+putri <= 500,000: kandidat=1 spearman=None skor_saw=[1.0] json_ok=True
+putri <= 550,000: kandidat=2 spearman=None skor_saw=[1.0, 0.1667] json_ok=True
+putra <= 500,000: kandidat=3 spearman={'rho': 1.0, 'p_value': 0.0} skor_saw=[0.8333, 0.7887, 0.5556] json_ok=True
+5 kos identik: spearman=None skor_saw=[1.0, 1.0, 1.0, 1.0, 1.0] rank=[1, 2, 3, 4, 5] (urut id naik bila semua seri)
+10 baris jarak_itb_km dikosongkan: jumlah_tanpa_data=6 (per-kriteria tidak dilaporkan; kunci output = ['bobot', 'hasil', 'jumlah_tanpa_data', 'spearman', 'total_kandidat'])
+
+==============================================================================
+G. Subset kriteria arbitrer lewat rank_kos (n = 1, 2, 4, 12)
+==============================================================================
+n= 1: kandidat=57 tanpa_data=0 sum(bobot)=1.0000 spearman={'rho': 1.0, 'p_value': 0.0} #1=Kost Wisma Merpati Tipe B SAW=1.0 TOPSIS=1.0 kunci_skor_kriteria=1
+n= 2: kandidat=57 tanpa_data=0 sum(bobot)=1.0000 spearman={'rho': 0.9889, 'p_value': 0.0} #1=Kost Pak Amung Hegarmanah SAW=0.95 TOPSIS=0.9354 kunci_skor_kriteria=2
+n= 4: kandidat=57 tanpa_data=0 sum(bobot)=1.0000 spearman={'rho': 0.972, 'p_value': 0.0} #1=Kost Wisma Merpati Tipe B SAW=0.8645 TOPSIS=0.8367 kunci_skor_kriteria=4
+n=12: kandidat=57 tanpa_data=0 sum(bobot)=0.9999 spearman={'rho': 0.8534, 'p_value': 0.0} #1=Kost Pojok Besar Tipe A SAW=0.8228 TOPSIS=0.6933 kunci_skor_kriteria=12

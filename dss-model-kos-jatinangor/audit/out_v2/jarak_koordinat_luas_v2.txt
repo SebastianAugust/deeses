@@ -1,0 +1,58 @@
+== Korelasi tiga sumber jarak (Pearson / Spearman) ==
+Unpad: n=180  OSRM~listing 0.049/0.106 | garis-lurus~listing 0.097/0.077 | garis-lurus~OSRM 0.605/0.446
+ITB: n=174  OSRM~listing 0.082/0.080 | garis-lurus~listing -0.020/0.042 | garis-lurus~OSRM 0.332/0.336
+
+== Jarak Unpad (OSRM) per bin garis-lurus ==
+              n  osrm_med  osrm_min  osrm_max
+bin                                          
+(0.0, 0.5]   39      0.80      0.13      5.65
+(0.5, 1.0]  103      4.87      0.66      6.63
+(1.0, 1.5]   99      4.89      2.21      6.38
+(1.5, 2.0]   97      5.29      4.05      7.00
+(2.0, 3.0]   19      5.54      4.52      6.91
+
+kos dgn garis-lurus Unpad <0.5 km tetapi rute Unpad > 3 km: 2
+      id                                                      nama    hu  jarak_unpad_km  jarak_itb_km
+14511404                                        Kost Annisa Tipe A 0.411           5.648         3.011
+55858046                                   Kost Pondok Aira Tipe B 0.416           3.102         3.562
+43688036                            Kost Pondok Artha STPDN Tipe B 0.406           2.599         3.005
+80127548                                      Kost Pondok Marmer 1 0.406           2.599         3.005
+27623889 Kost Pondok Pertama Sukawening Tipe C Jatinangor Sumedang 0.440           2.582         3.022
+
+== Kos 'Cileunyi' & 'Rancaekek' ==
+      id                                       nama    lat     lng    hu    hi  jarak_unpad_km  jarak_itb_km
+10744712 Kost Haffair Rancaekek Jatinangor Sumedang -6.927 107.782 0.830 1.447           5.897         3.260
+20937649       Kost Fengsui Tipe A Cileunyi Bandung -6.926 107.772 0.348 0.373           0.784         4.492
+
+== Koordinat sama persis dipakai nama berbeda-basis? ==
+titik koordinat identik dipakai >1 kos: 90 titik; dari itu basis nama BERBEDA (kemungkinan koordinat tebakan/geokode area): 90
+                      n  basis                                                                                nama
+lat       lng                                                                                                     
+-6.944003 107.770818  2      2                                 Kost Abu Ijo Tipe Standar | Kost Pojok Besar Tipe A
+-6.943801 107.764378  2      2  Kost Pondok Sakinah 2 Tipe A | Kost Pondok Cikuda Indah Tipe B Jatinangor Sumedang
+-6.943552 107.770298  2      2                     Kost Pondok Ayra Tipe A | Kost Pondok Bunda Rama Tipe Executive
+-6.943336 107.773642  2      2  Kost Pondok Rayne Jaya Tipe A View Taman | Kost Puspita Tipe C Jatinangor Sumedang
+-6.943099 107.775170  2      2                                                        Kost Rivita | Kost Kanayakan
+-6.942876 107.780962  2      2                                               Kost Pojok Besar Tipe C | Kost The 75
+-6.942744 107.764239  2      2                                   Kost Pondok Dara I Tipe B | Kost Caringin Ganesha
+-6.942491 107.770717  2      2                          Kost Fathmi Tipe A | Kost Granada Panoramic Tipe Exclusive
+
+== Luas: 59 baris yang jadi 12 padahal teks xlsx lama bukan 12 ==
+n=59; contoh teks lama -> luas baru:
+      id ukuran_kamar  dari_teks  luas_kamar_m2
+38447336        4x2.6      10.40           12.0
+26351311        5x4.5      22.50           12.0
+12759551          3x3       9.00           12.0
+17522908        2.5x4      10.00           12.0
+18641054        2.5x3       7.50           12.0
+43688036        3x2.5       7.50           12.0
+17852343          3x3       9.00           12.0
+29692671      4.5x4.5      20.25           12.0
+distribusi dari_teks pada 59 baris itu (ringkas): {9.0: 29, 7.5: 4, 15.0: 4, 20.0: 3, 16.0: 3, 30.0: 2, 24.0: 2, 10.4: 1}
+baris lain selisih luas baru vs teks lama (bukan 12): 4
+      id ukuran_kamar  dari_teks  luas_kamar_m2
+64121173        4.5x3       13.5          14.50
+67906862        4x4.5       18.0          14.00
+78614919        4x4.5       18.0          14.00
+95233312        3x425     1275.0          12.75
+jumlah teks lama tepat '3x4' atau 12 m2: 137

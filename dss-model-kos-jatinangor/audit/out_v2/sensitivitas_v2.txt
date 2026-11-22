@@ -1,0 +1,15 @@
+Sensitivitas urutan prioritas. Mesin: numpy vektor, skor dibulatkan 9 desimal sebelum ranking, pemutus seri TOPSIS -> harga -> id.
+
+### SET4 (default app: harga, jarak_kampus, luas, cctv) 4! = 24
+skenario	kandidat	urutan	#1_berbeda	#1_paling_sering(%)	top3_berbeda	#1_SAW==#1_TOPSIS(%)	rho_min	rho_p5	rho_median
+<= 1 jt putri	61	24	3	Kost Bunda 1 Tipe Vip (45.8%)	6	87.5	0.944	0.947	0.972
+<= 1 jt putra	24	24	4	Kost Dyana (33.3%)	7	66.7	0.887	0.901	0.964
+<= 1.5 jt putri	98	24	5	Kost Bunda 1 Tipe Vip (33.3%)	9	87.5	0.930	0.934	0.972
+<= 1.5 jt campur	143	24	8	Kost Pondok Maharani Tipe A2 Jatinangor Sumedang (25.0%)	16	83.3	0.909	0.912	0.961
+
+### SET8 (harga, jarak_kampus, luas, km_dalam, ac, wifi, cctv, penjaga) 8! = 40.320
+skenario	kandidat	urutan	#1_berbeda	#1_paling_sering(%)	top3_berbeda	#1_SAW==#1_TOPSIS(%)	rho_min	rho_p5	rho_median
+<= 1 jt putri	61	40320	5	Kost Wisma Triarga Tipe Executive (45.5%)	17	90.0	0.869	0.929	0.977
+<= 1 jt putra	24	40320	4	Kost Dyana (59.8%)	10	70.9	0.584	0.877	0.974
+<= 1.5 jt putri	98	40320	5	Kost Pondok Niaibas Tipe A (71.9%)	24	74.3	0.820	0.917	0.974
+<= 1.5 jt campur	143	40320	9	Kost Wisma Pelangi 1 (35.9%)	49	77.2	0.705	0.887	0.975

@@ -1,0 +1,7 @@
+id bersama: 357
+flag berubah vs CSV lama (baris x kolom): 0
+harga berubah: 0 | tipe_penghuni berubah: 0 | nama berubah: 0
+C4_lama vs luas baru: baris beda >0.01: 61 dari 357
+C2 lama vs C2 baru: Pearson -0.033 Spearman -0.005 | median lama 1.1 median baru 2.045
+lat/lng lama kosong: 357 -> baru terisi: 357
+peringkat berubah: SAW/TOPSIS tidak dibandingkan (skema kriteria berbeda).

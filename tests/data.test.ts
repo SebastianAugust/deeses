@@ -61,6 +61,11 @@ describe("mapper baris → Kos", () => {
       wifi: 1,
       ruang_tamu: 1,
       ruang_jemur: 1,
+      shower: 0,
+      kloset_duduk: 0,
+      tv: 1,
+      bayar_bulanan: 1,
+      bayar_tahunan: 1,
     });
     expect(k.jarak_imputasi).toBe(false);
     expect(isKosLengkap(k)).toBe(true);

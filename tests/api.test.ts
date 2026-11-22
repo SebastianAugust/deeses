@@ -56,7 +56,7 @@ const CSV = bacaCsv(
 
 // ---------------------------------------------------------------------------
 describe("katalog kriteria (src/config/kriteria.ts)", () => {
-  it("memuat 20 piece usulan dengan kategori & jenis yang benar", () => {
+  it("memuat 25 piece usulan dengan kategori & jenis yang benar", () => {
     const usulan: [string, string, string][] = [
       ["harga", "biaya", "cost"], ["deposit", "biaya", "cost"], ["listrik", "biaya", "benefit"],
       ["jarak_unpad", "lokasi", "cost"], ["jarak_itb", "lokasi", "cost"], ["minimarket", "lokasi", "cost"],
@@ -65,6 +65,8 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
       ["penjaga", "keamanan", "benefit"], ["akses24", "keamanan", "benefit"], ["parkir_motor", "bersama", "benefit"],
       ["parkir_mobil", "bersama", "benefit"], ["dapur", "bersama", "benefit"], ["wifi", "bersama", "benefit"],
       ["jam_malam", "aturan", "cost"], ["tamu", "aturan", "cost"],
+      ["tv", "kamar", "benefit"], ["shower", "kamar", "benefit"], ["kloset_duduk", "kamar", "benefit"],
+      ["bayar_bulanan", "biaya", "benefit"], ["bayar_tahunan", "biaya", "benefit"],
     ];
     for (const [kode, kategori, jenis] of usulan) {
       expect(getKriteria(kode), kode).toMatchObject({ kategori, jenis });
@@ -126,11 +128,18 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
     expect(isKodeTersedia("deposit")).toBe(false);
     expect(isKodeTersedia("harga")).toBe(true);
     expect(isKodeKriteria("C1")).toBe(false);
-    expect(kriteriaPerKategori("biaya").map((k) => k.kode)).toEqual(["harga", "listrik"]);
+    expect(kriteriaPerKategori("biaya").map((k) => k.kode)).toEqual([
+      "harga",
+      "listrik",
+      "bayar_bulanan",
+      "bayar_tahunan",
+    ]);
     expect(kriteriaPerKategori("biaya", { hanyaTersedia: false }).map((k) => k.kode)).toEqual([
       "harga",
       "deposit",
       "listrik",
+      "bayar_bulanan",
+      "bayar_tahunan",
     ]);
     const kelompok = katalogTerkelompok();
     expect(kelompok.map((k) => k.kode)).not.toContain("aturan");

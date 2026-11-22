@@ -1,0 +1,45 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api.test.ts > katalog kriteria (src/config/kriteria.ts) > piece tersedia: kolomnya ada di kos_scored.csv dan nilainya TIDAK konstan
+AssertionError: expected 357 to be 360 // Object.is equality
+
+- Expected
++ Received
+
+- 360
++ 357
+
+ ❯ tests/api.test.ts:96:24
+     94|
+     95|   it("piece tersedia: kolomnya ada di kos_scored.csv dan nilainya TIDA…
+     96|     expect(CSV.length).toBe(360);
+       |                        ^
+     97|     for (const k of KRITERIA_TERSEDIA) {
+     98|       const nilai = new Set(CSV.map((b) => bacaSumber(b, k.sumber!)));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/api.test.ts > katalog kriteria (src/config/kriteria.ts) > piece tidak tersedia: tanpa sumber, dengan alasan, dan kolomnya memang tidak ada di data
+AssertionError: expected [ Array(37) ] to not include 'jarak_unpad_km'
+ ❯ tests/api.test.ts:115:26
+    113|       expect(kolomCsv).not.toContain(k.kode);
+    114|     }
+    115|     expect(kolomCsv).not.toContain("jarak_unpad_km");
+       |                          ^
+    116|     expect(kolomCsv).not.toContain("jarak_itb_km");
+    117|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 69 passed (71)
+   Start at  17:46:09
+   Duration  2.54s (transform 630ms, setup 0ms, import 3.89s, tests 293ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice

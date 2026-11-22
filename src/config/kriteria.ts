@@ -82,6 +82,16 @@ const DATA_KATALOG = [
     sumber: { kolom: "termasuk_listrik", tipe: "biner" }, satuan: "ya/tidak",
     deskripsi: "Tanpa token atau tagihan listrik terpisah.", tersedia: true,
   },
+  {
+    kode: "bayar_bulanan", nama: "Bisa bayar per bulan", singkat: "bayar per bulan", kategori: "biaya", jenis: "benefit",
+    sumber: { kolom: "pembayaran_per_bulan", tipe: "biner" }, satuan: "ya/tidak",
+    deskripsi: "Kos menerima pembayaran sewa per bulan. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
+  },
+  {
+    kode: "bayar_tahunan", nama: "Bisa bayar per tahun", singkat: "bayar per tahun", kategori: "biaya", jenis: "benefit",
+    sumber: { kolom: "pembayaran_per_tahun", tipe: "biner" }, satuan: "ya/tidak",
+    deskripsi: "Kos menerima pembayaran sewa per tahun. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
+  },
   // ------------------------------- lokasi ------------------------------
   {
     // C2 = min(jarak Unpad, jarak ITB) dari prepare_data.py. Satu-satunya kolom
@@ -140,6 +150,23 @@ const DATA_KATALOG = [
     kode: "jendela", nama: "Jendela", singkat: "jendela", kategori: "kamar", jenis: "benefit",
     sumber: { kolom: "jendela", tipe: "biner" }, satuan: "ya/tidak",
     deskripsi: "Kamar punya jendela.", tersedia: true,
+  },
+  // Piece biner di bawah: 0 di data bisa berarti "tidak ada" ATAU "tidak tercantum di iklan"
+  // (tidak bisa dibedakan). Perhitungan tetap memakai 0 dan kos tidak dikecualikan.
+  {
+    kode: "shower", nama: "Shower", singkat: "shower", kategori: "kamar", jenis: "benefit",
+    sumber: { kolom: "shower", tipe: "biner" }, satuan: "ya/tidak",
+    deskripsi: "Kamar mandi memakai shower. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
+  },
+  {
+    kode: "kloset_duduk", nama: "Kloset duduk", singkat: "kloset duduk", kategori: "kamar", jenis: "benefit",
+    sumber: { kolom: "kloset_duduk", tipe: "biner" }, satuan: "ya/tidak",
+    deskripsi: "Kamar mandi memakai kloset duduk. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
+  },
+  {
+    kode: "tv", nama: "TV", singkat: "TV", kategori: "kamar", jenis: "benefit",
+    sumber: { kolom: "tv", tipe: "biner" }, satuan: "ya/tidak",
+    deskripsi: "Kamar dilengkapi televisi. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
   },
   {
     kode: "furnitur", nama: "Furnitur lengkap", singkat: "furnitur", kategori: "kamar", jenis: "benefit",

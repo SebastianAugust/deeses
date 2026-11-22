@@ -1,0 +1,26 @@
+kode	kolom	jenis	terisi%	unik	min	median	max	n_nilai1	%nilai1	konstan	keluar_dari_distribusi
+harga	harga	cost	100.0	103	416667	1e+06	3.5e+06			tidak	modus=6.2%
+listrik	termasuk_listrik	benefit	100.0	2	0	0	1	27	7.6	tidak	modus=92.4%
+bayar_bulanan	pembayaran_per_bulan	benefit	100.0	2	0	1	1	268	75.1	tidak	modus=75.1%
+bayar_tahunan	pembayaran_per_tahun	benefit	100.0	2	0	1	1	254	71.1	tidak	modus=71.1%
+luas	luas_kamar_m2	benefit	100.0	35	4	12	30			tidak	modus=54.9%
+km_dalam	k_mandi_dalam	benefit	100.0	2	0	1	1	238	66.7	tidak	modus=66.7%
+ac	ac	benefit	100.0	2	0	0	1	91	25.5	tidak	modus=74.5%
+jendela	jendela	benefit	100.0	2	0	1	1	244	68.3	tidak	modus=68.3%
+tv	tv	benefit	100.0	2	0	0	1	113	31.7	tidak	modus=68.3%
+shower	shower	benefit	100.0	2	0	1	1	217	60.8	tidak	modus=60.8%
+air_panas	air_panas	benefit	100.0	2	0	0	1	111	31.1	tidak	modus=68.9%
+kloset_duduk	kloset_duduk	benefit	100.0	2	0	1	1	224	62.7	tidak	modus=62.7%
+cctv	cctv	benefit	100.0	2	0	0	1	151	42.3	tidak	modus=57.7%
+penjaga	penjaga	benefit	100.0	2	0	1	1	218	61.1	tidak	modus=61.1%
+parkir_motor	parkir_motor_sepeda	benefit	100.0	2	0	1	1	327	91.6	tidak	modus=91.6%
+parkir_mobil	parkir_mobil	benefit	100.0	2	0	0	1	170	47.6	tidak	modus=52.4%
+wifi	wifi	benefit	100.0	2	0	1	1	310	86.8	tidak	modus=86.8%
+ruang_tamu	ruang_tamu	benefit	100.0	2	0	0	1	124	34.7	tidak	modus=65.3%
+ruang_jemur	ruang_jemur	benefit	100.0	2	0	1	1	210	58.8	tidak	modus=58.8%
+jarak_unpad	jarak_unpad_km	cost	100.0	252	0.13	4.851	6.999			tidak	modus=1.1%
+jarak_itb	jarak_itb_km	cost	100.0	250	0	2.519	7.586			tidak	modus=1.1%
+jarak_kampus	C2	cost	100.0	247	0	2.045	5.331			tidak	modus=1.1%
+deposit	(tidak ada kolom)	-	0.0	0	-	-	-			N/A	
+minimarket	(tidak ada kolom)	-	0.0	0	-	-	-			N/A	
+pasar	(tidak ada kolom)	-	0.0	0	-	-	-			N/A	

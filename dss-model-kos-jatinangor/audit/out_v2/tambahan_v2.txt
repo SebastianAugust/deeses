@@ -1,0 +1,7 @@
+corr unpad-itb pearson/spearman -0.193 0.088
+C2==1.1 rows: 0
+harga min per tipe: {'campur': 416666.67, 'putra': 500000.0, 'putri': 500000.0}
+putra 500000 3
+putri 500000 1
+campur 500000 16
+putri 550000 2

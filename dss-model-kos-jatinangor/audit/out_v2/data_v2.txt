@@ -1,0 +1,176 @@
+
+==============================================================================
+1. Bentuk file
+==============================================================================
+kos_scored.csv: 357 baris x 37 kolom
+kolom: ['id', 'nama', 'alamat', 'lat', 'lng', 'tipe_penghuni', 'harga', 'jarak_unpad_km', 'jarak_itb_km', 'luas_kamar_m2', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'url_gambar1', 'termasuk_listrik', 'jendela', 'k_mandi_dalam', 'kloset_duduk', 'kloset_jongkok', 'shower', 'air_panas', 'cctv', 'wifi', 'penjaga', 'ac', 'parkir_mobil', 'parkir_motor_sepeda', 'tv', 'ruang_tamu', 'ruang_jemur', 'pembayaran_per_bulan', 'pembayaran_per_tahun']
+dataset_kos_v1.csv: 360 baris x 27 kolom; kolom: ['id', 'nama_kos', 'tipe_kos', 'harga', 'jarak_ke_unpad', 'jarak_ke_itb', 'luas_kamar_m2', 'termasuk_listrik', 'jendela', 'k_mandi_dalam', 'kloset duduk', 'kloset_jongkok', 'shower', 'air_panas', 'cctv', 'wifi', 'penjaga', 'ac', 'parkir_mobil', 'parkir_motor_sepeda', 'tv', 'ruang_tamu', 'ruang_jemur', 'pembayaran_per_bulan', 'pembayaran_per_tahun', 'lat', 'lng']
+kos_scored lama (git 83e92b2): (360, 34); xlsx lama: (360, 25)
+kolom hilang dibanding CSV lama: ['url']
+kolom baru dibanding CSV lama: ['jarak_itb_km', 'jarak_unpad_km', 'luas_kamar_m2', 'url_gambar1']
+dtype CSV baru: {'id': 'int64', 'nama': 'str', 'alamat': 'float64', 'lat': 'float64', 'lng': 'float64', 'tipe_penghuni': 'str', 'harga': 'float64', 'jarak_unpad_km': 'float64', 'jarak_itb_km': 'float64', 'luas_kamar_m2': 'float64', 'C1': 'float64', 'C2': 'float64', 'C3': 'float64', 'C4': 'float64', 'C5': 'float64', 'C6': 'float64', 'C7': 'float64', 'C8': 'float64', 'url_gambar1': 'float64', 'termasuk_listrik': 'int64', 'jendela': 'int64', 'k_mandi_dalam': 'int64', 'kloset_duduk': 'int64', 'kloset_jongkok': 'int64', 'shower': 'int64', 'air_panas': 'int64', 'cctv': 'int64', 'wifi': 'int64', 'penjaga': 'int64', 'ac': 'int64', 'parkir_mobil': 'int64', 'parkir_motor_sepeda': 'int64', 'tv': 'int64', 'ruang_tamu': 'int64', 'ruang_jemur': 'int64', 'pembayaran_per_bulan': 'int64', 'pembayaran_per_tahun': 'int64'}
+null per kolom: {'alamat': 357, 'C3': 357, 'C5': 357, 'C6': 357, 'C7': 357, 'C8': 357, 'url_gambar1': 357}
+kolom 100% kosong: ['alamat', 'C3', 'C5', 'C6', 'C7', 'C8', 'url_gambar1']
+
+==============================================================================
+2. Baris: apa yang dibuang dibanding v1 / lama
+==============================================================================
+id v1 unik: 360 | duplikat id v1: 0
+id ada di v1 tapi tidak di kos_scored: 3
+      id                                              nama_kos tipe_kos      harga
+10145377 Rumah Kontrakan Sweethome Fasyiha Jatinangor Sumedang   campur 1666666.67
+44117935            Rumah Kontrakan Bu Eli Jatinangor Sumedang   campur 1666666.67
+45096476       Rumah Kontrakan Cukup Besar Jatinangor Sumedang   campur    1250000
+id di kos_scored tapi tidak di v1: []
+id di CSV lama tapi tidak di baru: 3 | id baru tapi tidak di lama: 0
+nama mengandung 'kontrakan' di kos_scored: 0
+nama duplikat di kos_scored: 3 baris duplikat (3 nama)
+      id                  nama tipe_penghuni     harga  luas_kamar_m2
+83438330      Kost Hoop Tipe B        campur  950000.0           6.00
+89840015      Kost Hoop Tipe B        campur 1250000.0          12.00
+28172766      Kost Hoop Tipe C        campur 1250000.0          12.00
+73878364      Kost Hoop Tipe C        campur  950000.0          12.00
+17852343 Kost Pondok Sakinah 1         putri  800000.0          12.00
+82314475 Kost Pondok Sakinah 1        campur  750000.0           8.75
+  nama mengandung 'rancaekek': 1
+  nama mengandung 'cileunyi': 1
+  nama mengandung 'bandung': 5
+  nama mengandung 'sumedang': 87
+  nama mengandung 'jatinangor': 87
+  nama Rancaekek/Cileunyi:
+      id                                       nama  jarak_unpad_km  jarak_itb_km
+10744712 Kost Haffair Rancaekek Jatinangor Sumedang           5.897         3.260
+20937649       Kost Fengsui Tipe A Cileunyi Bandung           0.784         4.492
+
+==============================================================================
+3. Koordinat lat/lng
+==============================================================================
+lat/lng terisi: 357/357; numerik valid: 357
+lat range [-6.950825,-6.917591] lng range [107.758983,107.786673]
+di dalam kotak (-6.97, -6.89, 107.74, 107.81): 357; di luar: 0
+Empty DataFrame
+Columns: [id, nama, lat, lng]
+Index: []
+lat==0 atau lng==0: 0
+pasangan (lat,lng) persis sama: 90 pasangan, 180 baris terlibat; maks 2 kos di satu titik
+setelah dibulatkan 4 desimal (~11 m): 89 titik dipakai >1 kos, 180 baris; maks 4
+dibulatkan 3 desimal (~110 m): maks 6 kos di satu sel; sel dgn >=5 kos: 5
+jumlah desimal lat (distribusi): {4: 2, 5: 5, 6: 50, 7: 275, 8: 1, 9: 24}
+lat/lng bertipe di CSV: dtype lat = float64 | lng = float64 (Supabase: teks; CSV: float64 -> tipe beda tapi aman jika di-cast ke text)
+string lat berformat tidak biasa (bukan -6.xxxx): 0
+lat/lng v1 vs kos_scored (id sama) identik: True
+
+==============================================================================
+4. Jarak ke kampus
+==============================================================================
+jarak_unpad_km: terisi 357/357, null 0, min 0.130, median 4.851, max 6.999, unik 252
+jarak_itb_km: terisi 357/357, null 0, min 0.000, median 2.519, max 7.586, unik 250
+C2: terisi 357/357, null 0, min 0.000, median 2.045, max 5.331, unik 247
+C2 == min(unpad, itb) di semua baris: True
+jarak Unpad dan ITB sama persis di baris yang sama: 0
+jarak = 0.0 : unpad 0, itb 1
+jarak > 5 km: unpad 154, itb 6; C2 > 3 km: 83
+jarak_unpad_km vs garis lurus (haversine ke titik acuan): rute<garis lurus*0.98 pada 0 baris (mustahil untuk rute jalan); rasio rute/garis-lurus median 3.63, p90 6.48, maks 13.7
+jarak_itb_km vs garis lurus (haversine ke titik acuan): rute<garis lurus*0.98 pada 1 baris (mustahil untuk rute jalan); rasio rute/garis-lurus median 1.99, p90 5.64, maks 12.0
+haversine ke Unpad: median 1.21 km, maks 2.79; ke ITB: median 1.14, maks 2.53
+jarak antara 2 titik acuan (Unpad-ITB) garis lurus: 0.652 km
+kos yang lebih dekat ke ITB dari Unpad (rute): 286; ke Unpad: 71
+jarak_unpad_km (OSRM) vs jarak_ke_unpad (listing v1): n=180, Pearson=0.049, Spearman=0.106, rute/listing median=5.25, baris selisih>1 km: 161
+jarak_itb_km (OSRM) vs jarak_ke_itb (listing v1): n=174, Pearson=0.082, Spearman=0.080, rute/listing median=1.83, baris selisih>1 km: 98
+jarak listing v1 terisi: unpad 180, itb 174, keduanya kosong 59
+contoh selisih terbesar Unpad (OSRM vs listing):
+      id                         nama  hav_unpad  jarak_unpad_km  jarak_ke_unpad
+15940175 Kost Griya Purnama Executive   1.981946           6.697           0.638
+45048480      Kost Pojok Besar Tipe C   1.986402           6.724           0.680
+72615213 Kost 251 Jatinangor Sumedang   1.956164           6.791           0.750
+21702104                Kost Zynniana   1.617101           6.550           0.635
+55389428                  Kost Dharis   1.921558           6.899           1.000
+53157760   Kost Pondok Kaca II Tipe B   0.899234           5.971           0.073
+kolom flag imputasi jarak ada?: TIDAK ADA
+kolom jarak_metode / titik gerbang ada di CSV?: TIDAK ADA (hanya di komentar/konstanta prepare_data.py:8-9)
+
+==============================================================================
+5. Alamat, url, foto, kontak
+==============================================================================
+alamat terisi: 0/357; nilai unik non-null: []
+url_gambar1 terisi: 0/357
+kolom url listing ada?: TIDAK ADA
+kolom foto_url ada?: TIDAK ADA
+kolom kontak/wa/telp ada?: TIDAK ADA
+kolom deposit ada?: TIDAK ADA
+kolom minimarket/pasar/laundry ada?: TIDAK ADA
+CSV lama: alamat unik: ['Jatinangor, Sumedang'] | lat terisi: 0
+
+==============================================================================
+6. Harga
+==============================================================================
+harga: min 416,667 median 1,000,000 max 3,500,000; unik 103
+harga berdesimal (bukan rupiah bulat): 56 baris
+  dari itu yang x12 hampir bulat (pola tahunan/12): 56 baris
+  contoh: [[649566.0, 833333.33], [10744712.0, 458333.33], [11536215.0, 916666.67], [12948472.0, 916666.67], [13273598.0, 541666.67]]
+harga bukan kelipatan 1000: 70
+kolom harga_bulanan/harga_tahunan/basis_harga ada?: TIDAK ADA
+harga v1 mentah tipe campur: string berkoma: 268 | desimal x.xx: 58
+outlier harga IQR (> 2,625,000): [[27797129, 'Kost Casa Mia Exclusive Single', 2750000.0], [80930985, 'Kost Pondok Restu', 3500000.0]]
+
+==============================================================================
+7. Luas kamar
+==============================================================================
+luas: terisi 357, unik 35, min 4.0, median 12.0, max 30.0
+luas == 12.0: 196 baris (54.9%); distribusi nilai teratas: {12.0: 196, 9.0: 65, 16.0: 16, 6.0: 9, 20.0: 9, 14.0: 7, 10.5: 7, 15.0: 6}
+kolom luas_imputasi / ukuran_kamar ada?: TIDAK ADA
+xlsx lama: ukuran_kamar null 0 dari 360; nilai '12' atau '3x4' dst contoh: ['2.5x4', '4x2.6', '3.4x2.4', '3x3', '5x4.5']
+  teks ukuran_kamar lama bisa di-parse p x l: 357/357
+  luas_kamar_m2 baru == p x l teks lama: 294/357
+  luas baru == 12 padahal teks lama tidak 12: 59
+  teks lama tidak ter-parse: 0 baris; luas baru pada baris itu: {}
+  v1: luas_kamar_m2 == 12: 197/360 (54.7%); max 30.0
+
+==============================================================================
+8. C1..C8 (komposit) di kos_scored.csv baru
+==============================================================================
+C1: terisi 357/357, unik 103
+C2: terisi 357/357, unik 247
+C3: terisi 0/357, unik 0
+C4: terisi 357/357, unik 35
+C5: terisi 0/357, unik 0
+C6: terisi 0/357, unik 0
+C7: terisi 0/357, unik 0
+C8: terisi 0/357, unik 0
+C1 == harga: True | C4 == luas_kamar_m2: True
+C3 bernilai (sintetis 0.15+0.35*C2)?:  tidak, semua kosong
+CSV lama C3 vs 0.15+0.35*C2: maks selisih 0.0005000000000000004
+
+==============================================================================
+9. Flag 0/1
+==============================================================================
+nilai unik semua flag: [0, 1] | NaN: 0
+                      terisi   n1  pct1   n0
+termasuk_listrik         357   27   7.6  330
+jendela                  357  244  68.3  113
+k_mandi_dalam            357  238  66.7  119
+kloset_duduk             357  224  62.7  133
+kloset_jongkok           357  146  40.9  211
+shower                   357  217  60.8  140
+air_panas                357  111  31.1  246
+cctv                     357  151  42.3  206
+wifi                     357  310  86.8   47
+penjaga                  357  218  61.1  139
+ac                       357   91  25.5  266
+parkir_mobil             357  170  47.6  187
+parkir_motor_sepeda      357  327  91.6   30
+tv                       357  113  31.7  244
+ruang_tamu               357  124  34.7  233
+ruang_jemur              357  210  58.8  147
+pembayaran_per_bulan     357  268  75.1   89
+pembayaran_per_tahun     357  254  71.1  103
+baris tanpa satu pun flag=1 (kemungkinan 'tidak tercantum'): 0; baris dengan <=2 flag: 1; median flag=1 per baris: 10.0
+kloset duduk=1 & jongkok=1: 33; keduanya 0: 20
+k_mandi_dalam=0 tapi shower=1 atau air_panas=1 (kemungkinan 0=tidak tercantum): 65
+dokumentasi semantik flag di repo (README/docstring 'tidak tercantum'): lihat langkah grep di laporan
+
+==============================================================================
+10. Tipe penghuni & id
+==============================================================================
+tipe_penghuni: {'campur': 160, 'putri': 133, 'putra': 64}
+id: unik 357 min 649566 max 99998856 dtype int64 (Supabase integer: id maks di int4? 2147483647)

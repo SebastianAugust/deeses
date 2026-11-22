@@ -1,0 +1,43 @@
+Skrip audit v1 dijalankan terhadap model/data SEKARANG, pada SALINAN di scratchpad (supaya audit/out dan golden_test.json lama tidak tertimpa).
+Python audit/.venv: 3.14.7, pandas 3.1.1, numpy 2.5.5, scipy 1.18.1
+run_all.ps1 tidak dijalankan langsung karena menulis ke audit/out dan golden_test.json; urutan langkahnya ditiru satu per satu.
+
+##### model_dss.py
+#1 | Kost Pondok Darul Ulum II | Rp 700,000 | SAW: 0.8852 | TOPSIS: 0.8135
+#2 | Kost Berlian Ipdn Tipe A | Rp 750,000 | SAW: 0.8282 | TOPSIS: 0.7508
+#3 | Kost Pondok Sakinah 1 | Rp 800,000 | SAW: 0.8044 | TOPSIS: 0.7138
+#4 | Kost Wisma Merpati Tipe A | Rp 500,000 | SAW: 0.8 | TOPSIS: 0.7597
+#5 | Kost Vinus Tipe B | Rp 800,000 | SAW: 0.7789 | TOPSIS: 0.7162
+EXIT CODE: 0
+
+##### audit/golden_test.py
+    main()
+    ~~~~^^
+  File "C:\Users\Sebastian\AppData\Local\Temp\claude\f5d69de29c0853c0\5f71be25-c210-4e44-a35a-cca1d3fcea3c\scratchpad\run\audit\golden_test.py", line 195, in main
+    nd = m.normalisasi_minmax(df)
+TypeError: normalisasi_minmax() missing 1 required positional argument: 'urutan_kriteria'
+EXIT CODE: 1
+
+##### audit/audit_data.py
+    ) as handle:
+    ^
+  File "C:\codes\Semester 5\dss\dss-model-kos-jatinangor\audit\.venv\Lib\site-packages\pandas\io\common.py", line 954, in get_handle
+    handle = open(handle, ioargs.mode)
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\Sebastian\\AppData\\Local\\Temp\\claude\\f5d69de29c0853c0\\5f71be25-c210-4e44-a35a-cca1d3fcea3c\\scratchpad\\run\\dataset_kos_mamikos.xlsx'
+EXIT CODE: 1
+
+##### audit/bandingkan.py
+  File "C:\Users\Sebastian\AppData\Local\Temp\claude\f5d69de29c0853c0\5f71be25-c210-4e44-a35a-cca1d3fcea3c\scratchpad\run\model_dss.py", line 142, in rank_kos
+    bobot = hitung_bobot_ranksum(urutan_kriteria)
+  File "C:\Users\Sebastian\AppData\Local\Temp\claude\f5d69de29c0853c0\5f71be25-c210-4e44-a35a-cca1d3fcea3c\scratchpad\run\model_dss.py", line 90, in hitung_bobot_ranksum
+    raise ValueError(f"Kriteria '{k}' tidak ada di katalog.")
+ValueError: Kriteria 'C3' tidak ada di katalog.
+EXIT CODE: 1
+
+##### audit/sensitivitas.py
+    ~~~~^^
+  File "C:\Users\Sebastian\AppData\Local\Temp\claude\f5d69de29c0853c0\5f71be25-c210-4e44-a35a-cca1d3fcea3c\scratchpad\run\audit\sensitivitas.py", line 114, in main
+    assert abs(max(h["skor_saw"] for h in ri["hasil"]) - s.max()) < 1e-12
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+EXIT CODE: 1

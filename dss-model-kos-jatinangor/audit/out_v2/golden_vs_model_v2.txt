@@ -1,0 +1,14 @@
+skenario | lolos | hasil | model.total | model.tanpa_data | golden.tanpa_data | urutan_id_sama | maks_selisih_4dp | spearman(model) | spearman(golden) | cocok | id_numerik_menentukan
+n01_harga | 61 | 61 | 61 | 0 | 0 | True | 0.0 | 1.0 | 1.0 | True | False
+n02_jarak_luas | 41 | 41 | 41 | 0 | 0 | True | 0.0 | 0.9906 | 0.9906 | True | False
+n02_seri_banyak | 143 | 143 | 143 | 0 | 0 | True | 0.0 | 1.0 | 1.0 | True | True
+n03_satu_kandidat | 1 | 1 | 1 | 0 | 0 | True | 0.0 | None | None | True | False
+n03_dua_kandidat | 2 | 2 | 2 | 0 | 0 | True | 0.0 | None | None | True | False
+n03_nol_kandidat | 0 | 0 | 0 | 0 | 0 | True | 0.0 | None | None | True | False
+n04_default_app | 74 | 74 | 74 | 0 | 0 | True | 0.0 | 0.9514 | 0.9514 | True | False
+n04_nilai_kosong | 98 | 93 | 93 | 5 | 5 | True | 0.0 | 0.8587 | 0.8587 | True | False
+n08_campur_ikut | 241 | 241 | 241 | 0 | 0 | True | 0.0 | 0.8357 | 0.8357 | True | False
+n12_penuh | 57 | 57 | 57 | 0 | 0 | True | 0.0 | 0.8534 | 0.8534 | True | False
+n03_kolom_konstan | 5 | 5 | 5 | 0 | 0 | True | 0.0 | 1.0 | 1.0 | True | False
+
+skenario kolom_konstan dibuat: True (600000, 'putra', 'parkir_motor')

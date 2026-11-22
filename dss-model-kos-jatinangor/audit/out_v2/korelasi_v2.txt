@@ -1,0 +1,15 @@
+Korelasi antar kolom kriteria (seluruh 357 kos). Pasangan |Pearson| atau |Spearman| >= 0.5:
+kriteria_a	kriteria_b	Pearson	Spearman	tanda
+bayar_bulanan	km_dalam	0.815	0.815	sedang >0.7
+jarak_unpad	jarak_kampus	0.664	0.734	sedang >0.7
+harga	ac	0.728	0.693	sedang >0.7
+ac	air_panas	0.607	0.607	sedang >0.5
+harga	air_panas	0.566	0.588	sedang >0.5
+shower	kloset_duduk	0.568	0.568	sedang >0.5
+jarak_itb	jarak_kampus	0.533	0.495	sedang >0.5
+harga	shower	0.486	0.504	sedang >0.5
+
+Jumlah pasangan: 231; |r|>0.9: 0; |r|>0.7: 3
+Identik secara matematis (bukan korelasi): C1==harga: True | C4==luas_kamar_m2: True | C2==min(unpad,itb): True
+Proporsi C2 yang berasal dari ITB (jarak_itb <= jarak_unpad): 80.1%
+kloset duduk vs jongkok (Pearson): -0.691

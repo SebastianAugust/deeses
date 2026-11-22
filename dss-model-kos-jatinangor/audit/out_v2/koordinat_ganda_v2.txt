@@ -1,0 +1,14 @@
+v1: 360 baris; baris yang berbagi (lat,lng) persis dgn kos lain: 180 (50%); jumlah titik: 90; ukuran grup: {2: 90}
+pasangan: selisih urutan baris di file — median 143.5 , min 1 , maks 223
+pasangan yang hanya satu sisi punya jarak Unpad & sisi lain hanya ITB: 16 dari 90
+pasangan tipe_kos sama: 32 | harga sama: 1
+posisi baris (urut) anggota pasangan: kuartil pertama [0-89] vs sisanya -> a<180: 70 b>=180: 90
+ urut       id                                            nama_kos  tipe_kos      harga  jarak_ke_unpad  jarak_ke_itb       lat        lng
+   62 22255557                           Kost Abu Ijo Tipe Standar laki-laki  2,000,000             NaN           1.4 -6.944003 107.770818
+  246 71292308                             Kost Pojok Besar Tipe A laki-laki  1,500,000             NaN           NaN -6.944003 107.770818
+  208 62383492                        Kost Pondok Sakinah 2 Tipe A laki-laki    990,000           0.995           NaN -6.943801 107.764378
+  301 85621059 Kost Pondok Cikuda Indah Tipe B Jatinangor Sumedang    campur  916666.67           0.927           NaN -6.943801 107.764378
+  331 93911231                             Kost Pondok Ayra Tipe A perempuan    900,000           1.000           NaN -6.943552 107.770298
+  340 95946227               Kost Pondok Bunda Rama Tipe Executive    campur    850,000           1.100           NaN -6.943552 107.770298
+   69 24910526            Kost Pondok Rayne Jaya Tipe A View Taman    campur    900,100             NaN           1.2 -6.943336 107.773642
+  249 72426795             Kost Puspita Tipe C Jatinangor Sumedang    campur 1208333.33             NaN           NaN -6.943336 107.773642

@@ -1,0 +1,5 @@
+baris: 357 | id sama dengan v1 minus kontrakan: True | urutan baris sama: True
+flag identik dgn v1: True
+harga identik: True | tipe identik: True | luas identik: True
+nama identik (strip): True
+jarak_unpad/itb: TIDAK direproduksi (butuh jaringan OSRM publik; tidak dijalankan). Kolom jarak tidak ada di v1 selain jarak_ke_* (sumber lain).

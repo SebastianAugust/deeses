@@ -1,0 +1,138 @@
+[
+ [
+  "SET4",
+  1000000,
+  "putri",
+  {
+   "kandidat": 61,
+   "perm": 24,
+   "beda_no1": 3,
+   "no1_paling_sering": "Kost Bunda 1 Tipe Vip",
+   "no1_pct": 45.833333333333336,
+   "top3_beda": 6,
+   "no1_sama_saw_topsis_pct": 87.5,
+   "rho_min": 0.9438392384981489,
+   "rho_p5": 0.9470861977789529,
+   "rho_median": 0.9723955579058698
+  }
+ ],
+ [
+  "SET4",
+  1000000,
+  "putra",
+  {
+   "kandidat": 24,
+   "perm": 24,
+   "beda_no1": 4,
+   "no1_paling_sering": "Kost Dyana",
+   "no1_pct": 33.333333333333336,
+   "top3_beda": 7,
+   "no1_sama_saw_topsis_pct": 66.66666666666667,
+   "rho_min": 0.8869565217391304,
+   "rho_p5": 0.9008695652173913,
+   "rho_median": 0.9639130434782608
+  }
+ ],
+ [
+  "SET4",
+  1500000,
+  "putri",
+  {
+   "kandidat": 98,
+   "perm": 24,
+   "beda_no1": 5,
+   "no1_paling_sering": "Kost Bunda 1 Tipe Vip",
+   "no1_pct": 33.333333333333336,
+   "top3_beda": 9,
+   "no1_sama_saw_topsis_pct": 87.5,
+   "rho_min": 0.9301493793393645,
+   "rho_p5": 0.9336623121601029,
+   "rho_median": 0.9722280664843256
+  }
+ ],
+ [
+  "SET4",
+  1500000,
+  "campur",
+  {
+   "kandidat": 143,
+   "perm": 24,
+   "beda_no1": 8,
+   "no1_paling_sering": "Kost Pondok Maharani Tipe A2 Jatinangor Sumedang",
+   "no1_pct": 25.0,
+   "top3_beda": 16,
+   "no1_sama_saw_topsis_pct": 83.33333333333333,
+   "rho_min": 0.9088364686956235,
+   "rho_p5": 0.9120296956564561,
+   "rho_median": 0.9609105683049344
+  }
+ ],
+ [
+  "SET8",
+  1000000,
+  "putri",
+  {
+   "kandidat": 61,
+   "perm": 40320,
+   "beda_no1": 5,
+   "no1_paling_sering": "Kost Wisma Triarga Tipe Executive",
+   "no1_pct": 45.461309523809526,
+   "top3_beda": 17,
+   "no1_sama_saw_topsis_pct": 89.95039682539682,
+   "rho_min": 0.868799576943416,
+   "rho_p5": 0.9292966684294023,
+   "rho_median": 0.9765203595980961
+  }
+ ],
+ [
+  "SET8",
+  1000000,
+  "putra",
+  {
+   "kandidat": 24,
+   "perm": 40320,
+   "beda_no1": 4,
+   "no1_paling_sering": "Kost Dyana",
+   "no1_pct": 59.82142857142857,
+   "top3_beda": 10,
+   "no1_sama_saw_topsis_pct": 70.89285714285714,
+   "rho_min": 0.5843478260869565,
+   "rho_p5": 0.8765217391304346,
+   "rho_median": 0.9739130434782608
+  }
+ ],
+ [
+  "SET8",
+  1500000,
+  "putri",
+  {
+   "kandidat": 98,
+   "perm": 40320,
+   "beda_no1": 5,
+   "no1_paling_sering": "Kost Pondok Niaibas Tipe A",
+   "no1_pct": 71.9047619047619,
+   "top3_beda": 24,
+   "no1_sama_saw_topsis_pct": 74.25099206349206,
+   "rho_min": 0.8203367570083328,
+   "rho_p5": 0.9166331949837103,
+   "rho_median": 0.9744850142493735
+  }
+ ],
+ [
+  "SET8",
+  1500000,
+  "campur",
+  {
+   "kandidat": 143,
+   "perm": 40320,
+   "beda_no1": 9,
+   "no1_paling_sering": "Kost Wisma Pelangi 1",
+   "no1_pct": 35.8655753968254,
+   "top3_beda": 49,
+   "no1_sama_saw_topsis_pct": 77.24702380952381,
+   "rho_min": 0.7052595292031911,
+   "rho_p5": 0.8865144538560031,
+   "rho_median": 0.9752700351291899
+  }
+ ]
+]

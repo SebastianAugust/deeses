@@ -11,7 +11,7 @@ import { validasiIdKos, validasiQueryDetail } from "@/lib/validasi";
  *
  * Rank & skor dihitung dengan filter DAN kriteria yang sama seperti POST /api/rank.
  * `peringkat` null kalau kos tidak lolos filter. Field detail yang tidak ada di
- * tabel (kontak, aturan, sekitar, deposit, foto_urls, sumber_url, diperbarui_at) = null.
+ * tabel (kontak, aturan, sekitar, deposit, sumber_url, diperbarui_at) = null. foto_urls = foto_url_1..5 yang valid (null bila tidak ada).
  */
 export async function GET(request: NextRequest, ctx: RouteContext<"/api/kos/[id]">) {
   const { id } = await ctx.params;

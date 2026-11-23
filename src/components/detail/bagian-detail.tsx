@@ -64,7 +64,7 @@ export function JudulKos({
           </>
         )}
       </p>
-      <TautanPeta nama={kos.nama} className="-mt-1" />
+      <TautanPeta nama={kos.nama} placeId={kos.gmaps_place_id} className="-mt-1" />
     </div>
   );
 }

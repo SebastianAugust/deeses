@@ -16,13 +16,20 @@ type KosPhotoProps = {
 };
 
 /**
- * Foto kos; jatuh ke PhotoPlaceholder kalau `foto_url` null.
- * Saat foto selesai dimuat: blur + transparan → tajam (250 ms).
+ * Foto kos; jatuh ke PhotoPlaceholder kalau `src` null atau gambar gagal dimuat
+ * (mis. diblokir hotlink / link mati). Saat foto selesai dimuat: blur +
+ * transparan → tajam (250 ms).
  */
 export function KosPhoto({ src, nama, className, iconSize, label, children }: KosPhotoProps) {
-  const [dimuat, setDimuat] = useState(false);
+  // Status dikaitkan ke `src`, supaya ganti foto pada komponen yang sama dimulai dari awal.
+  const [status, setStatus] = useState<{ src: string; hasil: "dimuat" | "gagal" } | null>(null);
+  const tandai = (hasil: "dimuat" | "gagal") =>
+    // Idempoten (objek lama dikembalikan bila sama): ref di bawah dipanggil ulang tiap render.
+    setStatus((s) => (s?.src === src && s.hasil === hasil ? s : { src: src as string, hasil }));
+  const dimuat = status?.src === src && status.hasil === "dimuat";
+  const gagal = status?.src === src && status.hasil === "gagal";
 
-  if (!src) {
+  if (!src || gagal) {
     return (
       <PhotoPlaceholder className={className} iconSize={iconSize} label={label}>
         {children}
@@ -38,13 +45,17 @@ export function KosPhoto({ src, nama, className, iconSize, label, children }: Ko
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           // Foto dari cache bisa selesai sebelum onLoad terpasang → cek `complete`.
+          // Gambar yang sudah rusak sebelum hidrasi tidak memicu onError → `naturalWidth` 0.
           ref={(el) => {
-            if (el?.complete && el.naturalWidth > 0) setDimuat(true);
+            if (el?.complete) tandai(el.naturalWidth > 0 ? "dimuat" : "gagal");
           }}
           src={src}
           alt={`Foto ${nama}`}
           loading="lazy"
-          onLoad={() => setDimuat(true)}
+          // Sebagian CDN memblokir hotlink bila ada Referer.
+          referrerPolicy="no-referrer"
+          onLoad={() => tandai("dimuat")}
+          onError={() => tandai("gagal")}
           className={cn(
             "size-full object-cover transition-[opacity,filter] duration-250 ease-out",
             dimuat ? "opacity-100 blur-0" : "opacity-0 blur-md",

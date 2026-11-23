@@ -107,8 +107,15 @@ function IsiDetail({
   tujuan: TujuanKembali;
 }) {
   const { kos, peringkat } = data;
-  const foto = kos.foto_urls?.filter(Boolean) ?? [];
   const [fotoAktif, setFotoAktif] = useState<number | null>(null);
+  // Foto yang gagal dimuat (diblokir/mati) dibuang dari galeri supaya tidak ada tile rusak.
+  const [fotoGagal, setFotoGagal] = useState<string[]>([]);
+  const foto = (kos.foto_urls?.filter(Boolean) ?? []).filter((f) => !fotoGagal.includes(f));
+  const tandaiGagal = (src: string) => {
+    setFotoGagal((lama) => (lama.includes(src) ? lama : [...lama, src]));
+    // Lightbox yang terbuka bisa kehilangan indeksnya bila daftar menyusut.
+    setFotoAktif(null);
+  };
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-28 lg:max-w-[1220px] lg:px-8 lg:pt-6 lg:pb-16">
@@ -119,8 +126,15 @@ function IsiDetail({
         onBuka={setFotoAktif}
         backHref={tujuan.href}
         pakaiRiwayat={tujuan.riwayatMobile}
+        onGagal={tandaiGagal}
       />
-      <GaleriDesktop className="hidden lg:grid" foto={foto} nama={kos.nama} onBuka={setFotoAktif} />
+      <GaleriDesktop
+        className="hidden lg:grid"
+        foto={foto}
+        nama={kos.nama}
+        onBuka={setFotoAktif}
+        onGagal={tandaiGagal}
+      />
 
       <div className="flex flex-col gap-8 px-4 pt-6 lg:flex-row lg:items-start lg:gap-12 lg:px-0 lg:pt-7">
         <div className="flex min-w-0 flex-1 flex-col gap-8">

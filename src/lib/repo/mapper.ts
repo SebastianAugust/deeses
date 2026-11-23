@@ -59,6 +59,10 @@ export const LABEL_FASILITAS: Record<Fasilitas, { label: string; grup: "kamar" |
   pembayaran_per_tahun: { label: "Bisa bayar per tahun", grup: "lain" },
 };
 
+/** Kolom foto di tabel (text, boleh null / tidak ada), urut tampil. */
+export const KOLOM_FOTO = ["foto_url_1", "foto_url_2", "foto_url_3", "foto_url_4", "foto_url_5"] as const;
+export const MAKS_FOTO = KOLOM_FOTO.length;
+
 /** Alamat placeholder dari prepare_data.py — bukan alamat asli. */
 const ALAMAT_PLACEHOLDER = "jatinangor, sumedang";
 
@@ -92,7 +96,12 @@ export type Kos = {
   /** = C4. */
   luas_m2: number | null;
   url: string | null;
+  /** Foto pertama (= foto_urls[0]) atau null. */
   foto_url: string | null;
+  /** Semua foto valid, urut, tanpa duplikat, maks MAKS_FOTO. Bisa kosong. */
+  foto_urls: string[];
+  /** Place ID Google; null bila kolom gmaps_place_id belum ada / kosong. */
+  gmaps_place_id: string | null;
   fasilitas: Record<Fasilitas, boolean | null>;
 };
 
@@ -109,6 +118,34 @@ function teks(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const t = v.trim();
   return t === "" ? null : t;
+}
+
+/**
+ * Satu URL foto: teks ter-trim berskema http/https yang valid (host wajib ada).
+ * javascript:, data:, relatif, kosong, atau bukan teks → null.
+ */
+export function keUrlFoto(v: unknown): string | null {
+  const t = teks(v);
+  if (t === null) return null;
+  try {
+    const u = new URL(t);
+    return (u.protocol === "http:" || u.protocol === "https:") && u.hostname !== "" ? t : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Daftar foto dari nilai kolom mentah: URL tidak valid dibuang, urutan
+ * dipertahankan, duplikat persis dibuang, maksimal MAKS_FOTO.
+ */
+export function keDaftarFoto(nilai: readonly unknown[]): string[] {
+  const hasil: string[] = [];
+  for (const v of nilai) {
+    const url = keUrlFoto(v);
+    if (url !== null && !hasil.includes(url) && hasil.length < MAKS_FOTO) hasil.push(url);
+  }
+  return hasil;
 }
 
 /** Ambil kolom; tabel bisa menamai C1 atau c1 tergantung cara dibuat. */
@@ -162,6 +199,10 @@ export function petakanBaris(baris: BarisKos): Kos {
   const fasilitas = {} as Record<Fasilitas, boolean | null>;
   for (const f of KOLOM_FASILITAS) fasilitas[f] = keBoolean(kolom(baris, f));
 
+  // foto_url_1..5; kolom lama "foto_url" (sudah tidak ada di tabel) hanya cadangan bila foto_url_1 kosong.
+  const [f1, ...sisaFoto] = KOLOM_FOTO.map((nama) => kolom(baris, nama));
+  const foto_urls = keDaftarFoto([keUrlFoto(f1) ?? keUrlFoto(kolom(baris, "foto_url")), ...sisaFoto]);
+
   const c2 = angka(kolom(baris, "C2"));
   return {
     id,
@@ -177,7 +218,9 @@ export function petakanBaris(baris: BarisKos): Kos {
     jarak_imputasi: c2 === C2_IMPUTASI,
     luas_m2: angka(kolom(baris, "C4")),
     url: teks(kolom(baris, "url")),
-    foto_url: teks(kolom(baris, "foto_url")),
+    foto_url: foto_urls[0] ?? null,
+    foto_urls,
+    gmaps_place_id: teks(kolom(baris, "gmaps_place_id")),
     fasilitas,
   };
 }
@@ -207,7 +250,7 @@ function formatLuas(m2: number): string {
 
 /**
  * Info detail dari data yang ADA di tabel. Yang tidak ada di tabel (kontak, aturan,
- * sekitar, deposit, diperbarui_at) = null. `sumber_url` = kolom `url` (null bila kosong).
+ * sekitar, deposit, diperbarui_at) = null. Foto = foto_url_1..5 yang valid. `sumber_url` = kolom `url` (null bila kosong).
  */
 export function keKosInfo(k: Kos): KosInfo {
   const daftar = (grup: "kamar" | "bersama") =>
@@ -226,12 +269,13 @@ export function keKosInfo(k: Kos): KosInfo {
     fasilitas_bersama: daftar("bersama"),
     aturan: null,
     sekitar: null,
-    foto_urls: k.foto_url ? [k.foto_url] : null, // tabel hanya punya 1 foto (foto_url)
+    foto_urls: k.foto_urls.length > 0 ? [...k.foto_urls] : null, // foto_url_1..5 (maks 5)
     kontak_nama: null,
     kontak_wa: null,
     kontak_telp: null,
     sumber_url: k.url,
     diperbarui_at: null,
+    gmaps_place_id: k.gmaps_place_id,
   };
 }
 
@@ -248,6 +292,7 @@ export function diagnostikData(semua: readonly Kos[]) {
     total: semua.length,
     lengkap_untuk_dss: semua.filter(isKosLengkap).length,
     foto_url_terisi: semua.filter((k) => k.foto_url !== null).length,
+    foto_urls_terisi: semua.filter((k) => k.foto_urls.length > 0).length,
     url_terisi: semua.filter((k) => k.url !== null).length,
     alamat_terisi: semua.filter((k) => k.alamat !== null).length,
     koordinat_terisi: semua.filter((k) => k.lat !== null && k.lng !== null).length,

@@ -4,13 +4,16 @@ import { detailKos, keRankResponse, keRankResult, urutkanKos } from "@/lib/perin
 import { PETUNJUK_RLS, KosDataError, galatKeBody, keKosDataError } from "@/lib/repo/galat";
 import {
   KOLOM_FASILITAS,
+  MAKS_FOTO,
   diagnostikData,
   isKosLengkap,
   keAlamat,
   keBoolean,
+  keDaftarFoto,
   keKoordinat,
   keKosInfo,
   keTipe,
+  keUrlFoto,
   kriteriaTanpaData,
   petakanBaris,
   type BarisKos,
@@ -29,6 +32,8 @@ import fixture from "./fixtures/baris-kos.json";
 
 const ASLI = fixture.baris as BarisKos[];
 const [THE75, GREEN, ANNISA] = ASLI;
+/** Variasi foto_url_1..5: [semua terisi, hanya 1, tidak ada, foto_url_1 kosong tapi foto_url_2 terisi]. */
+const FOTO_FIXTURE = fixture.baris_foto as BarisKos[];
 
 function ubah(dasar: BarisKos, perubahan: BarisKos): BarisKos {
   return { ...dasar, ...perubahan };
@@ -153,11 +158,57 @@ describe("mapper baris → Kos", () => {
     }
   });
 
-  it("foto_urls = [foto_url] bila ada, null bila kosong", () => {
-    expect(keKosInfo(petakanBaris(ubah(ANNISA, { foto_url: "https://contoh.test/f.jpg" }))).foto_urls).toEqual([
-      "https://contoh.test/f.jpg",
-    ]);
-    expect(keKosInfo(petakanBaris(ANNISA)).foto_urls).toBeNull();
+  it("foto_urls dari foto_url_1..5: daftar lengkap, hanya 1, tanpa foto (null), foto_url_1 kosong", () => {
+    const [LENGKAP, SATU, TANPA, TANPA_SATU] = FOTO_FIXTURE;
+    const lengkap = petakanBaris(LENGKAP);
+    expect(lengkap.foto_urls).toEqual([1, 2, 3, 4, 5].map((i) => `https://contoh.test/foto/${i}.jpg`));
+    expect(lengkap.foto_url).toBe("https://contoh.test/foto/1.jpg");
+    expect(keKosInfo(lengkap).foto_urls).toEqual(lengkap.foto_urls);
+
+    const satu = petakanBaris(SATU);
+    expect(satu.foto_urls).toEqual(["https://contoh.test/foto/1.jpg"]);
+    expect(satu.foto_url).toBe("https://contoh.test/foto/1.jpg");
+    expect(keKosInfo(satu).foto_urls).toEqual(["https://contoh.test/foto/1.jpg"]);
+
+    const tanpa = petakanBaris(TANPA);
+    expect(tanpa.foto_urls).toEqual([]);
+    expect(tanpa.foto_url).toBeNull();
+    expect(keKosInfo(tanpa).foto_urls).toBeNull();
+
+    // foto_url_1 kosong tapi foto_url_2 terisi: foto yang ada tetap dipakai, urutan terjaga.
+    const tanpaSatu = petakanBaris(TANPA_SATU);
+    expect(tanpaSatu.foto_urls).toEqual(["https://contoh.test/foto/2.jpg", "https://contoh.test/foto/3.jpg"]);
+    expect(tanpaSatu.foto_url).toBe("https://contoh.test/foto/2.jpg");
+  });
+
+  it("foto_urls: kolom foto tidak ada sama sekali → kosong; kolom lama foto_url hanya cadangan bila foto_url_1 kosong", () => {
+    expect(petakanBaris(ANNISA).foto_urls).toEqual([]); // fixture lama: hanya foto_url ""
+    const lama = "https://contoh.test/lama.jpg";
+    expect(petakanBaris(ubah(ANNISA, { foto_url: lama })).foto_urls).toEqual([lama]);
+    expect(petakanBaris(ubah(ANNISA, { foto_url: lama })).foto_url).toBe(lama);
+    // foto_url_1 ada → kolom lama diabaikan
+    const baru = "https://contoh.test/baru.jpg";
+    expect(petakanBaris(ubah(ANNISA, { foto_url: lama, foto_url_1: baru })).foto_urls).toEqual([baru]);
+    // foto_url_1 tidak valid → cadangan dipakai, lalu foto_url_2 menyusul
+    expect(
+      petakanBaris(ubah(ANNISA, { foto_url: lama, foto_url_1: "javascript:alert(1)", foto_url_2: baru })).foto_urls,
+    ).toEqual([lama, baru]);
+    // kolom lama pun tidak valid → diabaikan
+    expect(petakanBaris(ubah(ANNISA, { foto_url: "data:image/png;base64,AAAA" })).foto_urls).toEqual([]);
+  });
+
+  it("foto_url_N null/spasi/skema berbahaya tidak jadi foto; foto_urls tidak pernah melebihi 5", () => {
+    const k = petakanBaris(
+      ubah(ANNISA, {
+        foto_url_1: null,
+        foto_url_2: "   ",
+        foto_url_3: "/relatif/foto.jpg",
+        foto_url_4: "ftp://contoh.test/x.jpg",
+        foto_url_5: "  https://contoh.test/ok.jpg  ",
+      }),
+    );
+    expect(k.foto_urls).toEqual(["https://contoh.test/ok.jpg"]);
+    expect(k.foto_urls.length).toBeLessThanOrEqual(MAKS_FOTO);
   });
 
   it("sumber_url = url (null bila url kosong)", () => {
@@ -168,20 +219,87 @@ describe("mapper baris → Kos", () => {
     expect(keKosInfo(petakanBaris(ANNISA)).sumber_url).toBeNull();
   });
 
+  it("gmaps_place_id: ada → teks ter-trim; kosong/spasi/bukan teks → null; kolom tidak ada → null", () => {
+    const info = (perubahan: BarisKos) => keKosInfo(petakanBaris(ubah(ANNISA, perubahan)));
+    expect(info({ gmaps_place_id: "  ChIJabc123  " }).gmaps_place_id).toBe("ChIJabc123");
+    expect(petakanBaris(ubah(ANNISA, { gmaps_place_id: "ChIJabc123" })).gmaps_place_id).toBe("ChIJabc123");
+    expect(info({ gmaps_place_id: "" }).gmaps_place_id).toBeNull();
+    expect(info({ gmaps_place_id: "   " }).gmaps_place_id).toBeNull();
+    expect(info({ gmaps_place_id: null }).gmaps_place_id).toBeNull();
+    expect(info({ gmaps_place_id: 123 }).gmaps_place_id).toBeNull();
+    // baris fixture tidak punya kolom ini sama sekali
+    expect("gmaps_place_id" in ANNISA).toBe(false);
+    expect(petakanBaris(ANNISA).gmaps_place_id).toBeNull();
+    expect(keKosInfo(petakanBaris(ANNISA)).gmaps_place_id).toBeNull();
+  });
+
   it("diagnostik menghitung kolom terisi dan tipe di luar daftar", () => {
     const semua = [
       ...ASLI.map(petakanBaris),
-      petakanBaris(ubah(GREEN, { id: 1, tipe_penghuni: "laki-laki", url: "https://contoh.test/1", foto_url: "https://contoh.test/1.jpg" })),
+      petakanBaris(ubah(GREEN, { id: 1, tipe_penghuni: "laki-laki", url: "https://contoh.test/1", foto_url_1: "https://contoh.test/1.jpg" })),
+      ...FOTO_FIXTURE.map(petakanBaris),
     ];
     expect(diagnostikData(semua)).toMatchObject({
-      total: 4,
-      lengkap_untuk_dss: 3,
-      foto_url_terisi: 1,
+      total: 8,
+      lengkap_untuk_dss: 7,
+      foto_url_terisi: 4, // GREEN + 3 baris foto yang punya foto
+      foto_urls_terisi: 4,
       url_terisi: 1,
       alamat_terisi: 0,
       koordinat_terisi: 0,
       tipe_di_luar_daftar: { "laki-laki": 1 },
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("keUrlFoto / keDaftarFoto", () => {
+  it("keUrlFoto: hanya http/https valid, hasil ter-trim", () => {
+    expect(keUrlFoto("https://contoh.test/a.jpg")).toBe("https://contoh.test/a.jpg");
+    expect(keUrlFoto("http://contoh.test/a.jpg")).toBe("http://contoh.test/a.jpg");
+    expect(keUrlFoto("  https://contoh.test/a.jpg \t")).toBe("https://contoh.test/a.jpg");
+    expect(keUrlFoto("HTTPS://contoh.test/a.jpg")).toBe("HTTPS://contoh.test/a.jpg");
+  });
+
+  it("keUrlFoto: kosong, spasi, bukan teks, skema lain, relatif, tidak valid → null", () => {
+    for (const v of [null, undefined, "", "   ", 42, {}, [], true]) expect(keUrlFoto(v)).toBeNull();
+    for (const v of [
+      "javascript:alert(1)",
+      "JavaScript:alert(1)",
+      "data:image/png;base64,AAAA",
+      "ftp://contoh.test/a.jpg",
+      "file:///etc/passwd",
+      "//contoh.test/a.jpg",
+      "/foto/a.jpg",
+      "foto/a.jpg",
+      "contoh.test/a.jpg",
+      "https://",
+      "http://exa mple.test/a.jpg",
+      "bukan url",
+    ]) {
+      expect(keUrlFoto(v)).toBeNull();
+    }
+  });
+
+  it("keDaftarFoto: urutan dipertahankan, kosong/tidak valid dibuang", () => {
+    expect(
+      keDaftarFoto(["https://a.test/1.jpg", null, "", "  ", "javascript:x", "https://a.test/2.jpg", undefined]),
+    ).toEqual(["https://a.test/1.jpg", "https://a.test/2.jpg"]);
+    expect(keDaftarFoto([])).toEqual([]);
+    expect(keDaftarFoto([null, null, null])).toEqual([]);
+  });
+
+  it("keDaftarFoto: duplikat persis dibuang (setelah trim), yang beda huruf besar/kecil dianggap berbeda", () => {
+    expect(
+      keDaftarFoto(["https://a.test/1.jpg", " https://a.test/1.jpg ", "https://a.test/2.jpg", "https://a.test/1.jpg"]),
+    ).toEqual(["https://a.test/1.jpg", "https://a.test/2.jpg"]);
+    expect(keDaftarFoto(["https://a.test/A.jpg", "https://a.test/a.jpg"])).toHaveLength(2);
+  });
+
+  it("keDaftarFoto: maksimal MAKS_FOTO (5)", () => {
+    const banyak = Array.from({ length: 8 }, (_, i) => `https://a.test/${i}.jpg`);
+    expect(keDaftarFoto(banyak)).toEqual(banyak.slice(0, MAKS_FOTO));
+    expect(MAKS_FOTO).toBe(5);
   });
 });
 

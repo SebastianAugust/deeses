@@ -12,42 +12,69 @@ type GaleriProps = {
   nama: string;
   /** Buka lightbox di foto ke-i. */
   onBuka: (indeks: number) => void;
+  /** Dipanggil saat satu foto gagal dimuat (induk membuangnya dari daftar). */
+  onGagal?: (src: string) => void;
   className?: string;
 };
 
-/** Sudut tile: hanya sudut luar grid yang membulat besar (mockup 08). */
-const SUDUT = [
-  "rounded-[24px_8px_8px_24px]",
-  "rounded-[8px]",
-  "rounded-[8px_24px_8px_8px]",
-  "rounded-[8px]",
-  "rounded-[8px_8px_24px_8px]",
-];
+/*
+ * Tata letak galeri desktop per jumlah foto (1–5), supaya tidak ada tile kosong.
+ * Tinggi total tetap 410px (2 × 200 + celah). Hanya sudut luar grid yang
+ * membulat besar (mockup 08). Kelas ditulis utuh agar terbaca Tailwind.
+ */
+const GRID_FOTO: Record<number, { grid: string; tile: string[] }> = {
+  1: { grid: "grid-cols-1 grid-rows-[410px]", tile: ["rounded-[24px]"] },
+  2: {
+    grid: "grid-cols-[2fr_1fr] grid-rows-[410px]",
+    tile: ["rounded-[24px_8px_8px_24px]", "rounded-[8px_24px_24px_8px]"],
+  },
+  3: {
+    grid: "grid-cols-[2fr_1fr] grid-rows-[200px_200px]",
+    tile: ["row-span-2 rounded-[24px_8px_8px_24px]", "rounded-[8px_24px_8px_8px]", "rounded-[8px_8px_24px_8px]"],
+  },
+  4: {
+    grid: "grid-cols-[2fr_1fr_1fr] grid-rows-[200px_200px]",
+    tile: [
+      "row-span-2 rounded-[24px_8px_8px_24px]",
+      "rounded-[8px]",
+      "rounded-[8px_24px_8px_8px]",
+      "col-span-2 rounded-[8px_8px_24px_8px]",
+    ],
+  },
+  5: {
+    grid: "grid-cols-[2fr_1fr_1fr] grid-rows-[200px_200px]",
+    tile: [
+      "row-span-2 rounded-[24px_8px_8px_24px]",
+      "rounded-[8px]",
+      "rounded-[8px_24px_8px_8px]",
+      "rounded-[8px]",
+      "rounded-[8px_8px_24px_8px]",
+    ],
+  },
+};
 
 /**
- * Galeri desktop: 1 foto besar (2 baris) + 4 foto kecil. Tile berfoto adalah
- * tombol pembuka lightbox (hover: foto sedikit zoom). Tile tanpa foto memakai
- * PhotoPlaceholder dan tidak interaktif.
+ * Galeri desktop: 1 foto besar + sampai 4 foto kecil (tata letak menyesuaikan
+ * jumlah, lihat GRID_FOTO). Tile adalah tombol pembuka lightbox (hover: foto
+ * sedikit zoom). Tanpa foto: satu PhotoPlaceholder penuh.
  */
-export function GaleriDesktop({ foto, nama, onBuka, className }: GaleriProps) {
+export function GaleriDesktop({ foto, nama, onBuka, onGagal, className }: GaleriProps) {
+  if (foto.length === 0) {
+    return (
+      <div className={cn("relative grid-cols-1 grid-rows-[410px]", className)}>
+        <PhotoPlaceholder className="rounded-[24px]" iconSize={34} label="Belum ada foto" />
+      </div>
+    );
+  }
+  const tampil = foto.slice(0, 5);
+  const { grid, tile } = GRID_FOTO[tampil.length];
   return (
-    <div className={cn("relative grid-cols-[2fr_1fr_1fr] grid-rows-[200px_200px] gap-2.5", className)}>
-      {SUDUT.map((sudut, i) => {
-        const src = foto[i];
-        const kelas = cn("relative overflow-hidden", sudut, i === 0 && "row-span-2");
-        if (!src) {
-          return (
-            <PhotoPlaceholder
-              key={i}
-              className={kelas}
-              iconSize={i === 0 ? 34 : 0}
-              label={i === 0 ? (foto.length === 0 ? "Belum ada foto" : "foto kos") : null}
-            />
-          );
-        }
+    <div className={cn("relative gap-2.5", grid, className)}>
+      {tampil.map((src, i) => {
+        const kelas = cn("relative overflow-hidden", tile[i]);
         return (
           <button
-            key={i}
+            key={src}
             type="button"
             onClick={() => onBuka(i)}
             aria-label={`Buka foto ${i + 1} dari ${foto.length}`}
@@ -58,6 +85,7 @@ export function GaleriDesktop({ foto, nama, onBuka, className }: GaleriProps) {
               alt={`Foto ${i + 1} ${nama}`}
               sizes={i === 0 ? "(min-width: 1024px) 600px, 100vw" : "300px"}
               prioritas={i === 0}
+              onGagal={onGagal}
             />
           </button>
         );
@@ -86,6 +114,7 @@ export function GaleriMobile({
   onBuka,
   backHref,
   pakaiRiwayat = true,
+  onGagal,
   className,
 }: GaleriProps & { backHref: string; pakaiRiwayat?: boolean | string }) {
   const [aktif, setAktif] = useState(0);
@@ -111,7 +140,7 @@ export function GaleriMobile({
                 aria-label={`Buka foto ${i + 1} dari ${foto.length}`}
                 className="galeri-item relative block size-full overflow-hidden bg-line"
               >
-                <FotoKos src={src} alt={`Foto ${i + 1} ${nama}`} sizes="100vw" prioritas={i === 0} />
+                <FotoKos src={src} alt={`Foto ${i + 1} ${nama}`} sizes="100vw" prioritas={i === 0} onGagal={onGagal} />
               </button>
             </li>
           ))}

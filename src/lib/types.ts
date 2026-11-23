@@ -88,6 +88,8 @@ export type KosInfo = {
   sumber_url?: string | null;
   /** ISO 8601. */
   diperbarui_at?: string | null;
+  /** Place ID Google (kolom gmaps_place_id; belum ada di tabel → null). Dipakai tautan Maps. */
+  gmaps_place_id?: string | null;
 };
 
 export type KosDetail = RankResult & KosInfo;

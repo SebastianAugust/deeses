@@ -54,6 +54,9 @@ export type RankResult = {
   basis_harga?: BasisHarga | null;
   lat?: number | null;
   lng?: number | null;
+  /** Perkiraan jarak rute (km) ke Unpad dan ITB (kolom jarak_unpad_km / jarak_itb_km); null = tidak ada. */
+  jarak_unpad_km?: number | null;
+  jarak_itb_km?: number | null;
 };
 
 /** Respons POST /api/rank. */
@@ -78,6 +81,9 @@ export type KosRingkasCarousel = {
   tipe: TipePenghuni | null;
   jarak_km: number | null;
   jarak_imputasi: boolean;
+  /** Perkiraan jarak rute (km) per kampus; null = tidak ada. */
+  jarak_unpad_km?: number | null;
+  jarak_itb_km?: number | null;
   foto_url: string | null;
   url: string | null;
 };

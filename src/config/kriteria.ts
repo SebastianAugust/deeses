@@ -103,15 +103,13 @@ const DATA_KATALOG = [
   },
   {
     kode: "jarak_unpad", nama: "Jarak ke Unpad", singkat: "jarak ke Unpad", kategori: "lokasi", jenis: "cost",
-    sumber: null, satuan: "km", deskripsi: "Jarak ke gerbang kampus Unpad.",
-    tersedia: false,
-    alasanTidakTersedia: "Kolom jarak_unpad_km sudah ada di data bersih (perkiraan jarak rute), tetapi piece ini belum diaktifkan.",
+    sumber: { kolom: "jarak_unpad_km", tipe: "angka" }, satuan: "km",
+    deskripsi: "perkiraan jarak rute ke Unpad (data OpenStreetMap)", tersedia: true,
   },
   {
     kode: "jarak_itb", nama: "Jarak ke ITB", singkat: "jarak ke ITB", kategori: "lokasi", jenis: "cost",
-    sumber: null, satuan: "km", deskripsi: "Jarak ke gerbang ITB Jatinangor.",
-    tersedia: false,
-    alasanTidakTersedia: "Kolom jarak_itb_km sudah ada di data bersih (perkiraan jarak rute), tetapi piece ini belum diaktifkan.",
+    sumber: { kolom: "jarak_itb_km", tipe: "angka" }, satuan: "km",
+    deskripsi: "perkiraan jarak rute ke ITB (data OpenStreetMap)", tersedia: true,
   },
   {
     kode: "minimarket", nama: "Jarak ke minimarket", singkat: "jarak ke minimarket", kategori: "lokasi", jenis: "cost",

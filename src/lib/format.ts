@@ -80,13 +80,27 @@ export const CATATAN_DATA_SIMULASI = "Data kos sebagian simulasi/perkiraan (loka
 type DenganStatusData = {
   jarak_km?: number | null;
   jarak_imputasi?: boolean;
+  jarak_unpad_km?: number | null;
+  jarak_itb_km?: number | null;
   koordinat_status?: string | null;
   basis_harga?: string | null;
 };
 
-/** Jarak ke kampus ada dan bukan imputasi → angkanya ditampilkan, dan berlabel "perkiraan jarak rute". */
+const adalahAngka = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+/** Minimal salah satu jarak per kampus (Unpad/ITB) ada. */
+export function adaJarakPerKampus(kos: DenganStatusData): boolean {
+  return adalahAngka(kos.jarak_unpad_km) || adalahAngka(kos.jarak_itb_km);
+}
+
+/** Ada jarak yang ditampilkan (per kampus, atau C2 yang bukan imputasi) → berlabel "perkiraan jarak rute". */
 export function adaJarakRute(kos: DenganStatusData): boolean {
-  return typeof kos.jarak_km === "number" && !kos.jarak_imputasi;
+  return adaJarakPerKampus(kos) || (typeof kos.jarak_km === "number" && !kos.jarak_imputasi);
+}
+
+/** 1.84 → "1,8 km" (dibulatkan 0,1 km); null/undefined/bukan angka → "-". */
+export function formatJarakKampus(km: number | null | undefined): string {
+  return adalahAngka(km) ? formatJarak(km) : "-";
 }
 
 /** koordinat_status "perkiraan" → titik lokasi bisa meleset (label "lokasi perkiraan"). */

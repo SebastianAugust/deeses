@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { KRITERIA_DEFAULT, type KodeKriteria } from "@/config/kriteria";
-import { detailKos, keRankResponse, keRankResult, urutkanKos } from "@/lib/peringkat";
+import { detailKos, keRankResponse, keRankResult, keRingkas, urutkanKos } from "@/lib/peringkat";
 import { PETUNJUK_RLS, KosDataError, galatKeBody, keKosDataError } from "@/lib/repo/galat";
 import {
   KOLOM_FASILITAS,
@@ -10,6 +10,7 @@ import {
   keAlamat,
   keBoolean,
   keDaftarFoto,
+  keJarakKm,
   keKoordinat,
   keKosInfo,
   keTipe,
@@ -24,7 +25,9 @@ import {
   LABEL_JARAK_RUTE,
   LABEL_LOKASI_PERKIRAAN,
   adaJarakRute,
+  adaJarakPerKampus,
   formatJarak,
+  formatJarakKampus,
   hargaDariTahunan,
   lokasiPerkiraan,
   teksJarak,
@@ -65,6 +68,8 @@ describe("mapper baris → Kos", () => {
       harga: 745000,
       listrik: 0,
       jarak_kampus: 0.108,
+      jarak_unpad: 0.108,
+      jarak_itb: 1.9,
       luas: 8.16,
       km_dalam: 1,
       ac: 0,
@@ -615,5 +620,52 @@ describe("catatan mutu data (label perkiraan)", () => {
     expect(formatJarak(1.84)).toBe("1,8 km");
     expect(formatJarak(1.86)).toBe("1,9 km");
     expect(teksJarak({ jarak_km: 2.04 })).toBe("2,0 km");
+  });
+});
+
+describe("jarak per kampus (jarak_unpad_km, jarak_itb_km)", () => {
+  it("keJarakKm: angka valid (juga teks angka) diterima; kosong, negatif, tak hingga, bukan angka → null", () => {
+    expect(keJarakKm(1.84)).toBe(1.84);
+    expect(keJarakKm("2.3")).toBe(2.3);
+    expect(keJarakKm(0)).toBe(0);
+    for (const v of [null, undefined, "", "  ", "abc", -1, Number.NaN, Number.POSITIVE_INFINITY, {}, [], true]) {
+      expect(keJarakKm(v), String(v)).toBeNull();
+    }
+  });
+
+  it("mapper membaca keduanya; kolom tidak ada atau tak valid → null; C2 tidak berubah", () => {
+    const k = petakanBaris(ubah(ANNISA, { jarak_unpad_km: 1.3, jarak_itb_km: "2.1" }));
+    expect([k.jarak_unpad_km, k.jarak_itb_km, k.jarak_km]).toEqual([1.3, 2.1, 0.108]);
+    const tanpa = petakanBaris(ubah(ANNISA, { jarak_unpad_km: null, jarak_itb_km: "x" }));
+    expect([tanpa.jarak_unpad_km, tanpa.jarak_itb_km]).toEqual([null, null]);
+    const polos = Object.fromEntries(Object.entries(ANNISA).filter(([n]) => !/^jarak_(unpad|itb)_km$/.test(n)));
+    const lama = petakanBaris(polos);
+    expect([lama.jarak_unpad_km, lama.jarak_itb_km, lama.jarak_km]).toEqual([null, null, 0.108]);
+  });
+
+  it("ikut ke RankResult, detail, dan ringkasan (field lama tidak berubah)", () => {
+    const kos = [petakanBaris(ubah(ANNISA, { id: 1, jarak_unpad_km: 1.3, jarak_itb_km: 2.1 }))];
+    const req: RankRequest = { budget: 2_000_000, tipe: "putri", kriteria: ["harga"] };
+    const r = urutkanKos(kos, req).daftar.map(keRankResult)[0];
+    expect(r).toMatchObject({ jarak_km: 0.108, jarak_unpad_km: 1.3, jarak_itb_km: 2.1 });
+    const d = detailKos(kos, "1", req);
+    expect(d.status === "ada" && d.data.kos).toMatchObject({ jarak_unpad_km: 1.3, jarak_itb_km: 2.1 });
+    expect(keRingkas(kos[0])).toMatchObject({ jarak_km: 0.108, jarak_unpad_km: 1.3, jarak_itb_km: 2.1 });
+  });
+
+  it("formatJarakKampus: dibulatkan 0,1 km, koma desimal; kosong → \"-\"", () => {
+    expect(formatJarakKampus(1.34)).toBe("1,3 km");
+    expect(formatJarakKampus(2.15)).toBe("2,1 km");
+    expect(formatJarakKampus(12)).toBe("12,0 km");
+    for (const v of [null, undefined, Number.NaN]) expect(formatJarakKampus(v)).toBe("-");
+  });
+
+  it("adaJarakPerKampus dan adaJarakRute", () => {
+    expect(adaJarakPerKampus({ jarak_unpad_km: 1 })).toBe(true);
+    expect(adaJarakPerKampus({ jarak_itb_km: 0 })).toBe(true);
+    expect(adaJarakPerKampus({ jarak_unpad_km: null, jarak_itb_km: null })).toBe(false);
+    expect(adaJarakRute({ jarak_unpad_km: 1.2, jarak_km: null })).toBe(true);
+    expect(adaJarakRute({ jarak_km: 1.1, jarak_imputasi: true })).toBe(false);
+    expect(adaJarakRute({})).toBe(false);
   });
 });

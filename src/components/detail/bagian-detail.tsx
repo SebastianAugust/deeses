@@ -5,11 +5,13 @@ import { Bath, Check, Maximize, Users, Zap, type LucideIcon } from "lucide-react
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { ScoreBar } from "@/components/score-bar";
 import { CatatanDataKos } from "@/components/catatan-data-kos";
+import { JarakKampus } from "@/components/jarak-kampus";
 import { TautanPeta } from "@/components/detail/tautan-peta";
 import { jelaskanPeringkat, skorKriteria } from "@/lib/explain";
 import {
   CATATAN_DATA_SIMULASI,
-  LABEL_JARAK_RUTE,
+  adaJarakPerKampus,
+  formatJarakKampus,
   formatJarakMeter,
   formatSkor,
   formatTanggal,
@@ -62,16 +64,8 @@ export function JudulKos({
       <h1 className="text-[30px] leading-[1.1] font-extrabold tracking-[-0.03em] lg:text-[42px]">
         {kos.nama}
       </h1>
-      <p className="text-sm text-muted lg:text-[15px]">
-        {kos.alamat ? <>{kos.alamat} · </> : null}
-        {kos.jarak_imputasi || kos.jarak_km === null ? (
-          "jarak ke kampus belum diketahui"
-        ) : (
-          <>
-            <b className="text-ink">{teksJarak(kos)}</b> ke kampus
-          </>
-        )}
-      </p>
+      {kos.alamat ? <p className="text-sm text-muted lg:text-[15px]">{kos.alamat}</p> : null}
+      <JarakKampus kos={kos} className="text-sm text-muted lg:text-[15px]" />
       <CatatanDataKos kos={kos} harga={false} className="-mt-1 text-xs" />
       <TautanPeta
         nama={kos.nama}
@@ -164,11 +158,12 @@ const KARTU_KECIL =
 
 export function AturanSekitar({ kos }: { kos: KosDetail }) {
   const sekitar = [
-    {
-      nama: "Kampus terdekat (Unpad/ITB)",
-      jarak:
-        kos.jarak_imputasi || kos.jarak_km === null ? "Belum diketahui" : `${teksJarak(kos)} (${LABEL_JARAK_RUTE})`,
-    },
+    ...(adaJarakPerKampus(kos) || kos.jarak_km === null || kos.jarak_imputasi
+      ? [
+          { nama: "Jarak ke Unpad", jarak: formatJarakKampus(kos.jarak_unpad_km) },
+          { nama: "Jarak ke ITB", jarak: formatJarakKampus(kos.jarak_itb_km) },
+        ]
+      : [{ nama: "Kampus terdekat (Unpad/ITB)", jarak: teksJarak(kos) }]),
     ...(kos.sekitar ?? []).map((s) => ({ nama: s.nama, jarak: formatJarakMeter(s.jarak_m) })),
   ];
   return (
@@ -202,6 +197,7 @@ export function AturanSekitar({ kos }: { kos: KosDetail }) {
             </div>
           ))}
         </dl>
+        <CatatanDataKos kos={kos} lokasi={false} harga={false} />
       </section>
     </div>
   );

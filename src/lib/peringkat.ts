@@ -80,6 +80,8 @@ export function keRankResult({ kos, hasil }: KosTerurut): RankResult {
     basis_harga: kos.basis_harga,
     lat: kos.lat,
     lng: kos.lng,
+    jarak_unpad_km: kos.jarak_unpad_km,
+    jarak_itb_km: kos.jarak_itb_km,
   };
 }
 
@@ -165,6 +167,8 @@ export function keRingkas(k: Kos): KosRingkasCarousel {
     tipe: k.tipe,
     jarak_km: k.jarak_km,
     jarak_imputasi: k.jarak_imputasi,
+    jarak_unpad_km: k.jarak_unpad_km,
+    jarak_itb_km: k.jarak_itb_km,
     foto_url: k.foto_url,
     url: k.url,
   };

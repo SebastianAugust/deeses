@@ -3,9 +3,10 @@
 import { motion } from "motion/react";
 import { CatatanDataKos } from "@/components/catatan-data-kos";
 import { AnimatedText } from "@/components/animated-text";
+import { JarakKampus } from "@/components/jarak-kampus";
 import { KosPhoto } from "@/components/kos-photo";
 import { RankBadge } from "@/components/rank-badge";
-import { formatRupiah, formatSkor, teksJarak } from "@/lib/format";
+import { formatRupiah, formatSkor } from "@/lib/format";
 import { TRANSISI, jedaStagger } from "@/lib/motion";
 import { labelTipe } from "@/lib/ringkasan";
 import type { RankResult } from "@/lib/types";
@@ -87,12 +88,13 @@ export function KosListCard({
             </span>
           </div>
           <span className="truncate text-[13px] text-muted">
-            {teksJarak(kos)} · {labelTipe(kos.tipe)}
+            {labelTipe(kos.tipe)}
             {catatan ? ` · ${catatan}` : null}
           </span>
           <span className="text-sm">
             <b>{formatRupiah(kos.harga)}</b> <span className="text-muted">/ bulan</span>
           </span>
+          <JarakKampus kos={kos} className="text-xs text-muted" />
           <CatatanDataKos kos={kos} />
           {tanpaBar ? null : (
             <div className="mt-1 h-[5px] rounded-[3px] bg-line" aria-hidden>

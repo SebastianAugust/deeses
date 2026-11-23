@@ -110,7 +110,7 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
   it("piece tidak tersedia: tanpa sumber, dengan alasan, dan kolomnya memang tidak ada di data", () => {
     const tidak = KATALOG_KRITERIA.filter((k) => !k.tersedia);
     expect(tidak.map((k) => k.kode).sort()).toEqual(
-      ["akses24", "dapur", "deposit", "furnitur", "jam_malam", "jarak_itb", "jarak_unpad", "minimarket", "pasar", "tamu"].sort(),
+      ["akses24", "dapur", "deposit", "furnitur", "jam_malam", "minimarket", "pasar", "tamu"].sort(),
     );
     const kolomCsv = Object.keys(CSV[0]);
     for (const k of tidak) {
@@ -118,10 +118,6 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
       expect(k.alasanTidakTersedia?.length ?? 0).toBeGreaterThan(10);
       expect(kolomCsv).not.toContain(k.kode);
     }
-    // Data bersih sudah punya kolom jarak per kampus, tetapi piece jarak_unpad/jarak_itb belum diaktifkan
-    // (tidak ada sumber, ditolak API). Mengaktifkannya = tugas terpisah.
-    expect(kolomCsv).toContain("jarak_unpad_km");
-    expect(kolomCsv).toContain("jarak_itb_km");
   });
 
   it("kolom sintetis/komposit (C1, C3, C5–C8) tidak dipakai sebagai sumber", () => {

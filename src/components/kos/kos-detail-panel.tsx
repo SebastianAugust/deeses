@@ -5,10 +5,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { CatatanDataKos } from "@/components/catatan-data-kos";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { TautanPeta } from "@/components/detail/tautan-peta";
+import { JarakKampus } from "@/components/jarak-kampus";
 import { KosPhoto } from "@/components/kos-photo";
 import { PrimaryButton } from "@/components/primary-button";
 import { rankTopsis } from "@/lib/explain";
-import { formatRupiah, teksJarakKeKampus } from "@/lib/format";
+import { formatRupiah } from "@/lib/format";
 import { TRANSISI_CEPAT } from "@/lib/motion";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
 import type { KodeKriteria } from "@/config/kriteria";
@@ -49,9 +50,8 @@ export function KosDetailPanel({ kos, semua, kriteria, hrefDetail }: KosDetailPa
         <div className="flex flex-col gap-1 px-1.5">
           <DetailBadges kos={kos} total={semua.length} ringkas />
           <h2 className="text-[22px] leading-tight font-extrabold tracking-[-0.02em]">{kos.nama}</h2>
-          <span className="text-[13px] text-muted">
-            {teksJarakKeKampus(kos)} · {formatRupiah(kos.harga)} / bulan
-          </span>
+          <span className="text-[13px] text-muted">{formatRupiah(kos.harga)} / bulan</span>
+          <JarakKampus kos={kos} className="text-[13px] text-muted" />
           <CatatanDataKos kos={kos} />
           <TautanPeta
             nama={kos.nama}

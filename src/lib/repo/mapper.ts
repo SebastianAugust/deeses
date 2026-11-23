@@ -105,8 +105,11 @@ export type Kos = {
   harga: number | null;
   /** Nilai mentah per kriteria tersedia (kolom dari katalog). null = tidak ada / bukan angka. */
   nilai: Partial<Record<KodeKriteria, number | null>>;
-  /** = C2. */
+  /** = C2 (terdekat dari jarak_unpad_km dan jarak_itb_km). */
   jarak_km: number | null;
+  /** Perkiraan jarak rute (km) ke Unpad / ITB; null = kolom tidak ada, kosong, atau tidak valid. */
+  jarak_unpad_km: number | null;
+  jarak_itb_km: number | null;
   /** Heuristik data lama: C2 persis 1,1 (median imputasi) pada baris tanpa koordinat_status. */
   jarak_imputasi: boolean;
   /** = C4. */
@@ -199,6 +202,12 @@ export function keAlamat(v: unknown): string | null {
   return t;
 }
 
+/** Jarak km valid: angka hingga >= 0 (teks angka diterima); selain itu (kosong, negatif, "abc") → null. */
+export function keJarakKm(v: unknown): number | null {
+  const n = angka(v);
+  return n !== null && n >= 0 ? n : null;
+}
+
 /** 1 → true, 0 → false, selain itu (null, 2, "x") → null. */
 export function keBoolean(v: unknown): boolean | null {
   const n = angka(v);
@@ -245,6 +254,8 @@ export function petakanBaris(baris: BarisKos): Kos {
     harga: angka(kolom(baris, "harga")),
     nilai,
     jarak_km: c2,
+    jarak_unpad_km: keJarakKm(kolom(baris, "jarak_unpad_km")),
+    jarak_itb_km: keJarakKm(kolom(baris, "jarak_itb_km")),
     jarak_imputasi: c2 === C2_IMPUTASI && koordinat_status === null,
     luas_m2: angka(kolom(baris, "C4")),
     url: teks(kolom(baris, "url")),

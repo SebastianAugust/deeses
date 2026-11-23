@@ -12,6 +12,8 @@ type Props = {
   kos: {
     jarak_km?: number | null;
     jarak_imputasi?: boolean;
+    jarak_unpad_km?: number | null;
+    jarak_itb_km?: number | null;
     koordinat_status?: string | null;
     basis_harga?: string | null;
   };

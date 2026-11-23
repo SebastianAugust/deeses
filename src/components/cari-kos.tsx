@@ -8,7 +8,8 @@ import { Spinner } from "@/components/indikator-muat";
 import { KosPhoto } from "@/components/kos-photo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cariKos, geserSorotan, segmenSorot, tokenQuery } from "@/lib/cari-kos";
-import { formatRupiah, teksJarak } from "@/lib/format";
+import { formatRupiah } from "@/lib/format";
+import { JarakKampus } from "@/components/jarak-kampus";
 import { buildHref, type FilterState, type ParamTambahan } from "@/lib/query";
 import { labelTipe } from "@/lib/ringkasan";
 import type { KosRingkasCarousel } from "@/lib/types";
@@ -292,7 +293,7 @@ export function CariKos({ filter, paramTambahan, kompak = false, className }: Ca
                             {kos.harga === null ? "-" : <b className="font-bold text-ink">{formatRupiah(kos.harga)}</b>}
                             {kos.harga === null ? "" : " /bln"}
                           </span>
-                          {!kos.jarak_imputasi && kos.jarak_km !== null ? <span>{teksJarak(kos)}</span> : null}
+                          <JarakKampus kos={kos} varian="ringkas" />
                         </span>
                       </span>
                     </Link>

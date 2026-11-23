@@ -8,7 +8,17 @@
  * hanya bila kriteria itu dipasang).
  */
 import { KRITERIA_TERSEDIA, type KodeKriteria, type SumberKriteria } from "@/config/kriteria";
-import { isTipePenghuni, type KosInfo, type TipePenghuni } from "@/lib/types";
+import {
+  isBasisHarga,
+  isKoordinatStatus,
+  isLuasStatus,
+  isTipePenghuni,
+  type BasisHarga,
+  type KoordinatStatus,
+  type KosInfo,
+  type LuasStatus,
+  type TipePenghuni,
+} from "@/lib/types";
 
 export const KOLOM_FASILITAS = [
   "termasuk_listrik",
@@ -67,9 +77,9 @@ export const MAKS_FOTO = KOLOM_FOTO.length;
 const ALAMAT_PLACEHOLDER = "jatinangor, sumedang";
 
 /**
- * Nilai C2 hasil imputasi median di prepare_data.py.
- * TODO: hapus heuristik ini saat data punya flag imputasi (kolom jarak_imputasi).
- * Akibatnya kos yang jarak aslinya memang 1,1 km juga ikut tertandai.
+ * Nilai C2 hasil imputasi median di prepare_data.py (data LAMA).
+ * Hanya dipakai untuk baris tanpa koordinat_status: data bersih menghitung C2
+ * ulang sebagai jarak rute, jadi 1,1 di sana nilai asli, bukan imputasi.
  */
 const C2_IMPUTASI = 1.1;
 
@@ -83,6 +93,12 @@ export type Kos = {
   alamat: string | null;
   lat: number | null;
   lng: number | null;
+  /** Mutu titik lat/lng; null = kolom tidak ada / nilai tak dikenal. */
+  koordinat_status: KoordinatStatus | null;
+  /** "tidak_tercantum" = C4 kosong karena listing tidak menyebut ukuran kamar. */
+  luas_status: LuasStatus | null;
+  /** "tahun_dibagi_12" = harga dihitung dari tarif tahunan ÷ 12. */
+  basis_harga: BasisHarga | null;
   /** null kalau nilai di tabel bukan putra/putri/campur (lihat `tipe_asli`). */
   tipe: TipePenghuni | null;
   tipe_asli: string | null;
@@ -91,7 +107,7 @@ export type Kos = {
   nilai: Partial<Record<KodeKriteria, number | null>>;
   /** = C2. */
   jarak_km: number | null;
-  /** Heuristik sementara: C2 persis 1,1 (median imputasi). */
+  /** Heuristik data lama: C2 persis 1,1 (median imputasi) pada baris tanpa koordinat_status. */
   jarak_imputasi: boolean;
   /** = C4. */
   luas_m2: number | null;
@@ -167,6 +183,16 @@ export function keTipe(v: unknown): TipePenghuni | null {
   return isTipePenghuni(t) ? t : null;
 }
 
+/** Teks status → anggota daftar (huruf besar/spasi dimaafkan); selain itu null, tidak error. */
+function keStatus<T extends string>(adalah: (v: unknown) => v is T, v: unknown): T | null {
+  const t = typeof v === "string" ? v.trim().toLowerCase() : null;
+  return adalah(t) ? t : null;
+}
+
+export const keKoordinatStatus = (v: unknown): KoordinatStatus | null => keStatus(isKoordinatStatus, v);
+export const keLuasStatus = (v: unknown): LuasStatus | null => keStatus(isLuasStatus, v);
+export const keBasisHarga = (v: unknown): BasisHarga | null => keStatus(isBasisHarga, v);
+
 export function keAlamat(v: unknown): string | null {
   const t = teks(v);
   if (t === null || t.toLowerCase() === ALAMAT_PLACEHOLDER) return null;
@@ -204,18 +230,22 @@ export function petakanBaris(baris: BarisKos): Kos {
   const foto_urls = keDaftarFoto([keUrlFoto(f1) ?? keUrlFoto(kolom(baris, "foto_url")), ...sisaFoto]);
 
   const c2 = angka(kolom(baris, "C2"));
+  const koordinat_status = keKoordinatStatus(kolom(baris, "koordinat_status"));
   return {
     id,
     nama: teks(kolom(baris, "nama")) ?? "Kos tanpa nama",
     alamat: keAlamat(kolom(baris, "alamat")),
     lat: keKoordinat(kolom(baris, "lat"), 90),
     lng: keKoordinat(kolom(baris, "lng"), 180),
+    koordinat_status,
+    luas_status: keLuasStatus(kolom(baris, "luas_status")),
+    basis_harga: keBasisHarga(kolom(baris, "basis_harga")),
     tipe: keTipe(kolom(baris, "tipe_penghuni")),
     tipe_asli: teks(kolom(baris, "tipe_penghuni")),
     harga: angka(kolom(baris, "harga")),
     nilai,
     jarak_km: c2,
-    jarak_imputasi: c2 === C2_IMPUTASI,
+    jarak_imputasi: c2 === C2_IMPUTASI && koordinat_status === null,
     luas_m2: angka(kolom(baris, "C4")),
     url: teks(kolom(baris, "url")),
     foto_url: foto_urls[0] ?? null,
@@ -262,6 +292,7 @@ export function keKosInfo(k: Kos): KosInfo {
     alamat: k.alamat,
     luas_kamar: k.luas_m2 === null ? null : formatLuas(k.luas_m2),
     luas_m2: k.luas_m2,
+    luas_status: k.luas_status,
     kamar_mandi: mandi === null ? null : mandi ? "dalam" : "luar",
     listrik_termasuk: k.fasilitas.termasuk_listrik,
     deposit: null,
@@ -277,6 +308,16 @@ export function keKosInfo(k: Kos): KosInfo {
     diperbarui_at: null,
     gmaps_place_id: k.gmaps_place_id,
   };
+}
+
+/** Jumlah kos per nilai ("(tidak ada)" untuk null). */
+function hitungPer(semua: readonly Kos[], ambil: (k: Kos) => string | null): Record<string, number> {
+  const hasil: Record<string, number> = {};
+  for (const k of semua) {
+    const nilai = ambil(k) ?? "(tidak ada)";
+    hasil[nilai] = (hasil[nilai] ?? 0) + 1;
+  }
+  return hasil;
 }
 
 /** Ringkasan kualitas data (untuk log diagnostik & laporan), tanpa data rahasia. */
@@ -296,6 +337,9 @@ export function diagnostikData(semua: readonly Kos[]) {
     url_terisi: semua.filter((k) => k.url !== null).length,
     alamat_terisi: semua.filter((k) => k.alamat !== null).length,
     koordinat_terisi: semua.filter((k) => k.lat !== null && k.lng !== null).length,
+    koordinat_status: hitungPer(semua, (k) => k.koordinat_status),
+    luas_status: hitungPer(semua, (k) => k.luas_status),
+    basis_harga: hitungPer(semua, (k) => k.basis_harga),
     jarak_imputasi: semua.filter((k) => k.jarak_imputasi).length,
     kosong_per_kriteria: Object.fromEntries(
       KRITERIA_TERSEDIA.map((kr) => [kr.kode, semua.filter((k) => kriteriaTanpaData(k, [kr.kode]).length > 0).length]),

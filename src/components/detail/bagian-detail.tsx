@@ -4,9 +4,17 @@ import Link from "next/link";
 import { Bath, Check, Maximize, Users, Zap, type LucideIcon } from "lucide-react";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { ScoreBar } from "@/components/score-bar";
+import { CatatanDataKos } from "@/components/catatan-data-kos";
 import { TautanPeta } from "@/components/detail/tautan-peta";
 import { jelaskanPeringkat, skorKriteria } from "@/lib/explain";
-import { formatJarakMeter, formatSkor, formatTanggal, teksJarak } from "@/lib/format";
+import {
+  CATATAN_DATA_SIMULASI,
+  LABEL_JARAK_RUTE,
+  formatJarakMeter,
+  formatSkor,
+  formatTanggal,
+  teksJarak,
+} from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
 import { infoKriteria, type KodeKriteria } from "@/config/kriteria";
@@ -55,7 +63,7 @@ export function JudulKos({
         {kos.nama}
       </h1>
       <p className="text-sm text-muted lg:text-[15px]">
-        {kos.alamat ?? "Alamat belum ada data"} ·{" "}
+        {kos.alamat ? <>{kos.alamat} · </> : null}
         {kos.jarak_imputasi || kos.jarak_km === null ? (
           "jarak ke kampus belum diketahui"
         ) : (
@@ -64,7 +72,15 @@ export function JudulKos({
           </>
         )}
       </p>
-      <TautanPeta nama={kos.nama} placeId={kos.gmaps_place_id} className="-mt-1" />
+      <CatatanDataKos kos={kos} harga={false} className="-mt-1 text-xs" />
+      <TautanPeta
+        nama={kos.nama}
+        placeId={kos.gmaps_place_id}
+        lat={kos.lat}
+        lng={kos.lng}
+        koordinat_status={kos.koordinat_status}
+        className="-mt-1"
+      />
     </div>
   );
 }
@@ -150,7 +166,8 @@ export function AturanSekitar({ kos }: { kos: KosDetail }) {
   const sekitar = [
     {
       nama: "Kampus terdekat (Unpad/ITB)",
-      jarak: kos.jarak_imputasi || kos.jarak_km === null ? "Belum diketahui" : teksJarak(kos),
+      jarak:
+        kos.jarak_imputasi || kos.jarak_km === null ? "Belum diketahui" : `${teksJarak(kos)} (${LABEL_JARAK_RUTE})`,
     },
     ...(kos.sekitar ?? []).map((s) => ({ nama: s.nama, jarak: formatJarakMeter(s.jarak_m) })),
   ];
@@ -261,7 +278,7 @@ export function CatatanSumber({ kos }: { kos: KosDetail }) {
     <p className="text-xs leading-normal text-muted">
       Data dari listing publik{tanggal ? `, terakhir diperbarui ${tanggal}` : ""}.{" "}
       <b className="text-ink">Data sementara:</b> sebagian informasi (alamat, kontak, foto) belum
-      terisi. Informasi bisa berubah, pastikan lagi ke pengelola sebelum survei.
+      terisi. {CATATAN_DATA_SIMULASI} Informasi bisa berubah, pastikan lagi ke pengelola sebelum survei.
     </p>
   );
 }

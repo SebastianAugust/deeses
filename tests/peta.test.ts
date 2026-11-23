@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { urlCariGoogleMaps } from "@/lib/peta";
+import { titikBisaDipercaya, urlCariGoogleMaps, urlGoogleMaps } from "@/lib/peta";
 
 const DASAR = "https://www.google.com/maps/search/?api=1&query=";
 
@@ -123,5 +123,67 @@ describe("urlCariGoogleMaps: place ID", () => {
   it("nama kosong tetap null walau ada placeId", () => {
     expect(urlCariGoogleMaps("", ID)).toBeNull();
     expect(urlCariGoogleMaps("  (2)", ID)).toBeNull();
+  });
+});
+
+describe("urlGoogleMaps: pin langsung vs pencarian nama menurut koordinat_status", () => {
+  const PIN = "https://www.google.com/maps/search/?api=1&query=";
+  const dasar = { nama: "Kost Pondok Wangi Tipe A (2)", lat: -6.9272491, lng: 107.7793797 };
+
+  it("terverifikasi dan geokode → pin LAT,LNG (koma tidak di-encode)", () => {
+    for (const koordinat_status of ["terverifikasi", "geokode"]) {
+      expect(urlGoogleMaps({ ...dasar, koordinat_status })).toBe(`${PIN}-6.9272491,107.7793797`);
+    }
+  });
+
+  it("perkiraan → pencarian nama (tanpa Tipe X dan tanpa (2)), koordinat tidak dipakai", () => {
+    const url = urlGoogleMaps({ ...dasar, koordinat_status: "perkiraan" });
+    expect(url).toBe(`${PIN}Kost%20Pondok%20Wangi%20Jatinangor`);
+    expect(url).not.toContain("6.92");
+  });
+
+  it("status tidak ada / null / tak dikenal → pencarian nama seperti sebelumnya", () => {
+    const cari = urlCariGoogleMaps(dasar.nama);
+    expect(urlGoogleMaps({ ...dasar })).toBe(cari);
+    expect(urlGoogleMaps({ ...dasar, koordinat_status: null })).toBe(cari);
+    expect(urlGoogleMaps({ ...dasar, koordinat_status: "akurat" })).toBe(cari);
+    expect(urlGoogleMaps({ nama: dasar.nama })).toBe(cari);
+  });
+
+  it("status terpercaya tetapi koordinat tidak valid → pencarian nama (tidak pernah pin rusak)", () => {
+    const cari = urlCariGoogleMaps(dasar.nama);
+    for (const [lat, lng] of [
+      [null, null],
+      [undefined, undefined],
+      [-6.9, null],
+      [null, 107.7],
+      [Number.NaN, 107.7],
+      [-6.9, Number.POSITIVE_INFINITY],
+      [91, 107.7],
+      [-6.9, 181],
+    ] as const) {
+      expect(urlGoogleMaps({ nama: dasar.nama, lat, lng, koordinat_status: "geokode" }), `${lat},${lng}`).toBe(cari);
+    }
+  });
+
+  it("pin tetap jadi tautan walau nama kosong; nama kosong tanpa pin → null", () => {
+    expect(urlGoogleMaps({ nama: "", lat: -6.9, lng: 107.7, koordinat_status: "geokode" })).toBe(`${PIN}-6.9,107.7`);
+    expect(urlGoogleMaps({ nama: "", lat: -6.9, lng: 107.7, koordinat_status: "perkiraan" })).toBeNull();
+    expect(urlGoogleMaps({ nama: "  (2)" })).toBeNull();
+  });
+
+  it("place ID ditambahkan ke pin maupun pencarian", () => {
+    expect(urlGoogleMaps({ ...dasar, koordinat_status: "geokode", placeId: "ChIJabc" })).toBe(
+      `${PIN}-6.9272491,107.7793797&query_place_id=ChIJabc`,
+    );
+    expect(urlGoogleMaps({ ...dasar, koordinat_status: "perkiraan", placeId: "ChIJabc" })).toBe(
+      `${PIN}Kost%20Pondok%20Wangi%20Jatinangor&query_place_id=ChIJabc`,
+    );
+  });
+
+  it("titikBisaDipercaya", () => {
+    expect(titikBisaDipercaya("terverifikasi")).toBe(true);
+    expect(titikBisaDipercaya("geokode")).toBe(true);
+    for (const s of ["perkiraan", null, undefined, "", "lain"]) expect(titikBisaDipercaya(s), String(s)).toBe(false);
   });
 });

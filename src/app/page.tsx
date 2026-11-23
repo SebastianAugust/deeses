@@ -9,6 +9,7 @@ import { HomeUtama } from "@/components/home/home-utama";
 import { HomeUtamaFromUrl } from "@/components/home/home-utama-url";
 import { KosCarousel } from "@/components/home/kos-carousel";
 import { DEFAULT_FILTER } from "@/lib/query";
+import { CATATAN_DATA_SIMULASI } from "@/lib/format";
 
 /*
  * Home.
@@ -54,7 +55,7 @@ export default function HomePage() {
               yang kamu rakit sendiri: 1 sampai {MAKS_KRITERIA} dari {KRITERIA_TERSEDIA.length} kriteria yang datanya
               tersedia. Bobot tiap kriteria dihitung dari urutan prioritasmu (rank-sum), dan TOPSIS ditampilkan
               sebagai pembanding di detail kos. Data sementara: sebagian kos belum punya foto,
-              alamat, atau kontak.
+              alamat, atau kontak. {CATATAN_DATA_SIMULASI}
             </p>
           </GlassCard>
         </section>

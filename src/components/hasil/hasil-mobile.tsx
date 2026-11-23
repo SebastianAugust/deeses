@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { ArrowUpDown } from "lucide-react";
 import { motion } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
+import { CatatanDataKos } from "@/components/catatan-data-kos";
+import { CatatanDataSimulasi } from "@/components/catatan-data-simulasi";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { Crossfade } from "@/components/crossfade";
 import { IndikatorMuat } from "@/components/indikator-muat";
@@ -123,6 +125,7 @@ function DaftarMobile({
                 </span>
               </span>
             </div>
+            <CatatanDataKos kos={pertama} />
           </Link>
         </Muncul>
       </ul>
@@ -153,6 +156,7 @@ function DaftarMobile({
                   <b>{formatRupiah(kos.harga)}</b>{" "}
                   <span className="text-muted">· {teksJarak(kos)}</span>
                 </span>
+                <CatatanDataKos kos={kos} jarak={false} />
               </Link>
             </Muncul>
           ))}
@@ -179,6 +183,7 @@ function DaftarMobile({
                     <b>{formatRupiah(kos.harga)}</b>{" "}
                     <span className="text-muted">· {teksJarak(kos)}</span>
                   </span>
+                  <CatatanDataKos kos={kos} jarak={false} />
                 </span>
                 <span className="flex flex-col items-end">
                   <span className="text-sm font-extrabold tabular-nums">
@@ -192,6 +197,8 @@ function DaftarMobile({
           ))}
         </ul>
       ) : null}
+
+      <CatatanDataSimulasi className="mx-5 mt-6" />
     </div>
   );
 }

@@ -29,7 +29,7 @@ const { GET: getKriteriaRoute } = await import("@/app/api/kriteria/route");
 
 const ASLI = fixture.baris as BarisKos[];
 
-/** Parser CSV kecil (mendukung field ber-kutip berisi koma) untuk kos_scored.csv. */
+/** Parser CSV kecil (mendukung field ber-kutip berisi koma) untuk kos_bersih.csv. */
 function bacaCsv(path: string): Record<string, string>[] {
   const baris = readFileSync(path, "utf8").trim().split(/\r?\n/);
   const pisah = (l: string) => {
@@ -50,8 +50,9 @@ function bacaCsv(path: string): Record<string, string>[] {
   return baris.slice(1).map((l) => Object.fromEntries(pisah(l).map((v, i) => [kepala[i], v])));
 }
 
+// Data bersih (354 kos; dibuat di dss-model-kos-jatinangor/data_bersih), bentuk kolom sama dengan public.kos.
 const CSV = bacaCsv(
-  fileURLToPath(new URL("../dss-model-kos-jatinangor/kos_scored.csv", import.meta.url)),
+  fileURLToPath(new URL("../dss-model-kos-jatinangor/data_bersih/kos_bersih.csv", import.meta.url)),
 );
 
 // ---------------------------------------------------------------------------
@@ -94,11 +95,14 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
     }
   });
 
-  it("piece tersedia: kolomnya ada di kos_scored.csv dan nilainya TIDAK konstan", () => {
-    expect(CSV.length).toBe(360);
+  it("piece tersedia: kolomnya ada di kos_bersih.csv dan nilainya TIDAK konstan", () => {
+    expect(CSV.length).toBe(354);
     for (const k of KRITERIA_TERSEDIA) {
       const nilai = new Set(CSV.map((b) => bacaSumber(b, k.sumber!)));
-      expect(nilai.has(null), `${k.kode} ada yang kosong`).toBe(false);
+      // Satu-satunya kekosongan yang sah: luas (C4) pada kos yang luas_status-nya "tidak_tercantum".
+      const kosong = CSV.filter((b) => bacaSumber(b, k.sumber!) === null).map((b) => b.id);
+      const sah = k.kode === "luas" ? CSV.filter((b) => b.luas_status === "tidak_tercantum").map((b) => b.id) : [];
+      expect(kosong, `${k.kode} ada yang kosong`).toEqual(sah);
       expect(nilai.size, `${k.kode} konstan`).toBeGreaterThan(1);
     }
   });
@@ -114,8 +118,10 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
       expect(k.alasanTidakTersedia?.length ?? 0).toBeGreaterThan(10);
       expect(kolomCsv).not.toContain(k.kode);
     }
-    expect(kolomCsv).not.toContain("jarak_unpad_km");
-    expect(kolomCsv).not.toContain("jarak_itb_km");
+    // Data bersih sudah punya kolom jarak per kampus, tetapi piece jarak_unpad/jarak_itb belum diaktifkan
+    // (tidak ada sumber, ditolak API). Mengaktifkannya = tugas terpisah.
+    expect(kolomCsv).toContain("jarak_unpad_km");
+    expect(kolomCsv).toContain("jarak_itb_km");
   });
 
   it("kolom sintetis/komposit (C1, C3, C5–C8) tidak dipakai sebagai sumber", () => {
@@ -144,6 +150,11 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
     const kelompok = katalogTerkelompok();
     expect(kelompok.map((k) => k.kode)).not.toContain("aturan");
     expect(kelompok.flatMap((k) => k.kriteria).length).toBe(KRITERIA_TERSEDIA.length);
+    // Jarak dan luas sengaja bukan default (datanya perkiraan), tetapi tetap bisa dipasang.
+    expect([...KRITERIA_DEFAULT]).toEqual(["harga", "ac", "km_dalam", "cctv"]);
+    expect(isKodeTersedia("jarak_kampus") && isKodeTersedia("luas")).toBe(true);
+    expect(getKriteria("jarak_kampus")?.deskripsi).toContain("perkiraan jarak rute (data OpenStreetMap)");
+    expect(getKriteria("luas")?.deskripsi).toContain("luas dari ukuran yang tercantum");
     expect(KRITERIA_DEFAULT.length).toBeLessThanOrEqual(MAKS_KRITERIA);
     for (const k of KRITERIA_DEFAULT) expect(isKodeTersedia(k)).toBe(true);
   });

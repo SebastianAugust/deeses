@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Copy, MessageCircle, Phone } from "lucide-react";
+import { CatatanDataKos } from "@/components/catatan-data-kos";
 import { KosPhoto } from "@/components/kos-photo";
 import { KELAS_TOMBOL_SEKUNDER, PrimaryButton } from "@/components/primary-button";
 import { StickyBottomBar } from "@/components/sticky-bottom-bar";
@@ -62,6 +63,7 @@ export function KontakCard({ kos }: { kos: KosDetail }) {
           <span className="text-[15px] text-muted">/ bulan</span>
         </p>
         {biaya ? <p className="text-[13px] text-muted">{biaya}</p> : null}
+        <CatatanDataKos kos={kos} jarak={false} lokasi={false} />
       </div>
 
       <hr className="border-line" />

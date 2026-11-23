@@ -69,3 +69,32 @@ export function teksJarakKeKampus(kos: DenganJarak): string {
     ? "jarak belum diketahui"
     : `${formatJarak(kos.jarak_km)} ke kampus`;
 }
+
+/* ------------------------- Catatan mutu data ------------------------- */
+
+export const LABEL_JARAK_RUTE = "perkiraan jarak rute";
+export const LABEL_LOKASI_PERKIRAAN = "lokasi perkiraan";
+export const CATATAN_HARGA_TAHUNAN = "harga dihitung dari tarif tahunan ÷ 12";
+export const CATATAN_DATA_SIMULASI = "Data kos sebagian simulasi/perkiraan (lokasi, jarak, luas), bukan data resmi.";
+
+type DenganStatusData = {
+  jarak_km?: number | null;
+  jarak_imputasi?: boolean;
+  koordinat_status?: string | null;
+  basis_harga?: string | null;
+};
+
+/** Jarak ke kampus ada dan bukan imputasi → angkanya ditampilkan, dan berlabel "perkiraan jarak rute". */
+export function adaJarakRute(kos: DenganStatusData): boolean {
+  return typeof kos.jarak_km === "number" && !kos.jarak_imputasi;
+}
+
+/** koordinat_status "perkiraan" → titik lokasi bisa meleset (label "lokasi perkiraan"). */
+export function lokasiPerkiraan(kos: DenganStatusData): boolean {
+  return kos.koordinat_status === "perkiraan";
+}
+
+/** basis_harga "tahun_dibagi_12" → harga bulanan dihitung dari tarif tahunan ÷ 12. */
+export function hargaDariTahunan(kos: DenganStatusData): boolean {
+  return kos.basis_harga === "tahun_dibagi_12";
+}

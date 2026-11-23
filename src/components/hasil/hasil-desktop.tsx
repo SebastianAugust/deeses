@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import { AnimatedText } from "@/components/animated-text";
 import { CariKos } from "@/components/cari-kos";
+import { CatatanDataSimulasi } from "@/components/catatan-data-simulasi";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { Crossfade } from "@/components/crossfade";
 import { IndikatorMuat } from "@/components/indikator-muat";
@@ -168,6 +169,7 @@ export function HasilDesktop() {
               </LayoutGroup>
             ) : null}
           </Crossfade>
+          <CatatanDataSimulasi className="pt-1" />
         </main>
 
         <div className="sticky top-[22px] max-h-[calc(100vh-44px)] w-[320px] flex-none overflow-y-auto rounded-[24px] xl:w-[380px]">

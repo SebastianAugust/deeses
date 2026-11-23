@@ -4,6 +4,22 @@ export type TipePenghuni = "putra" | "putri" | "campur";
 
 export const TIPE_PENGHUNI: readonly TipePenghuni[] = ["putra", "putri", "campur"];
 
+/**
+ * Status mutu data (kolom baru di public.kos). Kolom tidak ada / nilai tak dikenal = null
+ * (tidak diketahui), bukan error.
+ * - koordinat_status: seberapa bisa dipercaya titik lat/lng. "perkiraan" bisa meleset 1–2 km.
+ * - luas_status: apakah ukuran kamar tercantum di listing (C4 kosong bila "tidak_tercantum").
+ * - basis_harga: "tahun_dibagi_12" = harga bulanan dihitung dari tarif tahunan ÷ 12.
+ */
+export const KOORDINAT_STATUS = ["terverifikasi", "geokode", "perkiraan"] as const;
+export type KoordinatStatus = (typeof KOORDINAT_STATUS)[number];
+
+export const LUAS_STATUS = ["tercantum", "tidak_tercantum"] as const;
+export type LuasStatus = (typeof LUAS_STATUS)[number];
+
+export const BASIS_HARGA = ["bulan", "tahun_dibagi_12"] as const;
+export type BasisHarga = (typeof BASIS_HARGA)[number];
+
 /** Body POST /api/rank. `kriteria` = kode piece terpasang, urut prioritas (1..MAKS_KRITERIA). */
 export type RankRequest = {
   budget: number;
@@ -30,6 +46,14 @@ export type RankResult = {
   rank_topsis?: number;
   /** Skor ternormalisasi 0..1 untuk tiap kriteria TERPASANG (kunci = kode). */
   skor_kriteria: Partial<Record<KodeKriteria, number>>;
+  /**
+   * Penjelas data (tambahan opsional, kontrak lama tetap berlaku): status titik lokasi,
+   * basis harga, dan koordinat untuk tautan pin Google Maps. Null/tidak ada = tidak diketahui.
+   */
+  koordinat_status?: KoordinatStatus | null;
+  basis_harga?: BasisHarga | null;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 /** Respons POST /api/rank. */
@@ -72,6 +96,8 @@ export type KosInfo = {
   luas_kamar?: string | null;
   /** = C4 (m²). */
   luas_m2?: number | null;
+  /** "tidak_tercantum" = ukuran kamar tidak ada di listing (luas_m2 null). */
+  luas_status?: LuasStatus | null;
   kamar_mandi?: KamarMandi | null;
   listrik_termasuk?: boolean | null;
   /** Rupiah. */
@@ -114,6 +140,14 @@ export type KosDetailResponse = {
     berikutnya: KosRingkas | null;
   } | null;
 };
+
+function dalamDaftar<T extends string>(daftar: readonly T[], v: unknown): v is T {
+  return typeof v === "string" && (daftar as readonly string[]).includes(v);
+}
+
+export const isKoordinatStatus = (v: unknown): v is KoordinatStatus => dalamDaftar(KOORDINAT_STATUS, v);
+export const isLuasStatus = (v: unknown): v is LuasStatus => dalamDaftar(LUAS_STATUS, v);
+export const isBasisHarga = (v: unknown): v is BasisHarga => dalamDaftar(BASIS_HARGA, v);
 
 export function isTipePenghuni(v: unknown): v is TipePenghuni {
   return typeof v === "string" && (TIPE_PENGHUNI as readonly string[]).includes(v);

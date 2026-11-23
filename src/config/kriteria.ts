@@ -8,8 +8,8 @@
  * Setiap piece menunjuk ke KOLOM MENTAH tabel public.kos (lihat
  * src/lib/repo/mapper.ts dan tests/fixtures/baris-kos.json; bentuk kolom sama
  * dengan dss-model-kos-jatinangor/kos_scored.csv). `tersedia: true` hanya bila
- * kolomnya ada dan nilainya tidak konstan di data (diverifikasi atas 360 baris
- * kos_scored.csv). Piece yang belum ada datanya tetap dicatat (tersedia: false
+ * kolomnya ada dan nilainya tidak konstan di data (diverifikasi atas 354 baris
+ * dss-model-kos-jatinangor/data_bersih/kos_bersih.csv). Piece yang belum ada datanya tetap dicatat (tersedia: false
  * + alasan) supaya mudah diaktifkan saat kolomnya ditambahkan, tetapi TIDAK
  * pernah tampil di UI dan ditolak oleh API.
  *
@@ -94,24 +94,24 @@ const DATA_KATALOG = [
   },
   // ------------------------------- lokasi ------------------------------
   {
-    // C2 = min(jarak Unpad, jarak ITB) dari prepare_data.py. Satu-satunya kolom
-    // jarak di tabel. Catatan data: sebagian nilai adalah imputasi median 1,1 km
-    // di sumber (AUDIT.md T03) dan belum punya kolom penanda.
+    // C2 = min(jarak Unpad, jarak ITB): perkiraan jarak rute (OSRM, data
+    // OpenStreetMap) dari titik lat/lng. Titik berstatus koordinat_status
+    // "perkiraan" bisa meleset 1–2 km, jadi piece ini bukan rakitan default.
     kode: "jarak_kampus", nama: "Jarak ke kampus terdekat", singkat: "jarak ke kampus", kategori: "lokasi", jenis: "cost",
     sumber: { kolom: "C2", tipe: "angka" }, satuan: "km",
-    deskripsi: "Jarak ke Unpad atau ITB Jatinangor, mana yang lebih dekat.", tersedia: true,
+    deskripsi: "Jarak ke Unpad atau ITB Jatinangor, mana yang lebih dekat; perkiraan jarak rute (data OpenStreetMap).", tersedia: true,
   },
   {
     kode: "jarak_unpad", nama: "Jarak ke Unpad", singkat: "jarak ke Unpad", kategori: "lokasi", jenis: "cost",
     sumber: null, satuan: "km", deskripsi: "Jarak ke gerbang kampus Unpad.",
     tersedia: false,
-    alasanTidakTersedia: `${BELUM_ADA("jarak_unpad_km")} Data mentah jarak_ke_unpad hanya ada di xlsx dan kosong di 180 dari 360 baris.`,
+    alasanTidakTersedia: "Kolom jarak_unpad_km sudah ada di data bersih (perkiraan jarak rute), tetapi piece ini belum diaktifkan.",
   },
   {
     kode: "jarak_itb", nama: "Jarak ke ITB", singkat: "jarak ke ITB", kategori: "lokasi", jenis: "cost",
     sumber: null, satuan: "km", deskripsi: "Jarak ke gerbang ITB Jatinangor.",
     tersedia: false,
-    alasanTidakTersedia: `${BELUM_ADA("jarak_itb_km")} Data mentah jarak_ke_itb hanya ada di xlsx dan kosong di 186 dari 360 baris.`,
+    alasanTidakTersedia: "Kolom jarak_itb_km sudah ada di data bersih (perkiraan jarak rute), tetapi piece ini belum diaktifkan.",
   },
   {
     kode: "minimarket", nama: "Jarak ke minimarket", singkat: "jarak ke minimarket", kategori: "lokasi", jenis: "cost",
@@ -125,11 +125,11 @@ const DATA_KATALOG = [
   },
   // ------------------------------- kamar -------------------------------
   {
-    // C4 = p × l dari ukuran_kamar (prepare_data.py). Bukan komposit; kolom
-    // ukuran_kamar sendiri tidak ada di tabel, jadi C4 satu-satunya kolom luas.
+    // C4 = luas kamar (m²) dari ukuran yang tercantum di listing. Kosong bila
+    // luas_status "tidak_tercantum" (kos itu dikecualikan hanya bila piece dipasang).
     kode: "luas", nama: "Luas kamar", singkat: "luas kamar", kategori: "kamar", jenis: "benefit",
     sumber: { kolom: "C4", tipe: "angka" }, satuan: "m²",
-    deskripsi: "Ukuran kamar dalam meter persegi.", tersedia: true,
+    deskripsi: "Ukuran kamar dalam meter persegi; luas dari ukuran yang tercantum.", tersedia: true,
   },
   {
     kode: "km_dalam", nama: "Kamar mandi dalam", singkat: "kamar mandi dalam", kategori: "kamar", jenis: "benefit",
@@ -246,8 +246,12 @@ export const KRITERIA_TERSEDIA: readonly KriteriaInfo[] = KATALOG_KRITERIA.filte
 
 const PER_KODE = new Map<string, KriteriaInfo>(KATALOG_KRITERIA.map((k) => [k.kode, k]));
 
-/** Rakitan awal (mengikuti mockup 09/10): harga, jarak, luas, CCTV. */
-export const KRITERIA_DEFAULT: readonly KodeKriteria[] = ["harga", "jarak_kampus", "luas", "cctv"];
+/**
+ * Rakitan awal: harga, AC, kamar mandi dalam, CCTV. Jarak dan luas sengaja tidak
+ * jadi default: nilainya perkiraan (lokasi sebagian titik perkiraan, luas dari
+ * ukuran yang tercantum).
+ */
+export const KRITERIA_DEFAULT: readonly KodeKriteria[] = ["harga", "ac", "km_dalam", "cctv"];
 
 /**
  * F2: apakah pencari "putra"/"putri" ikut melihat kos "campur"?

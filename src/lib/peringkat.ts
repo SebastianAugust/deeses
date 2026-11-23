@@ -76,6 +76,10 @@ export function keRankResult({ kos, hasil }: KosTerurut): RankResult {
     skor_topsis: bulatkanTampilan(hasil.skor_topsis),
     rank_topsis: hasil.rank_topsis,
     skor_kriteria: bulatkanSkor(hasil.skor_kriteria),
+    koordinat_status: kos.koordinat_status,
+    basis_harga: kos.basis_harga,
+    lat: kos.lat,
+    lng: kos.lng,
   };
 }
 

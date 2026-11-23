@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { CatatanDataKos } from "@/components/catatan-data-kos";
 import { AnimatedText } from "@/components/animated-text";
 import { KosPhoto } from "@/components/kos-photo";
 import { RankBadge } from "@/components/rank-badge";
@@ -92,6 +93,7 @@ export function KosListCard({
           <span className="text-sm">
             <b>{formatRupiah(kos.harga)}</b> <span className="text-muted">/ bulan</span>
           </span>
+          <CatatanDataKos kos={kos} />
           {tanpaBar ? null : (
             <div className="mt-1 h-[5px] rounded-[3px] bg-line" aria-hidden>
               <div

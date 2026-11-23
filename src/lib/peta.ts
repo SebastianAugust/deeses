@@ -1,8 +1,12 @@
 /**
- * Tautan Google Maps untuk kos: PENCARIAN berdasarkan NAMA (koordinat di data
- * belum terverifikasi), atau tautan langsung ke tempat bila data punya place ID
- * Google (kolom gmaps_place_id). Hanya membangun URL; tidak memanggil layanan Google.
+ * Tautan Google Maps untuk kos. Hanya membangun URL; tidak memanggil layanan Google.
+ * - koordinat_status "terverifikasi" atau "geokode" (dan lat/lng valid): PIN langsung
+ *   ke koordinat (…&query=LAT,LNG).
+ * - "perkiraan" atau status tidak ada: PENCARIAN berdasarkan NAMA (titik di data
+ *   bisa meleset 1–2 km, jadi tidak dipakai sebagai pin).
+ * - Bila data punya place ID Google (kolom gmaps_place_id) ditambahkan query_place_id.
  */
+import { isKoordinatStatus, type KoordinatStatus } from "./types";
 
 const BASIS = "https://www.google.com/maps/search/?api=1&query=";
 
@@ -42,7 +46,44 @@ export function urlCariGoogleMaps(nama: string, placeId?: string | null): string
   const bersih = namaPencarian(nama ?? "");
   if (bersih === "") return null;
   const query = /jatinangor/i.test(bersih) ? bersih : `${bersih} Jatinangor`;
-  const url = `${BASIS}${encodeURIComponent(query)}`;
+  return tambahPlaceId(`${BASIS}${encodeURIComponent(query)}`, placeId);
+}
+
+function tambahPlaceId(url: string, placeId?: string | null): string {
   const id = typeof placeId === "string" ? placeId.trim() : "";
   return id === "" ? url : `${url}&query_place_id=${encodeURIComponent(id)}`;
+}
+
+/** Koordinat yang boleh jadi pin: angka hingga, dalam rentang bumi (null/NaN/di luar rentang → tidak). */
+function koordinatValid(lat: unknown, lng: unknown): lat is number {
+  return (
+    typeof lat === "number" && typeof lng === "number" &&
+    Number.isFinite(lat) && Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+  );
+}
+
+/** Status yang titiknya cukup dipercaya untuk pin langsung. */
+export function titikBisaDipercaya(status: KoordinatStatus | string | null | undefined): boolean {
+  return isKoordinatStatus(status) && status !== "perkiraan";
+}
+
+export type DataTautanPeta = {
+  nama: string;
+  lat?: number | null;
+  lng?: number | null;
+  koordinat_status?: KoordinatStatus | string | null;
+  placeId?: string | null;
+};
+
+/**
+ * Tautan Maps untuk satu kos: pin LAT,LNG bila koordinat_status "terverifikasi"/"geokode"
+ * dan koordinat valid; selain itu pencarian nama (urlCariGoogleMaps). Tanpa nama
+ * dan tanpa pin → null.
+ */
+export function urlGoogleMaps({ nama, lat, lng, koordinat_status, placeId }: DataTautanPeta): string | null {
+  if (titikBisaDipercaya(koordinat_status) && koordinatValid(lat, lng)) {
+    return tambahPlaceId(`${BASIS}${lat},${lng}`, placeId);
+  }
+  return urlCariGoogleMaps(nama, placeId);
 }

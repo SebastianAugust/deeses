@@ -1,30 +1,28 @@
 import { MapPin } from "lucide-react";
-import { urlCariGoogleMaps } from "@/lib/peta";
+import { urlGoogleMaps, type DataTautanPeta } from "@/lib/peta";
 import { cn } from "@/lib/utils";
 
 /**
- * Tautan "Lihat di Google Maps": membuka PENCARIAN nama kos di tab baru (atau
- * tempatnya langsung bila ada place ID), bukan koordinat dari data. Tidak
- * dirender bila nama tidak bisa dicari.
+ * Tautan "Lihat di Google Maps" (tab baru): pin ke koordinat bila titiknya
+ * "terverifikasi"/"geokode", selain itu pencarian nama (lihat src/lib/peta.ts).
+ * Tidak dirender bila tidak ada nama yang bisa dicari.
  */
 export function TautanPeta({
   nama,
   placeId,
+  lat,
+  lng,
+  koordinat_status,
   className,
-}: {
-  nama: string;
-  /** Place ID Google (opsional): bila ada, tautan membuka tempat itu langsung. */
-  placeId?: string | null;
-  className?: string;
-}) {
-  const href = urlCariGoogleMaps(nama, placeId);
+}: DataTautanPeta & { className?: string }) {
+  const href = urlGoogleMaps({ nama, placeId, lat, lng, koordinat_status });
   if (!href) return null;
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={`Lihat di Google Maps, cari ${nama.trim()}, buka di tab baru`}
+      aria-label={`Lihat ${nama.trim()} di Google Maps, buka di tab baru`}
       className={cn(
         "tekan tautan inline-flex min-h-11 items-center gap-1.5 self-start rounded-lg text-[13px] font-semibold text-accent-ink",
         className,

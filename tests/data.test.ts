@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { KRITERIA_DEFAULT } from "@/config/kriteria";
+import { KRITERIA_DEFAULT, type KodeKriteria } from "@/config/kriteria";
 import { detailKos, keRankResponse, keRankResult, urutkanKos } from "@/lib/peringkat";
 import { PETUNJUK_RLS, KosDataError, galatKeBody, keKosDataError } from "@/lib/repo/galat";
 import {
@@ -18,7 +18,18 @@ import {
   petakanBaris,
   type BarisKos,
 } from "@/lib/repo/mapper";
-import { formatJarak, teksJarak, teksJarakKeKampus } from "@/lib/format";
+import {
+  CATATAN_DATA_SIMULASI,
+  CATATAN_HARGA_TAHUNAN,
+  LABEL_JARAK_RUTE,
+  LABEL_LOKASI_PERKIRAAN,
+  adaJarakRute,
+  formatJarak,
+  hargaDariTahunan,
+  lokasiPerkiraan,
+  teksJarak,
+  teksJarakKeKampus,
+} from "@/lib/format";
 import { hargaUntukSebaran, hitungSebaran, jumlahDiBawah } from "@/lib/sebaran";
 import type { RankRequest } from "@/lib/types";
 import {
@@ -118,9 +129,68 @@ describe("mapper baris → Kos", () => {
     expect(keBoolean(null)).toBeNull();
   });
 
-  it("jarak_imputasi = C2 persis 1,1 (heuristik sementara)", () => {
+  it("jarak_imputasi = C2 persis 1,1 (heuristik data lama, hanya baris tanpa koordinat_status)", () => {
     expect(petakanBaris(ubah(ANNISA, { C2: 1.1 })).jarak_imputasi).toBe(true);
     expect(petakanBaris(ubah(ANNISA, { C2: 1.11 })).jarak_imputasi).toBe(false);
+    // Data bersih: C2 = jarak rute hasil hitung, 1,1 di sana nilai asli.
+    expect(petakanBaris(ubah(ANNISA, { C2: 1.1, koordinat_status: "geokode" })).jarak_imputasi).toBe(false);
+  });
+
+  it("koordinat_status, luas_status, basis_harga: dibaca; tidak ada/tak dikenal → null tanpa error", () => {
+    const lama = petakanBaris(ANNISA); // fixture lama tidak punya kolom status
+    expect([lama.koordinat_status, lama.luas_status, lama.basis_harga]).toEqual([null, null, null]);
+
+    const baru = petakanBaris(
+      ubah(ANNISA, { koordinat_status: "terverifikasi", luas_status: "tercantum", basis_harga: "tahun_dibagi_12" }),
+    );
+    expect([baru.koordinat_status, baru.luas_status, baru.basis_harga]).toEqual([
+      "terverifikasi",
+      "tercantum",
+      "tahun_dibagi_12",
+    ]);
+
+    for (const s of ["terverifikasi", "geokode", "perkiraan"] as const) {
+      expect(petakanBaris(ubah(ANNISA, { koordinat_status: s })).koordinat_status).toBe(s);
+    }
+    expect(petakanBaris(ubah(ANNISA, { luas_status: "tidak_tercantum", C4: "" })).luas_status).toBe("tidak_tercantum");
+    expect(petakanBaris(ubah(ANNISA, { basis_harga: "bulan" })).basis_harga).toBe("bulan");
+
+    // spasi/huruf besar dimaafkan; nilai asing, kosong, angka, null → null
+    expect(petakanBaris(ubah(ANNISA, { koordinat_status: "  Perkiraan " })).koordinat_status).toBe("perkiraan");
+    for (const aneh of ["", "  ", "akurat", "tahun", 1, null, undefined, {}]) {
+      const k = petakanBaris(ubah(ANNISA, { koordinat_status: aneh, luas_status: aneh, basis_harga: aneh }));
+      expect([k.koordinat_status, k.luas_status, k.basis_harga], String(aneh)).toEqual([null, null, null]);
+    }
+  });
+
+  it("alamat NULL / kosong → null (tanpa karangan); luas kosong → luas_m2 null", () => {
+    expect(petakanBaris(ubah(ANNISA, { alamat: null })).alamat).toBeNull();
+    expect(petakanBaris(ubah(ANNISA, { alamat: "" })).alamat).toBeNull();
+    const k = petakanBaris(ubah(ANNISA, { alamat: null, C4: "", luas_status: "tidak_tercantum" }));
+    expect(k.luas_m2).toBeNull();
+    expect(keKosInfo(k)).toMatchObject({ alamat: null, luas_kamar: null, luas_m2: null, luas_status: "tidak_tercantum" });
+  });
+
+  it("status ikut ke RankResult (kartu hasil) dan diagnostik menghitungnya", () => {
+    const kos = [
+      ubah(ANNISA, { id: 1, lat: "-6.93", lng: "107.77", koordinat_status: "geokode", basis_harga: "tahun_dibagi_12" }),
+      ubah(ANNISA, { id: 2, koordinat_status: "perkiraan", basis_harga: "bulan" }),
+      ubah(ANNISA, { id: 3 }),
+    ].map(petakanBaris);
+    const r = urutkanKos(kos, { budget: 2_000_000, tipe: "putri", kriteria: ["harga"] }).daftar.map(keRankResult);
+    const per = Object.fromEntries(r.map((x) => [x.id, x]));
+    expect(per["1"]).toMatchObject({
+      koordinat_status: "geokode",
+      basis_harga: "tahun_dibagi_12",
+      lat: -6.93,
+      lng: 107.77,
+    });
+    expect(per["2"]).toMatchObject({ koordinat_status: "perkiraan", basis_harga: "bulan" });
+    expect(per["3"]).toMatchObject({ koordinat_status: null, basis_harga: null });
+    expect(diagnostikData(kos)).toMatchObject({
+      koordinat_status: { geokode: 1, perkiraan: 1, "(tidak ada)": 1 },
+      basis_harga: { tahun_dibagi_12: 1, bulan: 1, "(tidak ada)": 1 },
+    });
   });
 
   it("id int → string, kolom kriteria huruf kecil (c1) tetap terbaca", () => {
@@ -384,6 +454,8 @@ describe("sebaran harga", () => {
 
 // ---------------------------------------------------------------------------
 describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])", () => {
+  // Rakitan eksplisit (jarak + luas dipasang): kasus "tanpa-data" kos 5 butuh piece luas. Bukan KRITERIA_DEFAULT, yang sudah tidak memuat jarak/luas.
+  const KRITERIA_UJI: KodeKriteria[] = ["harga", "jarak_kampus", "luas", "cctv"];
   const semua = [
     ...ASLI,
     ubah(ANNISA, { id: 2, nama: "uji-murah", harga: 600_000, C1: 600_000, C2: 0.9 }),
@@ -391,7 +463,7 @@ describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])"
     ubah(ANNISA, { id: 4, nama: "uji-tanpa-harga", harga: null }),
     ubah(ANNISA, { id: 5, nama: "uji-tanpa-luas", C4: null }),
   ].map(petakanBaris);
-  const req: RankRequest = { budget: 1_500_000, tipe: "putri", kriteria: [...KRITERIA_DEFAULT] };
+  const req: RankRequest = { budget: 1_500_000, tipe: "putri", kriteria: KRITERIA_UJI };
 
   it("/api/rank: hanya kos lengkap yang lolos filter, rank unik, skor dibulatkan 4 desimal", () => {
     const urut = urutkanKos(semua, req);
@@ -404,7 +476,7 @@ describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])"
       expect(r.url).toBeNull();
       expect(r.foto_url).toBeNull();
       expect(Number(r.skor_saw.toFixed(4))).toBe(r.skor_saw);
-      expect(Object.keys(r.skor_kriteria)).toEqual([...KRITERIA_DEFAULT]);
+      expect(Object.keys(r.skor_kriteria)).toEqual(KRITERIA_UJI);
     }
     // id 5 lolos filter tetapi luas kosong → disembunyikan & dihitung
     expect(urut.jumlah_tanpa_data).toBe(1);
@@ -418,7 +490,7 @@ describe("peringkat dari baris (konteks sama untuk /api/rank dan /api/kos/[id])"
 
   it("respons /api/rank membawa kriteria_dipakai (Σ bobot = 1) dan hitungan tanpa data", () => {
     const r = keRankResponse(urutkanKos(semua, req));
-    expect(r.kriteria_dipakai.map((k) => k.kode)).toEqual([...KRITERIA_DEFAULT]);
+    expect(r.kriteria_dipakai.map((k) => k.kode)).toEqual(KRITERIA_UJI);
     expect(Math.abs(r.kriteria_dipakai.reduce((s, k) => s + k.bobot, 0) - 1)).toBeLessThan(1e-12);
     expect(r.jumlah_tanpa_data).toBe(1);
     expect(r.hasil).toHaveLength(3);
@@ -512,5 +584,36 @@ describe("format jarak", () => {
     expect(teksJarak({ jarak_km: 1.1, jarak_imputasi: true })).toBe("jarak belum diketahui");
     expect(teksJarakKeKampus({ jarak_km: 0.3 })).toBe("0,3 km ke kampus");
     expect(teksJarakKeKampus({ jarak_km: 1.1, jarak_imputasi: true })).toBe("jarak belum diketahui");
+  });
+});
+
+describe("catatan mutu data (label perkiraan)", () => {
+  it("teks label sesuai permintaan", () => {
+    expect(LABEL_JARAK_RUTE).toBe("perkiraan jarak rute");
+    expect(LABEL_LOKASI_PERKIRAAN).toBe("lokasi perkiraan");
+    expect(CATATAN_HARGA_TAHUNAN).toBe("harga dihitung dari tarif tahunan ÷ 12");
+    expect(CATATAN_DATA_SIMULASI).toBe("Data kos sebagian simulasi/perkiraan (lokasi, jarak, luas), bukan data resmi.");
+  });
+
+  it("lokasiPerkiraan hanya untuk koordinat_status = perkiraan", () => {
+    expect(lokasiPerkiraan({ koordinat_status: "perkiraan" })).toBe(true);
+    for (const s of ["geokode", "terverifikasi", null, undefined, "lain"]) {
+      expect(lokasiPerkiraan({ koordinat_status: s }), String(s)).toBe(false);
+    }
+  });
+
+  it("hargaDariTahunan hanya untuk basis_harga = tahun_dibagi_12", () => {
+    expect(hargaDariTahunan({ basis_harga: "tahun_dibagi_12" })).toBe(true);
+    for (const s of ["bulan", null, undefined, "lain"]) expect(hargaDariTahunan({ basis_harga: s }), String(s)).toBe(false);
+  });
+
+  it("adaJarakRute: ada angka dan bukan imputasi; jarak dibulatkan 0,1 km", () => {
+    expect(adaJarakRute({ jarak_km: 1.84 })).toBe(true);
+    expect(adaJarakRute({ jarak_km: 0 })).toBe(true);
+    expect(adaJarakRute({ jarak_km: null })).toBe(false);
+    expect(adaJarakRute({ jarak_km: 1.1, jarak_imputasi: true })).toBe(false);
+    expect(formatJarak(1.84)).toBe("1,8 km");
+    expect(formatJarak(1.86)).toBe("1,9 km");
+    expect(teksJarak({ jarak_km: 2.04 })).toBe("2,0 km");
   });
 });

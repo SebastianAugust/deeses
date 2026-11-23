@@ -93,23 +93,24 @@ const DATA_KATALOG = [
     deskripsi: "Kos menerima pembayaran sewa per tahun. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
   },
   // ------------------------------- lokasi ------------------------------
+  // Jarak per kampus: perkiraan jarak rute (OSRM, data OpenStreetMap) dari titik lat/lng.
+  // Titik berstatus koordinat_status "perkiraan" bisa meleset 1–2 km, jadi ketiga piece
+  // jarak bukan rakitan default. Dua piece pertama sengaja paling atas di kategori Lokasi.
   {
-    // C2 = min(jarak Unpad, jarak ITB): perkiraan jarak rute (OSRM, data
-    // OpenStreetMap) dari titik lat/lng. Titik berstatus koordinat_status
-    // "perkiraan" bisa meleset 1–2 km, jadi piece ini bukan rakitan default.
-    kode: "jarak_kampus", nama: "Jarak ke kampus terdekat", singkat: "jarak ke kampus", kategori: "lokasi", jenis: "cost",
+    kode: "jarak_unpad", nama: "Lebih dekat ke Unpad", singkat: "jarak ke Unpad", kategori: "lokasi", jenis: "cost",
+    sumber: { kolom: "jarak_unpad_km", tipe: "angka" }, satuan: "km",
+    deskripsi: "perkiraan jarak rute ke Unpad/ITB (data OpenStreetMap)", tersedia: true,
+  },
+  {
+    kode: "jarak_itb", nama: "Lebih dekat ke ITB", singkat: "jarak ke ITB", kategori: "lokasi", jenis: "cost",
+    sumber: { kolom: "jarak_itb_km", tipe: "angka" }, satuan: "km",
+    deskripsi: "perkiraan jarak rute ke Unpad/ITB (data OpenStreetMap)", tersedia: true,
+  },
+  {
+    // C2 = min(jarak Unpad, jarak ITB): yang terdekat dari keduanya.
+    kode: "jarak_kampus", nama: "Dekat salah satu kampus (Unpad/ITB)", singkat: "jarak ke kampus", kategori: "lokasi", jenis: "cost",
     sumber: { kolom: "C2", tipe: "angka" }, satuan: "km",
     deskripsi: "Jarak ke Unpad atau ITB Jatinangor, mana yang lebih dekat; perkiraan jarak rute (data OpenStreetMap).", tersedia: true,
-  },
-  {
-    kode: "jarak_unpad", nama: "Jarak ke Unpad", singkat: "jarak ke Unpad", kategori: "lokasi", jenis: "cost",
-    sumber: { kolom: "jarak_unpad_km", tipe: "angka" }, satuan: "km",
-    deskripsi: "perkiraan jarak rute ke Unpad (data OpenStreetMap)", tersedia: true,
-  },
-  {
-    kode: "jarak_itb", nama: "Jarak ke ITB", singkat: "jarak ke ITB", kategori: "lokasi", jenis: "cost",
-    sumber: { kolom: "jarak_itb_km", tipe: "angka" }, satuan: "km",
-    deskripsi: "perkiraan jarak rute ke ITB (data OpenStreetMap)", tersedia: true,
   },
   {
     kode: "minimarket", nama: "Jarak ke minimarket", singkat: "jarak ke minimarket", kategori: "lokasi", jenis: "cost",

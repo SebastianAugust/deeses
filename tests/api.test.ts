@@ -13,7 +13,7 @@ import {
   katalogTerkelompok,
   kriteriaPerKategori,
 } from "@/config/kriteria";
-import { parseFilter, parseKriteria } from "@/lib/query";
+import { buildApiQuery, parseFilter, parseKriteria } from "@/lib/query";
 import { KosDataError } from "@/lib/repo/galat";
 import { bacaSumber, petakanBaris, type BarisKos, type Kos } from "@/lib/repo/mapper";
 import type { RankResponse } from "@/lib/types";
@@ -288,5 +288,53 @@ describe("kontrak GET /api/kriteria", () => {
         expect(p).not.toHaveProperty("sumber");
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+describe("piece jarak per kampus (jarak_unpad, jarak_itb) di katalog", () => {
+  const lokasi = () => KATALOG_KRITERIA.filter((k) => k.kategori === "lokasi");
+
+  it("keduanya paling atas di kategori Lokasi, lalu jarak_kampus; cost, km, tersedia", () => {
+    expect(lokasi().slice(0, 3).map((k) => k.kode)).toEqual(["jarak_unpad", "jarak_itb", "jarak_kampus"]);
+    expect(kriteriaPerKategori("lokasi").slice(0, 3).map((k) => k.kode)).toEqual(["jarak_unpad", "jarak_itb", "jarak_kampus"]);
+    expect(katalogTerkelompok().find((g) => g.kode === "lokasi")!.kriteria.slice(0, 2).map((k) => k.kode)).toEqual([
+      "jarak_unpad",
+      "jarak_itb",
+    ]);
+    for (const kode of ["jarak_unpad", "jarak_itb"]) {
+      expect(getKriteria(kode), kode).toMatchObject({
+        kategori: "lokasi",
+        jenis: "cost",
+        satuan: "km",
+        tersedia: true,
+        deskripsi: "perkiraan jarak rute ke Unpad/ITB (data OpenStreetMap)",
+      });
+    }
+    expect(getKriteria("jarak_unpad")).toMatchObject({ nama: "Lebih dekat ke Unpad", sumber: { kolom: "jarak_unpad_km", tipe: "angka" } });
+    expect(getKriteria("jarak_itb")).toMatchObject({ nama: "Lebih dekat ke ITB", sumber: { kolom: "jarak_itb_km", tipe: "angka" } });
+  });
+
+  it("jarak_kampus tetap ada (C2) dengan nama baru", () => {
+    expect(getKriteria("jarak_kampus")).toMatchObject({
+      nama: "Dekat salah satu kampus (Unpad/ITB)",
+      jenis: "cost",
+      tersedia: true,
+      sumber: { kolom: "C2", tipe: "angka" },
+    });
+  });
+
+  it("rakitan default tidak berubah dan tidak memuat piece jarak", () => {
+    expect([...KRITERIA_DEFAULT]).toEqual(["harga", "ac", "km_dalam", "cctv"]);
+    for (const k of ["jarak_unpad", "jarak_itb", "jarak_kampus"] as const) expect(KRITERIA_DEFAULT).not.toContain(k);
+  });
+
+  it("URL state dan validasi API menangani kode baru (urutan dipertahankan)", () => {
+    expect(parseKriteria("jarak_itb,harga,jarak_unpad")).toEqual(["jarak_itb", "harga", "jarak_unpad"]);
+    const f = parseFilter(new URLSearchParams("budget=1500000&tipe=putra&kriteria=jarak_unpad,jarak_itb,jarak_kampus"));
+    expect(f.kriteria).toEqual(["jarak_unpad", "jarak_itb", "jarak_kampus"]);
+    expect(buildApiQuery(f)).toBe("budget=1500000&tipe=putra&kriteria=jarak_unpad,jarak_itb,jarak_kampus");
+    const r = validasiRankRequest({ budget: 1_500_000, tipe: "putra", kriteria: ["jarak_itb", "jarak_unpad", "harga"] });
+    expect(r).toEqual({ ok: true, data: { budget: 1_500_000, tipe: "putra", kriteria: ["jarak_itb", "jarak_unpad", "harga"] } });
   });
 });

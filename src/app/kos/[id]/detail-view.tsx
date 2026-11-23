@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import { Crossfade } from "@/components/crossfade";
+import { PetaSekitar } from "@/components/peta/peta-sekitar";
 import {
   AturanSekitar,
   CatatanSumber,
@@ -142,6 +143,7 @@ function IsiDetail({
           <FaktaTiles kos={kos} />
           <Fasilitas kos={kos} />
           <AturanSekitar kos={kos} />
+          <PetaSekitar nama={kos.nama} lat={kos.lat} lng={kos.lng} koordinat_status={kos.koordinat_status} />
           <KenapaDirekomendasikan
             kos={kos}
             peringkat={peringkat}

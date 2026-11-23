@@ -669,3 +669,54 @@ describe("jarak per kampus (jarak_unpad_km, jarak_itb_km)", () => {
     expect(adaJarakRute({})).toBe(false);
   });
 });
+
+describe("peringkat dengan piece jarak per kampus", () => {
+  // Dekat Unpad tetapi jauh dari ITB, dan sebaliknya; harga sama supaya hanya jarak yang membedakan.
+  const kos = [
+    ubah(ANNISA, { id: 1, nama: "dekat-unpad", jarak_unpad_km: 0.5, jarak_itb_km: 4.0, C2: 0.5 }),
+    ubah(ANNISA, { id: 2, nama: "dekat-itb", jarak_unpad_km: 4.0, jarak_itb_km: 0.5, C2: 0.5 }),
+    ubah(ANNISA, { id: 3, nama: "tengah", jarak_unpad_km: 2.0, jarak_itb_km: 2.0, C2: 2.0 }),
+    ubah(ANNISA, { id: 4, nama: "tanpa-unpad", jarak_unpad_km: null, jarak_itb_km: 1.0, C2: 1.0 }),
+    ubah(ANNISA, { id: 5, nama: "tanpa-itb", jarak_unpad_km: 1.0, jarak_itb_km: null, C2: 1.0 }),
+  ].map(petakanBaris);
+  const rank = (kriteria: KodeKriteria[]) =>
+    urutkanKos(kos, { budget: 2_000_000, tipe: "putri", kriteria });
+  const idUrut = (h: ReturnType<typeof rank>) => h.daftar.map((t) => t.kos.id);
+
+  it("jarak_unpad: makin dekat Unpad makin tinggi (cost); kos tanpa nilai dikecualikan dan dihitung", () => {
+    const h = rank(["jarak_unpad"]);
+    expect(idUrut(h)).toEqual(["1", "5", "3", "2"]); // 0,5 < 1,0 < 2,0 < 4,0 km; kos 4 (null) tidak ikut
+    expect(h.jumlah_tanpa_data).toBe(1);
+    expect(h.tanpa_data_per_kriteria).toEqual({ jarak_unpad: 1 });
+  });
+
+  it("jarak_itb: urutan berbalik; kos tanpa jarak ITB dikecualikan", () => {
+    const h = rank(["jarak_itb"]);
+    expect(idUrut(h)).toEqual(["2", "4", "3", "1"]); // 0,5 < 1,0 < 2,0 < 4,0 km; kos 5 (null) tidak ikut
+    expect(h.tanpa_data_per_kriteria).toEqual({ jarak_itb: 1 });
+  });
+
+  it("prioritas Unpad di atas ITB mengubah pemenang; dua piece dipasang → kos dengan salah satu null dikecualikan", () => {
+    expect(idUrut(rank(["jarak_unpad", "jarak_itb"]))[0]).toBe("1");
+    expect(idUrut(rank(["jarak_itb", "jarak_unpad"]))[0]).toBe("2");
+    const dua = rank(["jarak_unpad", "jarak_itb"]);
+    expect(idUrut(dua).sort()).toEqual(["1", "2", "3"]);
+    expect(dua.jumlah_tanpa_data).toBe(2);
+    expect(dua.tanpa_data_per_kriteria).toEqual({ jarak_unpad: 1, jarak_itb: 1 });
+  });
+
+  it("piece lama jarak_kampus (C2) tetap jalan; tanpa piece jarak, nilai null tidak mengecualikan kos", () => {
+    const lama = rank(["jarak_kampus"]);
+    expect(lama.jumlah_tanpa_data).toBe(0);
+    expect(idUrut(lama)).toHaveLength(5);
+    const tanpaJarak = rank(["harga"]);
+    expect(tanpaJarak.jumlah_tanpa_data).toBe(0);
+    expect(idUrut(tanpaJarak)).toHaveLength(5);
+  });
+
+  it("detail kos: null di piece terpasang → tanpa-data; tanpa piece itu → ada", () => {
+    const req = { budget: 2_000_000, tipe: "putri" as const, kriteria: ["jarak_unpad" as KodeKriteria] };
+    expect(detailKos(kos, "4", req)).toEqual({ status: "tanpa-data", kriteria: ["jarak_unpad"] });
+    expect(detailKos(kos, "4", { ...req, kriteria: ["jarak_itb"] }).status).toBe("ada");
+  });
+});

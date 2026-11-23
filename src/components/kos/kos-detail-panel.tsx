@@ -7,6 +7,7 @@ import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { TautanPeta } from "@/components/detail/tautan-peta";
 import { JarakKampus } from "@/components/jarak-kampus";
 import { KosPhoto } from "@/components/kos-photo";
+import { PetaSekitar } from "@/components/peta/peta-sekitar";
 import { PrimaryButton } from "@/components/primary-button";
 import { rankTopsis } from "@/lib/explain";
 import { formatRupiah } from "@/lib/format";
@@ -74,6 +75,14 @@ export function KosDetailPanel({ kos, semua, kriteria, hrefDetail }: KosDetailPa
             <KenapaBox kos={kos} kriteria={kriteria} ringkas className="mx-1.5" />
           </>
         )}
+        <PetaSekitar
+          nama={kos.nama}
+          lat={kos.lat}
+          lng={kos.lng}
+          koordinat_status={kos.koordinat_status}
+          ringkas
+          className="px-1.5"
+        />
         <PrimaryButton href={hrefDetail} className="mx-1.5 mb-1.5 h-12 rounded-[14px]">
           Lihat detail kos
           <ArrowRight size={18} strokeWidth={2.4} aria-hidden />

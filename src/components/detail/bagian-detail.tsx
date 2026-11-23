@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Bath, Check, Maximize, Users, Zap, type LucideIcon } from "lucide-react";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
@@ -18,7 +19,9 @@ import {
   teksJarak,
 } from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
+import { ATRIBUSI_OSM, infoKategori, pilihTempatTerdekat, teksJarakGarisLurus } from "@/lib/poi";
 import { pembandingTerlaluSedikit } from "@/lib/skor-relatif";
+import { usePoi } from "@/lib/use-poi";
 import { infoKriteria, type KodeKriteria } from "@/config/kriteria";
 import type { KosDetail, KosDetailResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -156,8 +159,31 @@ export function Fasilitas({ kos }: { kos: KosDetail }) {
 const KARTU_KECIL =
   "flex flex-col gap-3 rounded-[22px] border border-white/95 bg-white/55 p-[18px]";
 
+type BarisSekitar = { nama: string; jarak: string; keterangan?: string; garisLurus?: boolean };
+
 export function AturanSekitar({ kos }: { kos: KosDetail }) {
-  const sekitar = [
+  const poi = usePoi();
+  const [semua, setSemua] = useState(false);
+  // Tempat terdekat dari OpenStreetMap. Kampus tidak diulang: jarak Unpad/ITB sudah ada di atas.
+  const terdekat = useMemo(
+    () => (poi.status === "siap" ? pilihTempatTerdekat(kos, poi.data).filter((t) => t.kategori !== "kampus") : []),
+    [poi, kos],
+  );
+  const namaSudahAda = new Set((kos.sekitar ?? []).map((s) => s.nama.trim().toLowerCase()));
+  const barisPoi: BarisSekitar[] = [];
+  const kategoriTerlihat = new Set<string>();
+  let tersembunyi = 0;
+  for (const t of terdekat) {
+    if (namaSudahAda.has(t.nama.trim().toLowerCase())) continue;
+    const pertama = !kategoriTerlihat.has(t.kategori);
+    kategoriTerlihat.add(t.kategori);
+    if (!pertama && !semua) {
+      tersembunyi += 1;
+      continue;
+    }
+    barisPoi.push({ nama: t.nama, keterangan: infoKategori(t.kategori).label, jarak: teksJarakGarisLurus(t.jarak_m), garisLurus: true });
+  }
+  const sekitar: BarisSekitar[] = [
     ...(adaJarakPerKampus(kos) || kos.jarak_km === null || kos.jarak_imputasi
       ? [
           { nama: "Jarak ke Unpad", jarak: formatJarakKampus(kos.jarak_unpad_km) },
@@ -165,6 +191,7 @@ export function AturanSekitar({ kos }: { kos: KosDetail }) {
         ]
       : [{ nama: "Kampus terdekat (Unpad/ITB)", jarak: teksJarak(kos) }]),
     ...(kos.sekitar ?? []).map((s) => ({ nama: s.nama, jarak: formatJarakMeter(s.jarak_m) })),
+    ...barisPoi,
   ];
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -190,14 +217,35 @@ export function AturanSekitar({ kos }: { kos: KosDetail }) {
           Sekitar kos
         </h2>
         <dl className="flex flex-col gap-2">
-          {sekitar.map((s) => (
-            <div key={s.nama} className="flex justify-between gap-3 border-b border-line pb-2 text-sm">
-              <dt>{s.nama}</dt>
-              <dd className="font-bold tabular-nums">{s.jarak}</dd>
+          {sekitar.map((s, i) => (
+            <div key={`${s.nama}-${i}`} className="flex justify-between gap-3 border-b border-line pb-2 text-sm">
+              <dt>
+                {s.nama}
+                {s.keterangan ? <span className="block text-xs text-muted">{s.keterangan}</span> : null}
+              </dt>
+              <dd className="flex-none text-right font-bold tabular-nums">
+                {s.jarak}
+                {s.garisLurus ? <span className="block text-[11px] font-normal text-muted">garis lurus</span> : null}
+              </dd>
             </div>
           ))}
         </dl>
+        {barisPoi.length > 0 && (tersembunyi > 0 || semua) ? (
+          <button
+            type="button"
+            aria-expanded={semua}
+            onClick={() => setSemua((v) => !v)}
+            className="tekan tautan min-h-9 self-start rounded-lg text-[13px] font-semibold text-accent-ink"
+          >
+            {semua ? "Tampilkan lebih sedikit" : `Lihat ${tersembunyi} tempat lainnya`}
+          </button>
+        ) : null}
         <CatatanDataKos kos={kos} lokasi={false} harga={false} />
+        {barisPoi.length > 0 ? (
+          <p className="text-[11px] leading-snug text-muted">
+            ± = jarak garis lurus (bukan rute). Tempat sekitar: {ATRIBUSI_OSM}.
+          </p>
+        ) : null}
       </section>
     </div>
   );
@@ -274,7 +322,8 @@ export function CatatanSumber({ kos }: { kos: KosDetail }) {
     <p className="text-xs leading-normal text-muted">
       Data dari listing publik{tanggal ? `, terakhir diperbarui ${tanggal}` : ""}.{" "}
       <b className="text-ink">Data sementara:</b> sebagian informasi (alamat, kontak, foto) belum
-      terisi. {CATATAN_DATA_SIMULASI} Informasi bisa berubah, pastikan lagi ke pengelola sebelum survei.
+      terisi. {CATATAN_DATA_SIMULASI} Peta dan tempat sekitar: {ATRIBUSI_OSM}. Informasi bisa berubah,
+      pastikan lagi ke pengelola sebelum survei.
     </p>
   );
 }

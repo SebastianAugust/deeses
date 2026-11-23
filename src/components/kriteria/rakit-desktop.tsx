@@ -463,7 +463,8 @@ export function RakitDesktop({ filter, rakitan }: { filter: FilterState; rakitan
             >
               <nav
                 aria-label="Lompat ke kategori"
-                className="sticky top-0 z-10 -mx-1 flex flex-wrap gap-2 bg-[rgba(243,246,251,0.94)] px-1 py-3 backdrop-blur-sm"
+                // Kaca (.glass) selaras header aplikasi: tembus pandang, menyatu dengan gradien latar.
+                className="glass sticky top-2 z-10 flex flex-wrap gap-2 rounded-2xl px-3 py-2.5"
               >
                 {kelompok.map((k) => {
                   const id = ID_BAGIAN(k.kode);
@@ -526,7 +527,9 @@ export function RakitDesktop({ filter, rakitan }: { filter: FilterState; rakitan
 
             <aside
               aria-label="Rakitan kriteria"
-              className="sticky top-4 flex max-h-[calc(100vh-32px)] w-[400px] flex-none flex-col gap-3 overflow-y-auto p-1 xl:w-[440px]"
+              // overflow-y-auto memotong bayangan di luar kotaknya (glow tombol utama ~40px ke bawah,
+              // bayangan kartu ~30px). Padding + margin negatif memberi ruang tanpa menggeser tata letak.
+              className="sticky top-0 -mx-6 -mt-6 -mb-10 flex max-h-[calc(100vh+16px)] w-[448px] flex-none flex-col gap-3 overflow-y-auto px-6 pt-6 pb-10 xl:w-[488px]"
             >
               <div
                 ref={refRak}
@@ -576,7 +579,7 @@ export function RakitDesktop({ filter, rakitan }: { filter: FilterState; rakitan
                   Kriteria paling bawah hanya dapat bobot {formatPersen(bobotTerbawah)}, hampir tidak berpengaruh.
                 </p>
               ) : null}
-              <p className="rounded-[12px] bg-[#EEF1F6] px-3 py-2.5 text-[12.5px] leading-normal text-muted">
+              <p className="rounded-[12px] border border-white/90 bg-white/60 px-3 py-2.5 text-[12.5px] leading-normal text-muted">
                 Kos yang datanya kosong di salah satu kriteria terpasang disembunyikan, dan jumlahnya ditampilkan
                 di halaman peringkat.
               </p>

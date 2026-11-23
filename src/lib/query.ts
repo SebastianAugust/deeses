@@ -113,6 +113,68 @@ export function adaPenandaOk(params: { get(name: string): string | null }): bool
   return params.get("ok") === "1";
 }
 
+/** Penanda asal detail kos: dibuka dari beranda (search bar / carousel Home). */
+export const PARAM_DARI_BERANDA = { dari: "beranda" } as const;
+
+/** Dari mana halaman /kos/[id] dibuka. */
+export type AsalDetail = "hasil" | "beranda" | "lain";
+
+/**
+ * Asal detail dari query params: `ok=1` → "hasil" (menang bila keduanya ada),
+ * `dari=beranda` → "beranda", selain itu (tautan langsung, tab baru, nilai aneh) → "lain".
+ */
+export function asalDetail(params: { get(name: string): string | null }): AsalDetail {
+  if (adaPenandaOk(params)) return "hasil";
+  if (params.get("dari") === PARAM_DARI_BERANDA.dari) return "beranda";
+  return "lain";
+}
+
+/** Param penanda yang dibawa saat berpindah antar detail (mis. "Kos berikutnya"). */
+export function paramAsal(asal: AsalDetail): ParamTambahan | undefined {
+  if (asal === "hasil") return PARAM_OK;
+  if (asal === "beranda") return PARAM_DARI_BERANDA;
+  return undefined;
+}
+
+export type TujuanKembali = {
+  /** Tujuan tautan (dan fallback bila router.back() tidak dipakai). */
+  href: string;
+  /** Teks tombol kembali di header desktop. */
+  label: string;
+  /** Teks tombol utama pada kartu galat/kosong. */
+  labelTombol: string;
+  /** BackLink desktop: router.back() hanya bila halaman sebelumnya persis ini (false = selalu href). */
+  riwayatDesktop: string | false;
+  /** BackLink mobile (ikon panah): true = router.back() dari halaman app mana pun. */
+  riwayatMobile: string | boolean;
+};
+
+/**
+ * Tujuan & label tombol kembali di detail kos menurut asalnya. "lain" tidak boleh
+ * menuju /hasil tanpa `ok=1` (desktop dialihkan ke /prioritas), jadi ke beranda.
+ */
+export function tujuanKembali(asal: AsalDetail, state: FilterState): TujuanKembali {
+  if (asal === "hasil") {
+    return {
+      href: buildHref("/hasil", state, PARAM_OK),
+      label: "Kembali ke peringkat",
+      labelTombol: "Lihat hasil rekomendasi",
+      riwayatDesktop: "/hasil",
+      riwayatMobile: true,
+    };
+  }
+  if (asal === "beranda") {
+    return {
+      href: "/",
+      label: "Kembali ke beranda",
+      labelTombol: "Ke beranda",
+      riwayatDesktop: "/",
+      riwayatMobile: "/",
+    };
+  }
+  return { href: "/", label: "Ke beranda", labelTombol: "Ke beranda", riwayatDesktop: false, riwayatMobile: false };
+}
+
 /** FilterState → body untuk POST /api/rank. */
 export function toRankRequest(state: FilterState): RankRequest {
   return { budget: state.budget, tipe: state.tipe, kriteria: state.kriteria };

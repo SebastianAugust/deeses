@@ -22,27 +22,27 @@ import { ErrorCard, InfoCard } from "@/components/status-card";
 import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SITE_NAME } from "@/config/site";
-import { PARAM_OK, adaPenandaOk, buildHref, type FilterState } from "@/lib/query";
+import { asalDetail, buildHref, paramAsal, tujuanKembali, type FilterState, type TujuanKembali } from "@/lib/query";
 import type { KosDetailResponse } from "@/lib/types";
 import { useFilter } from "@/lib/use-filter";
 import { useKosDetail } from "@/lib/use-kos-detail";
 
-/** Header kaca desktop: logo, "← Kembali ke peringkat", "Cara kerja perhitungan". */
-function HeaderDetail({ hrefHasil }: { hrefHasil: string }) {
+/** Header kaca desktop: logo, tombol kembali (sesuai asal), "Cara kerja perhitungan". */
+function HeaderDetail({ tujuan }: { tujuan: TujuanKembali }) {
   return (
     <header className="hidden border-b border-white/90 bg-white/55 backdrop-blur-[20px] backdrop-saturate-[1.6] lg:block">
       <div className="mx-auto flex max-w-[1220px] flex-wrap items-center gap-5 px-8 py-3.5">
         <Link href="/" aria-label={`${SITE_NAME}, ke beranda`} className="logo inline-flex min-h-11 items-center">
           <Logo ukuran="lg" />
         </Link>
-        {/* router.back() kalau halaman sebelumnya memang /hasil (state & scroll terjaga). */}
+        {/* router.back() kalau halaman sebelumnya memang asalnya (/hasil atau beranda): state & scroll terjaga. */}
         <BackLink
-          href={hrefHasil}
-          pakaiRiwayat="/hasil"
+          href={tujuan.href}
+          pakaiRiwayat={tujuan.riwayatDesktop}
           className="tekan tombol-kaca inline-flex h-10 items-center gap-1.5 rounded-full bg-white/75 px-3.5 text-sm font-semibold text-ink"
         >
           <ArrowLeft size={16} aria-hidden />
-          Kembali ke peringkat
+          {tujuan.label}
         </BackLink>
         <span className="flex-1" />
         <Link href="/#tentang" className="tautan text-sm font-semibold text-ink">
@@ -53,11 +53,11 @@ function HeaderDetail({ hrefHasil }: { hrefHasil: string }) {
   );
 }
 
-function TombolKembaliMobile({ href }: { href: string }) {
+function TombolKembaliMobile({ tujuan }: { tujuan: TujuanKembali }) {
   return (
     <BackLink
-      href={href}
-      pakaiRiwayat
+      href={tujuan.href}
+      pakaiRiwayat={tujuan.riwayatMobile}
       aria-label="Kembali"
       className="tekan tombol-kaca flex size-11 items-center justify-center rounded-full border-white/90 bg-white/78 text-ink lg:hidden"
     >
@@ -96,17 +96,19 @@ function IsiDetail({
   data,
   filter,
   dariHasil,
-  hrefHasil,
+  paramTambahan,
+  tujuan,
 }: {
   data: KosDetailResponse;
   filter: FilterState;
   dariHasil: boolean;
-  hrefHasil: string;
+  /** Penanda asal yang ikut terbawa ke detail kos berikutnya. */
+  paramTambahan: ReturnType<typeof paramAsal>;
+  tujuan: TujuanKembali;
 }) {
   const { kos, peringkat } = data;
   const foto = kos.foto_urls?.filter(Boolean) ?? [];
   const [fotoAktif, setFotoAktif] = useState<number | null>(null);
-  const paramTambahan = dariHasil ? PARAM_OK : undefined;
 
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col pb-28 lg:max-w-[1220px] lg:px-8 lg:pt-6 lg:pb-16">
@@ -115,7 +117,8 @@ function IsiDetail({
         foto={foto}
         nama={kos.nama}
         onBuka={setFotoAktif}
-        backHref={hrefHasil}
+        backHref={tujuan.href}
+        pakaiRiwayat={tujuan.riwayatMobile}
       />
       <GaleriDesktop className="hidden lg:grid" foto={foto} nama={kos.nama} onBuka={setFotoAktif} />
 
@@ -170,32 +173,33 @@ function IsiDetail({
 export function DetailView() {
   const { id } = useParams<{ id: string }>();
   const filter = useFilter();
-  const dariHasil = adaPenandaOk(useSearchParams());
+  const asal = asalDetail(useSearchParams());
+  const dariHasil = asal === "hasil";
   const detail = useKosDetail(id, filter);
-  const hrefHasil = buildHref("/hasil", filter, dariHasil ? PARAM_OK : undefined);
+  const tujuan = tujuanKembali(asal, filter);
 
   return (
     <div className="flex flex-1 flex-col">
-      <HeaderDetail hrefHasil={hrefHasil} />
+      <HeaderDetail tujuan={tujuan} />
       <Crossfade kunci={detail.status} className="flex flex-1 flex-col">
         {detail.status === "loading" ? <DetailSkeleton /> : null}
 
         {detail.status === "error" ? (
           <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5 lg:pt-10">
-            <TombolKembaliMobile href={hrefHasil} />
+            <TombolKembaliMobile tujuan={tujuan} />
             <ErrorCard pesan={detail.error} onCobaLagi={detail.cobaLagi} />
           </main>
         ) : null}
 
         {detail.status === "notfound" ? (
           <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5 lg:pt-10">
-            <TombolKembaliMobile href={hrefHasil} />
+            <TombolKembaliMobile tujuan={tujuan} />
             <InfoCard judul="Kos tidak ditemukan">
               <p className="text-sm leading-[1.55] text-muted">
                 Kos ini tidak ada di data kami. Mungkin tautannya sudah tidak berlaku.
               </p>
-              <PrimaryButton href={hrefHasil} block className="mt-1.5">
-                Lihat hasil rekomendasi
+              <PrimaryButton href={tujuan.href} block className="mt-1.5">
+                {tujuan.labelTombol}
               </PrimaryButton>
             </InfoCard>
           </main>
@@ -203,11 +207,11 @@ export function DetailView() {
 
         {detail.status === "belum-lengkap" ? (
           <main className="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-4 pt-3.5 lg:pt-10">
-            <TombolKembaliMobile href={hrefHasil} />
+            <TombolKembaliMobile tujuan={tujuan} />
             <InfoCard judul="Kos ini belum bisa dinilai">
               <p className="text-sm leading-[1.55] text-muted">{detail.pesan}</p>
-              <PrimaryButton href={hrefHasil} block className="mt-1.5">
-                Lihat hasil rekomendasi
+              <PrimaryButton href={tujuan.href} block className="mt-1.5">
+                {tujuan.labelTombol}
               </PrimaryButton>
             </InfoCard>
           </main>
@@ -219,7 +223,8 @@ export function DetailView() {
             data={detail.data}
             filter={filter}
             dariHasil={dariHasil}
-            hrefHasil={hrefHasil}
+            paramTambahan={paramAsal(asal)}
+            tujuan={tujuan}
           />
         ) : null}
       </Crossfade>

@@ -85,8 +85,9 @@ export function GaleriMobile({
   nama,
   onBuka,
   backHref,
+  pakaiRiwayat = true,
   className,
-}: GaleriProps & { backHref: string }) {
+}: GaleriProps & { backHref: string; pakaiRiwayat?: boolean | string }) {
   const [aktif, setAktif] = useState(0);
 
   return (
@@ -119,7 +120,7 @@ export function GaleriMobile({
 
       <BackLink
         href={backHref}
-        pakaiRiwayat
+        pakaiRiwayat={pakaiRiwayat}
         aria-label="Kembali"
         className="tekan tombol-kaca absolute top-3.5 left-3.5 flex size-11 items-center justify-center rounded-full border-white/90 bg-white/78 text-ink backdrop-blur-[14px]"
       >

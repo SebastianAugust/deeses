@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, type Variants } from "motion/react";
 import { STAGGER_DETIK, TRANSISI } from "@/lib/motion";
 import { CariKos } from "@/components/cari-kos";
-import { DEFAULT_FILTER, buildHref, type FilterState } from "@/lib/query";
+import { DEFAULT_FILTER, PARAM_DARI_BERANDA, buildHref, type FilterState } from "@/lib/query";
 import { gantiUrl } from "@/lib/use-filter";
 import { useSebaranHarga } from "@/lib/use-sebaran";
 import { HomeForm } from "./home-form";
@@ -67,7 +67,11 @@ export function HomeUtama({ initial }: { initial: FilterState }) {
           </p>
           {/* Pintasan ke kos tertentu berdasarkan nama, tanpa mengisi budget. z-30 di
               pembungkus hero supaya dropdown tampil di atas kartu form / "Cara kerjanya". */}
-          <CariKos filter={DEFAULT_FILTER} className="mt-1.5 lg:max-w-[520px]" />
+          <CariKos
+            filter={DEFAULT_FILTER}
+            paramTambahan={PARAM_DARI_BERANDA}
+            className="mt-1.5 lg:max-w-[520px]"
+          />
         </motion.div>
 
         <motion.section

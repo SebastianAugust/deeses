@@ -11,7 +11,7 @@ export default function KosTidakDitemukan() {
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col gap-4 px-4 pt-3.5 lg:pt-16">
       <BackLink
-        href="/hasil"
+        href="/"
         pakaiRiwayat
         aria-label="Kembali"
         className="tekan tombol-kaca flex size-11 items-center justify-center rounded-full border-white/90 bg-white/78 text-ink"
@@ -22,8 +22,8 @@ export default function KosTidakDitemukan() {
         <p className="text-sm leading-[1.55] text-muted">
           Kos ini tidak ada di data kami. Mungkin tautannya salah atau listing-nya sudah dihapus.
         </p>
-        <PrimaryButton href="/hasil" block className="mt-1.5">
-          Lihat hasil rekomendasi
+        <PrimaryButton href="/" block className="mt-1.5">
+          Ke beranda
         </PrimaryButton>
       </InfoCard>
     </main>

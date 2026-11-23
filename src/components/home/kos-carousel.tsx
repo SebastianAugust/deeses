@@ -9,7 +9,7 @@ import { KosPhoto } from "@/components/kos-photo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatRupiah } from "@/lib/format";
 import { TRANSISI, jedaStagger } from "@/lib/motion";
-import { DEFAULT_FILTER, buildHref, buildQuery } from "@/lib/query";
+import { DEFAULT_FILTER, PARAM_DARI_BERANDA, buildHref, buildQuery } from "@/lib/query";
 import { useKosRingkas } from "@/lib/use-kos-ringkas";
 
 const JUMLAH = 6;
@@ -20,7 +20,8 @@ const JUMLAH = 6;
  */
 export function KosCarousel() {
   const rank = useKosRingkas();
-  const query = buildQuery(DEFAULT_FILTER);
+  // Penanda asal: tombol kembali di detail tahu pengguna datang dari beranda.
+  const query = buildQuery(DEFAULT_FILTER, PARAM_DARI_BERANDA);
   const kunci = rank.status === "loading" ? "skeleton" : rank.status;
   const [sibuk, jalankan] = useSibukSingkat();
 

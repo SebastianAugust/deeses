@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Bath, Check, Maximize, Users, Zap, type LucideIcon } from "lucide-react";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
 import { ScoreBar } from "@/components/score-bar";
+import { TautanPeta } from "@/components/detail/tautan-peta";
 import { jelaskanPeringkat, skorKriteria } from "@/lib/explain";
 import { formatJarakMeter, formatSkor, formatTanggal, teksJarak } from "@/lib/format";
 import { labelTipe } from "@/lib/ringkasan";
@@ -63,6 +64,7 @@ export function JudulKos({
           </>
         )}
       </p>
+      <TautanPeta nama={kos.nama} className="-mt-1" />
     </div>
   );
 }

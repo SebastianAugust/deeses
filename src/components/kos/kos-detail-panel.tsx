@@ -3,6 +3,7 @@
 import { ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { CatatanSkorRelatif } from "@/components/catatan-skor-relatif";
+import { TautanPeta } from "@/components/detail/tautan-peta";
 import { KosPhoto } from "@/components/kos-photo";
 import { PrimaryButton } from "@/components/primary-button";
 import { rankTopsis } from "@/lib/explain";
@@ -50,6 +51,7 @@ export function KosDetailPanel({ kos, semua, kriteria, hrefDetail }: KosDetailPa
           <span className="text-[13px] text-muted">
             {teksJarakKeKampus(kos)} · {formatRupiah(kos.harga)} / bulan
           </span>
+          <TautanPeta nama={kos.nama} className="-mb-1" />
         </div>
         <div className="px-1.5">
           <SkorTiles kos={kos} rankTopsis={rankTopsis(kos, semua)} ringkas />

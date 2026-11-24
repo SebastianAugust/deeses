@@ -8,6 +8,7 @@ import { LocateFixed, Minus, MousePointer2, Plus } from "lucide-react";
 import { RADIUS_PERKIRAAN_M, type TempatTerdekat } from "@/lib/poi";
 import { LABEL_LOKASI_PERKIRAAN } from "@/lib/format";
 import { cincinLingkaran, keLngLat } from "@/lib/peta-geo";
+import { aksiRoda } from "@/lib/peta-roda";
 import { PetaGagal } from "./peta-gagal";
 import { buatPenandaKos, buatPenandaTempat, type Penanda } from "./penanda";
 
@@ -94,7 +95,8 @@ function kurangGerak(): boolean {
 
 /**
  * Peta MapLibre GL: pin kos + tempat sekitar. Hanya dimuat di klien (dynamic, ssr:false).
- * Mouse/touchpad (pointer: fine): scroll/pinch langsung zoom, tahan-geser = pan.
+ * Mouse/touchpad (pointer: fine): swipe dua jari = geser, pinch/Ctrl+scroll/roda mouse = zoom,
+ * tahan-geser = pan, klik dua kali = zoom in (lihat src/lib/peta-roda.ts).
  * Layar sentuh (pointer: coarse): gestur kooperatif (satu jari menggulir halaman, dua jari mengatur peta).
  *
  * Rantai cadangan: style vektor OpenFreeMap Liberty → style raster OSM → pesan "Peta tidak
@@ -308,11 +310,37 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
   }, []);
 
   // Ikuti jenis pointer (bisa berubah, mis. tablet dengan keyboard/mouse dipasang-lepas).
+  // - Pointer halus (mouse/touchpad): scrollZoom bawaan dan gestur kooperatif dimatikan; event
+  //   wheel ditangani sendiri: swipe dua jari = geser, pinch / Ctrl+scroll / roda mouse = zoom
+  //   di sekitar kursor, halaman tidak ikut menggulir selama kursor di atas peta.
+  // - Layar sentuh: perilaku bawaan (gestur kooperatif).
+  // Pembersihan efek melepas listener dan mengembalikan scrollZoom, jadi tidak ada listener ganda.
   useEffect(() => {
-    const kooperatif = peta.current?.cooperativeGestures;
-    if (!kooperatif) return;
-    if (pointerHalus) kooperatif.disable();
-    else kooperatif.enable();
+    const map = peta.current;
+    const el = wadah.current;
+    if (!map || !el) return;
+    if (!pointerHalus) {
+      map.cooperativeGestures.enable();
+      return;
+    }
+    map.cooperativeGestures.disable();
+    map.scrollZoom.disable();
+    const saatRoda = (e: WheelEvent) => {
+      e.preventDefault(); // halaman tidak menggulir / browser tidak zoom selama kursor di peta
+      const aksi = aksiRoda(e);
+      if (aksi.jenis === "geser") {
+        map.panBy([aksi.dx, aksi.dy], { animate: false });
+        return;
+      }
+      const kotak = el.getBoundingClientRect();
+      const titik: [number, number] = [e.clientX - kotak.left, e.clientY - kotak.top];
+      map.zoomTo(map.getZoom() + aksi.delta, { around: map.unproject(titik), duration: 0 });
+    };
+    el.addEventListener("wheel", saatRoda, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", saatRoda);
+      if (peta.current === map) map.scrollZoom.enable(); // peta yang sudah dibongkar dilewati
+    };
   }, [pointerHalus, siap]);
 
   // Petunjuk desktop hilang saat peta pertama kali disentuh (klik/seret atau scroll di atasnya).
@@ -431,7 +459,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
           {pointerHalus && petunjukTampil && siap ? (
             <p className="pointer-events-none absolute left-2 top-2 z-10 flex max-w-[min(70%,280px)] items-start gap-1.5 rounded-xl border border-white/90 bg-white/90 px-2.5 py-1.5 text-[11px] font-semibold leading-snug text-muted shadow-[0_4px_14px_rgba(30,45,90,.14)]">
               <MousePointer2 size={13} className="mt-px shrink-0" aria-hidden />
-              Scroll untuk zoom, geser untuk pindah. Arahkan kursor ke luar peta untuk menggulir halaman.
+              Geser dengan dua jari, cubit untuk zoom. Arahkan kursor ke luar peta untuk menggulir halaman.
             </p>
           ) : null}
           <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5">

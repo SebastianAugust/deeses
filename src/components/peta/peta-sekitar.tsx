@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { LABEL_LOKASI_PERKIRAAN } from "@/lib/format";
+import { urlGoogleMaps } from "@/lib/peta";
 import {
   ATRIBUSI_OSM,
   KATEGORI_POI,
@@ -14,14 +15,25 @@ import {
 } from "@/lib/poi";
 import { usePoi } from "@/lib/use-poi";
 import { cn } from "@/lib/utils";
+import { IKON_KATEGORI } from "./ikon-poi";
+import { PetaGagal } from "./peta-gagal";
+import type { PropsPeta } from "./peta-maplibre";
 
 const KERANGKA = "h-full w-full animate-pulse rounded-[inherit] bg-soft/70 motion-reduce:animate-none";
 
-// Leaflet hanya untuk klien dan hanya dimuat saat bagian peta terlihat di layar.
-const PetaLeaflet = dynamic(() => import("./peta-leaflet"), {
-  ssr: false,
-  loading: () => <div className={KERANGKA} aria-hidden />,
-});
+// MapLibre hanya untuk klien dan hanya dimuat saat bagian peta terlihat di layar.
+// Bila chunk-nya gagal diunduh (jaringan/blokir), tampilkan pesan + tautan Google Maps,
+// bukan error halaman.
+const PetaMaplibre = dynamic<PropsPeta>(
+  () =>
+    import("./peta-maplibre").catch(() => ({
+      default: ({ urlCadangan }: PropsPeta) => <PetaGagal href={urlCadangan} />,
+    })),
+  {
+    ssr: false,
+    loading: () => <div className={KERANGKA} aria-hidden />,
+  },
+);
 
 type Props = {
   nama: string;
@@ -34,7 +46,7 @@ type Props = {
 };
 
 /**
- * Peta interaktif OpenStreetMap: pin kos + tempat penting sekitar (≤ 3 per kategori,
+ * Peta interaktif (MapLibre + OpenFreeMap, data OpenStreetMap): pin kos + tempat penting sekitar (≤ 3 per kategori,
  * radius 1,2 km, jarak garis lurus), dengan chip filter kategori. Kos tanpa koordinat
  * valid tidak mendapat peta. Tidak memakai Google Maps/Places.
  */
@@ -59,6 +71,7 @@ export function PetaSekitar({ nama, lat, lng, koordinat_status, ringkas = false,
       lat={lat as number}
       lng={lng as number}
       perkiraan={koordinat_status === "perkiraan"}
+      status={koordinat_status}
       ringkas={ringkas}
       judul={judul}
       className={className}
@@ -71,6 +84,7 @@ function PetaBerkoordinat({
   lat,
   lng,
   perkiraan,
+  status,
   ringkas,
   judul,
   className,
@@ -79,6 +93,7 @@ function PetaBerkoordinat({
   lat: number;
   lng: number;
   perkiraan: boolean;
+  status?: string | null;
   ringkas: boolean;
   judul: React.ReactNode;
   className?: string;
@@ -87,8 +102,12 @@ function PetaBerkoordinat({
   const [terlihat, setTerlihat] = useState(false);
   const [mati, setMati] = useState<ReadonlySet<KategoriPoi>>(new Set());
   const poi = usePoi(terlihat);
+  const urlCadangan = useMemo(
+    () => urlGoogleMaps({ nama, lat, lng, koordinat_status: status }),
+    [nama, lat, lng, status],
+  );
 
-  // Muat Leaflet dan data tempat hanya setelah bingkai peta mendekati layar.
+  // Muat MapLibre dan data tempat hanya setelah bingkai peta mendekati layar.
   useEffect(() => {
     const el = bingkai.current;
     if (!el || terlihat) return;
@@ -144,23 +163,33 @@ function PetaBerkoordinat({
       </div>
 
       {kategoriAda.length > 0 ? (
-        <ul className="flex flex-wrap gap-1.5" aria-label="Tampilkan kategori tempat">
+        <ul
+          className="flex flex-nowrap gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden"
+          aria-label="Tampilkan kategori tempat"
+        >
           {kategoriAda.map((k) => {
             const nyala = !mati.has(k.kode);
+            const Ikon = IKON_KATEGORI[k.kode];
             return (
-              <li key={k.kode}>
+              <li key={k.kode} className="shrink-0">
                 <button
                   type="button"
                   aria-pressed={nyala}
                   onClick={() => alihkan(k.kode)}
                   className={cn(
-                    "tekan inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold",
+                    "tekan inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border py-1 pl-1.5 pr-3 text-xs font-semibold",
                     nyala
                       ? "border-accent/40 bg-soft text-accent-ink"
                       : "border-line bg-white/60 text-muted line-through decoration-muted/60",
                   )}
                 >
-                  <span aria-hidden>{k.emoji}</span>
+                  <span
+                    aria-hidden
+                    className="flex size-6 items-center justify-center rounded-full text-white"
+                    style={{ background: nyala ? k.warna : "#9aa1b0" }}
+                  >
+                    <Ikon size={14} strokeWidth={2.3} />
+                  </span>
                   {k.label}
                   <span className="tabular-nums opacity-70">{jumlahPerKategori.get(k.kode)}</span>
                 </button>
@@ -174,11 +203,18 @@ function PetaBerkoordinat({
         ref={bingkai}
         className={cn(
           "relative isolate w-full min-w-0 overflow-hidden rounded-[20px] border border-white/95 bg-soft/50 shadow-[0_8px_24px_rgba(30,45,90,.10)]",
-          ringkas ? "h-[240px]" : "h-[300px] lg:h-[360px]",
+          ringkas ? "h-[280px]" : "h-[320px] lg:h-[380px]",
         )}
       >
         {terlihat ? (
-          <PetaLeaflet nama={nama} lat={lat} lng={lng} perkiraan={perkiraan} tempat={tampil} />
+          <PetaMaplibre
+            nama={nama}
+            lat={lat}
+            lng={lng}
+            perkiraan={perkiraan}
+            urlCadangan={urlCadangan}
+            tempat={tampil}
+          />
         ) : (
           <div className={KERANGKA} aria-hidden />
         )}
@@ -191,7 +227,7 @@ function PetaBerkoordinat({
             ? `Belum ada data tempat dalam radius ${RADIUS_POI_M / 1000} km. `
             : null}
         {perkiraan ? `Lingkaran menandai kira-kira ±${RADIUS_PERKIRAAN_M} m dari titik perkiraan. ` : null}
-        Jarak garis lurus (bukan rute). Peta dan tempat sekitar: {ATRIBUSI_OSM}.
+        Jarak garis lurus (bukan rute). Peta: OpenFreeMap, © OpenMapTiles; data tempat sekitar: {ATRIBUSI_OSM}.
       </p>
     </section>
   );

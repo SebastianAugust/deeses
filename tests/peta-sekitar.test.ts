@@ -18,15 +18,17 @@ describe("<PetaSekitar>: kos tanpa koordinat valid tidak mendapat peta", () => {
     expect(out).toContain("Lokasi belum tersedia");
     expect(out).toContain("Peta sekitar kos");
     expect(out).not.toContain("Aktifkan peta");
-    expect(out).not.toContain("leaflet");
+    expect(out).not.toContain("maplibre");
   });
 
-  it("koordinat valid → bingkai peta (kerangka) dan atribusi OSM di render server, tanpa memuat Leaflet", () => {
+  it("koordinat valid → bingkai peta (kerangka) dan atribusi OpenFreeMap/OpenMapTiles/OSM di render server, tanpa memuat MapLibre", () => {
     const out = html({ lat: -6.93, lng: 107.77, koordinat_status: "geokode" });
     expect(out).not.toContain("Lokasi belum tersedia");
     expect(out).toContain("© OpenStreetMap contributors (ODbL)");
-    expect(out).toContain("h-[300px]"); // tinggi mobile; desktop lg:h-[360px]
-    expect(out).toContain("lg:h-[360px]");
+    expect(out).toContain("OpenFreeMap");
+    expect(out).toContain("OpenMapTiles");
+    expect(out).toContain("h-[320px]"); // tinggi mobile; desktop lg:h-[380px]
+    expect(out).toContain("lg:h-[380px]");
     expect(out).not.toContain("lokasi perkiraan");
   });
 
@@ -37,6 +39,6 @@ describe("<PetaSekitar>: kos tanpa koordinat valid tidak mendapat peta", () => {
   });
 
   it("varian ringkas (panel) lebih pendek", () => {
-    expect(html({ lat: -6.93, lng: 107.77, ringkas: true })).toContain("h-[240px]");
+    expect(html({ lat: -6.93, lng: 107.77, ringkas: true })).toContain("h-[280px]");
   });
 });

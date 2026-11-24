@@ -1,31 +1,45 @@
 /* Penanda dan popup peta sekitar (MapLibre). Warna mengikuti token aplikasi (globals.css). */
 
-.peta-pin {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/*
+ * Elemen LUAR (.peta-pin-luar) adalah elemen yang dipegang maplibregl.Marker: MapLibre
+ * memberinya position:absolute + transform (lihat .maplibregl-marker di maplibre-gl.css).
+ * Di sini TIDAK BOLEH ada position/top/left/transform/margin untuk .peta-pin-luar atau
+ * .maplibregl-marker, kalau tidak pin bergeser dari koordinatnya (terlihat saat zoom out).
+ * Ukurannya (width/height) diberikan inline dari penanda.ts.
+ */
+.peta-pin-luar {
   cursor: pointer;
-  filter: drop-shadow(0 3px 4px rgba(30, 45, 90, 0.35));
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
-.peta-pin:focus-visible .peta-pin__lingkar {
+.peta-pin-luar:focus-visible .peta-pin__lingkar {
   outline: 2px solid var(--color-accent, #1d5fd1);
   outline-offset: 2px;
 }
+
+/* Elemen DALAM: tampilan pin. Transform (hover) hanya di sini, berporos di ujung pin. */
+.peta-pin {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 3px 4px rgba(30, 45, 90, 0.35));
+  transform-origin: bottom center;
+  transition: transform 120ms ease-out;
+}
+.peta-pin-luar:hover .peta-pin {
+  transform: scale(1.08);
+}
 .peta-pin__lingkar {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   border: 2px solid #fff;
   border-radius: 9999px;
   color: #fff;
   box-sizing: border-box;
-  transition: transform 120ms ease-out;
-}
-.peta-pin:hover .peta-pin__lingkar {
-  transform: scale(1.08);
 }
 .peta-pin__ujung {
   width: 0;
@@ -57,10 +71,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .peta-pin__lingkar {
+  .peta-pin {
     transition: none;
   }
-  .peta-pin:hover .peta-pin__lingkar {
+  .peta-pin-luar:hover .peta-pin {
     transform: none;
   }
 }

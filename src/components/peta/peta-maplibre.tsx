@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./peta.css";
-import { LocateFixed, Minus, Plus } from "lucide-react";
+import { LocateFixed, Minus, MousePointer2, Plus } from "lucide-react";
 import { RADIUS_PERKIRAAN_M, type TempatTerdekat } from "@/lib/poi";
 import { LABEL_LOKASI_PERKIRAAN } from "@/lib/format";
+import { cincinLingkaran, keLngLat } from "@/lib/peta-geo";
 import { PetaGagal } from "./peta-gagal";
 import { buatPenandaKos, buatPenandaTempat, type Penanda } from "./penanda";
 
@@ -23,6 +24,23 @@ const SUMBER_UTAMA = "openmaptiles";
 const SUMBER_RASTER = "osm";
 const ATRIBUSI_OSM = "© OpenStreetMap contributors";
 const MAKS_PERINGATAN = 8;
+
+/**
+ * Kecepatan zoom scroll (default MapLibre: wheel 1/450, touchpad 1/100).
+ * - Mouse: satu klik roda (deltaY ~100) = ~0,17 level (default ~0,22): sedikit lebih halus.
+ * - Touchpad: swipe dua jari mengirim banyak event kecil; 1/100 terasa melonjak, jadi 1/200.
+ */
+const LAJU_ZOOM_RODA = 1 / 600;
+const LAJU_ZOOM_TOUCHPAD = 1 / 200;
+
+/** Pointer utama presisi (mouse/touchpad). Layar sentuh = "coarse". */
+const QUERY_POINTER_HALUS = "(pointer: fine)";
+const pointerHalusSekarang = () => window.matchMedia(QUERY_POINTER_HALUS).matches;
+function langgananPointer(onChange: () => void) {
+  const media = window.matchMedia(QUERY_POINTER_HALUS);
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
 
 /** Style cadangan minimal: ubin raster OpenStreetMap standar. */
 const GAYA_RASTER: maplibregl.StyleSpecification = {
@@ -70,26 +88,14 @@ export type PropsPeta = {
   tempat: TempatTerdekat[];
 };
 
-/** Lingkaran geodesik sederhana (cukup akurat untuk ratusan meter) sebagai cincin Polygon GeoJSON. */
-function poligonLingkaran(lat: number, lng: number, radiusM: number, langkah = 64) {
-  const dLat = radiusM / 111_320;
-  const dLng = radiusM / (111_320 * Math.cos((lat * Math.PI) / 180));
-  const cincin: [number, number][] = [];
-  for (let i = 0; i <= langkah; i++) {
-    const a = (i / langkah) * 2 * Math.PI;
-    cincin.push([lng + dLng * Math.cos(a), lat + dLat * Math.sin(a)]);
-  }
-  return cincin;
-}
-
 function kurangGerak(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
  * Peta MapLibre GL: pin kos + tempat sekitar. Hanya dimuat di klien (dynamic, ssr:false).
- * Gestur kooperatif: di layar sentuh digeser dengan dua jari (satu jari menggulir halaman),
- * di desktop roda mouse butuh Ctrl/⌘ supaya scroll halaman tidak terjebak.
+ * Mouse/touchpad (pointer: fine): scroll/pinch langsung zoom, tahan-geser = pan.
+ * Layar sentuh (pointer: coarse): gestur kooperatif (satu jari menggulir halaman, dua jari mengatur peta).
  *
  * Rantai cadangan: style vektor OpenFreeMap Liberty → style raster OSM → pesan "Peta tidak
  * dapat dimuat" (penanda disembunyikan). Satu ubin/sprite/glyph yang gagal TIDAK menggeser tahap.
@@ -101,12 +107,15 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
   const penandaAktif = useRef<maplibregl.Marker[]>([]);
   const [siap, setSiap] = useState(false);
   const [gagal, setGagal] = useState(false);
+  const [petunjukTampil, setPetunjukTampil] = useState(true);
   const pertama = useRef(true);
+  // Mouse/touchpad: zoom langsung dengan scroll. Layar sentuh: gestur kooperatif (dua jari).
+  const pointerHalus = useSyncExternalStore(langgananPointer, pointerHalusSekarang, () => false);
 
   // Lingkaran perkiraan: GeoJSON + cincin (untuk fit-bounds). GeoJSON disimpan di ref supaya
   // bisa dipasang ulang setiap kali style berganti (utama -> cadangan).
   const lingkaran = useMemo(() => {
-    const cincin = perkiraan ? poligonLingkaran(lat, lng, RADIUS_PERKIRAAN_M) : [];
+    const cincin = perkiraan ? cincinLingkaran({ lat, lng }, RADIUS_PERKIRAAN_M) : [];
     const data: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
       features: perkiraan
@@ -131,11 +140,11 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
       map = new maplibregl.Map({
         container: el,
         style: URL_GAYA,
-        center: [lng, lat],
+        center: keLngLat({ lat, lng }),
         zoom: ZOOM_PUSAT,
         maxZoom: 19,
         attributionControl: false, // dipasang manual supaya sesuai style yang aktif
-        cooperativeGestures: true,
+        cooperativeGestures: !pointerHalusSekarang(), // diperbarui oleh efek pointer di bawah
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
@@ -154,6 +163,8 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
       return () => clearTimeout(t);
     }
     map.touchZoomRotate.disableRotation();
+    map.scrollZoom.setWheelZoomRate(LAJU_ZOOM_RODA);
+    map.scrollZoom.setZoomRate(LAJU_ZOOM_TOUCHPAD);
 
     type Tahap = "utama" | "cadangan";
     let tahap: Tahap = "utama";
@@ -269,6 +280,9 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     map.on("load", saatSelesaiMuat);
     map.on("idle", saatSelesaiMuat);
     mulaiPenghitung();
+    // Panel/kartu induk bisa sedang beranimasi masuk (transform) saat peta dibuat: ukur ulang
+    // setelah animasi selesai supaya kanvas dan posisi penanda dihitung dari ukuran akhir.
+    const ukurUlang = setTimeout(() => map.resize(), 600);
 
     popup.current = new maplibregl.Popup({
       closeButton: false,
@@ -281,6 +295,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     return () => {
       selesai = true;
       clearTimeout(batasWaktu);
+      clearTimeout(ukurUlang);
       popup.current?.remove();
       popup.current = null;
       map.remove();
@@ -292,6 +307,27 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Ikuti jenis pointer (bisa berubah, mis. tablet dengan keyboard/mouse dipasang-lepas).
+  useEffect(() => {
+    const kooperatif = peta.current?.cooperativeGestures;
+    if (!kooperatif) return;
+    if (pointerHalus) kooperatif.disable();
+    else kooperatif.enable();
+  }, [pointerHalus, siap]);
+
+  // Petunjuk desktop hilang saat peta pertama kali disentuh (klik/seret atau scroll di atasnya).
+  useEffect(() => {
+    const el = wadah.current;
+    if (!el || !petunjukTampil) return;
+    const sembunyikan = () => setPetunjukTampil(false);
+    el.addEventListener("pointerdown", sembunyikan, { once: true });
+    el.addEventListener("wheel", sembunyikan, { once: true, passive: true });
+    return () => {
+      el.removeEventListener("pointerdown", sembunyikan);
+      el.removeEventListener("wheel", sembunyikan);
+    };
+  }, [petunjukTampil]);
+
   // Gambar ulang penanda + fit-bounds saat data atau filter berubah. Di mode gagal total
   // penanda disembunyikan (peta kosong dengan pin hanya membingungkan).
   useEffect(() => {
@@ -299,7 +335,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     const pop = popup.current;
     if (!map || !pop || !siap || gagal) return;
 
-    const batas = new maplibregl.LngLatBounds([lng, lat], [lng, lat]);
+    const batas = new maplibregl.LngLatBounds(keLngLat({ lat, lng }), keLngLat({ lat, lng }));
     for (const p of lingkaran.cincin) batas.extend(p);
 
     // Kampus dan kos digambar belakangan supaya berada di atas pin tempat biasa.
@@ -322,7 +358,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     };
     pop.on("close", saatTutup);
     const tampilkan = (p: Penanda) => {
-      pop.setOffset([0, -(p.tinggi + 3)]).setLngLat([p.lng, p.lat]).setDOMContent(p.popup).addTo(map);
+      pop.setOffset([0, -(p.tinggi + 3)]).setLngLat(keLngLat(p)).setDOMContent(p.popup).addTo(map);
     };
 
     penandaAktif.current = daftar.map((p, i) => {
@@ -351,9 +387,9 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
           pilih(e);
         }
       });
-      return new maplibregl.Marker({ element: p.elemen, anchor: "bottom" }).setLngLat([p.lng, p.lat]).addTo(map);
+      return new maplibregl.Marker({ element: p.elemen, anchor: "bottom" }).setLngLat(keLngLat(p)).addTo(map);
     });
-    for (const p of tempat) batas.extend([p.lng, p.lat]);
+    for (const p of tempat) batas.extend(keLngLat(p));
 
     map.resize();
     map.fitBounds(batas, {
@@ -374,7 +410,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     const map = peta.current;
     if (!map) return;
     map.easeTo({
-      center: [lng, lat],
+      center: keLngLat({ lat, lng }),
       zoom: Math.min(Math.max(map.getZoom(), 15.5), ZOOM_MAKS_FIT),
       duration: kurangGerak() ? 0 : 400,
     });
@@ -391,17 +427,25 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
       {gagal ? (
         <PetaGagal href={urlCadangan} className="absolute inset-0 z-20" />
       ) : (
-        <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5">
-          <button type="button" className={TOMBOL} aria-label="Perbesar peta" onClick={() => peta.current?.zoomIn()}>
-            <Plus size={18} aria-hidden />
-          </button>
-          <button type="button" className={TOMBOL} aria-label="Perkecil peta" onClick={() => peta.current?.zoomOut()}>
-            <Minus size={18} aria-hidden />
-          </button>
-          <button type="button" className={TOMBOL} aria-label="Pusatkan ke kos" onClick={pusatkan}>
-            <LocateFixed size={18} aria-hidden />
-          </button>
-        </div>
+        <>
+          {pointerHalus && petunjukTampil && siap ? (
+            <p className="pointer-events-none absolute left-2 top-2 z-10 flex max-w-[min(70%,280px)] items-start gap-1.5 rounded-xl border border-white/90 bg-white/90 px-2.5 py-1.5 text-[11px] font-semibold leading-snug text-muted shadow-[0_4px_14px_rgba(30,45,90,.14)]">
+              <MousePointer2 size={13} className="mt-px shrink-0" aria-hidden />
+              Scroll untuk zoom, geser untuk pindah. Arahkan kursor ke luar peta untuk menggulir halaman.
+            </p>
+          ) : null}
+          <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5">
+            <button type="button" className={TOMBOL} aria-label="Perbesar peta" onClick={() => peta.current?.zoomIn()}>
+              <Plus size={18} aria-hidden />
+            </button>
+            <button type="button" className={TOMBOL} aria-label="Perkecil peta" onClick={() => peta.current?.zoomOut()}>
+              <Minus size={18} aria-hidden />
+            </button>
+            <button type="button" className={TOMBOL} aria-label="Pusatkan ke kos" onClick={pusatkan}>
+              <LocateFixed size={18} aria-hidden />
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

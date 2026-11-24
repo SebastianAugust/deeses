@@ -17,6 +17,8 @@ export type Penanda = {
 };
 
 type Ukuran = { lingkar: number; ikon: number; ujung: number };
+/** Ujung runcing menimpa tepi bawah lingkaran sebanyak ini (margin-top negatif di CSS). */
+const UJUNG_MENYATU = 2;
 const UKURAN_KOS: Ukuran = { lingkar: 44, ikon: 22, ujung: 9 };
 const UKURAN_KAMPUS: Ukuran = { lingkar: 36, ikon: 18, ujung: 8 };
 const UKURAN_TEMPAT: Ukuran = { lingkar: 30, ikon: 15, ujung: 6 };
@@ -28,13 +30,26 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, kelas = "", teks?: st
   return e;
 }
 
-/** Pin bundar berwarna + ikon putih + ujung runcing kecil. Anchor marker: "bottom". */
+/**
+ * Pin bundar berwarna + ikon putih + ujung runcing kecil. Anchor marker: "bottom".
+ *
+ * Dua lapis, supaya posisi marker tidak pernah bergeser:
+ * - elemen LUAR = elemen yang diberikan ke maplibregl.Marker. Hanya width/height tetap
+ *   (ujung pin = tepi bawah = koordinat). MapLibre yang mengatur position dan transform-nya;
+ *   JANGAN beri CSS position/top/left/transform/margin di sini.
+ * - elemen DALAM (.peta-pin) = tampilan, efek hover/scale (transform-origin bottom center).
+ */
 function buatPin(warna: string, ikonSvg: string, u: Ukuran, nama: string, label?: string): HTMLElement {
-  const akar = el("div", "peta-pin");
-  akar.setAttribute("role", "button");
-  akar.tabIndex = 0;
-  akar.setAttribute("aria-label", nama);
+  const tinggi = u.lingkar + u.ujung - UJUNG_MENYATU;
 
+  const luar = el("div", "peta-pin-luar");
+  luar.style.width = `${u.lingkar}px`;
+  luar.style.height = `${tinggi}px`;
+  luar.setAttribute("role", "button");
+  luar.tabIndex = 0;
+  luar.setAttribute("aria-label", nama);
+
+  const dalam = el("div", "peta-pin");
   const lingkar = el("div", "peta-pin__lingkar");
   lingkar.style.cssText = `width:${u.lingkar}px;height:${u.lingkar}px;background:${warna}`;
   lingkar.innerHTML = ikonSvg; // statis: SVG dari komponen lucide
@@ -42,10 +57,10 @@ function buatPin(warna: string, ikonSvg: string, u: Ukuran, nama: string, label?
   const ujung = el("div", "peta-pin__ujung");
   ujung.style.cssText = `border-left-width:${u.ujung - 1}px;border-right-width:${u.ujung - 1}px;border-top:${u.ujung}px solid ${warna}`;
 
-  akar.append(lingkar, ujung);
-  if (label) akar.prepend(el("div", "peta-pin__label", label));
-  // Label kos mengambang di atas pin; tinggi pin untuk offset popup dihitung terpisah.
-  return akar;
+  dalam.append(lingkar, ujung);
+  if (label) dalam.prepend(el("div", "peta-pin__label", label));
+  luar.appendChild(dalam);
+  return luar;
 }
 
 /** Isi popup: ikon bulat berwarna + nama (tebal) + baris keterangan. */
@@ -77,7 +92,7 @@ export function buatPenandaKos(opsi: {
     lat,
     lng,
     nama,
-    tinggi: u.lingkar + u.ujung,
+    tinggi: u.lingkar + u.ujung - UJUNG_MENYATU,
     elemen: buatPin(WARNA_AKSEN, svgIkon(IKON_KOS, u.ikon, 2.3), u, `Kos ${nama}`, nama),
     popup: buatIsiPopup(WARNA_AKSEN, svgIkon(IKON_KOS, 14, 2.4), nama, baris),
   };
@@ -92,7 +107,7 @@ export function buatPenandaTempat(t: TempatTerdekat): Penanda {
     lat: t.lat,
     lng: t.lng,
     nama: t.nama,
-    tinggi: u.lingkar + u.ujung,
+    tinggi: u.lingkar + u.ujung - UJUNG_MENYATU,
     elemen: buatPin(kat.warna, svgIkon(ikon, u.ikon), u, `${t.nama}, ${kat.label}`),
     popup: buatIsiPopup(kat.warna, svgIkon(ikon, 14, 2.4), t.nama, [
       kat.label,

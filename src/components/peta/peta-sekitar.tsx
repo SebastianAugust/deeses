@@ -40,8 +40,6 @@ type Props = {
   lat?: number | null;
   lng?: number | null;
   koordinat_status?: string | null;
-  /** Tampilan sempit (panel /hasil): peta lebih pendek, judul lebih kecil. */
-  ringkas?: boolean;
   className?: string;
 };
 
@@ -50,9 +48,9 @@ type Props = {
  * radius 1,2 km, jarak garis lurus), dengan chip filter kategori. Kos tanpa koordinat
  * valid tidak mendapat peta. Tidak memakai Google Maps/Places.
  */
-export function PetaSekitar({ nama, lat, lng, koordinat_status, ringkas = false, className }: Props) {
+export function PetaSekitar({ nama, lat, lng, koordinat_status, className }: Props) {
   const judul = (
-    <h2 id="judul-peta" className={cn("font-extrabold", ringkas ? "text-[15px]" : "text-lg")}>
+    <h2 id="judul-peta" className="text-lg font-extrabold">
       Peta sekitar kos
     </h2>
   );
@@ -72,7 +70,6 @@ export function PetaSekitar({ nama, lat, lng, koordinat_status, ringkas = false,
       lng={lng as number}
       perkiraan={koordinat_status === "perkiraan"}
       status={koordinat_status}
-      ringkas={ringkas}
       judul={judul}
       className={className}
     />
@@ -85,7 +82,6 @@ function PetaBerkoordinat({
   lng,
   perkiraan,
   status,
-  ringkas,
   judul,
   className,
 }: {
@@ -94,7 +90,6 @@ function PetaBerkoordinat({
   lng: number;
   perkiraan: boolean;
   status?: string | null;
-  ringkas: boolean;
   judul: React.ReactNode;
   className?: string;
 }) {
@@ -203,7 +198,7 @@ function PetaBerkoordinat({
         ref={bingkai}
         className={cn(
           "relative isolate w-full min-w-0 overflow-hidden rounded-[20px] border border-white/95 bg-soft/50 shadow-[0_8px_24px_rgba(30,45,90,.10)]",
-          ringkas ? "h-[280px]" : "h-[320px] lg:h-[380px]",
+          "h-[320px] lg:h-[380px]",
         )}
       >
         {terlihat ? (

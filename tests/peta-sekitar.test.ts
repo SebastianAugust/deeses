@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createElement as h } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -37,8 +39,23 @@ describe("<PetaSekitar>: kos tanpa koordinat valid tidak mendapat peta", () => {
     expect(out).toContain("lokasi perkiraan");
     expect(out).toContain("±200 m");
   });
+});
 
-  it("varian ringkas (panel) lebih pendek", () => {
-    expect(html({ lat: -6.93, lng: 107.77, ringkas: true })).toContain("h-[280px]");
+describe("peta hanya di halaman detail penuh, bukan di /hasil", () => {
+  const baca = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
+
+  it("panel detail /hasil dan kartu hasil tidak mengimpor peta/POI (tak ada MapLibre, style, atau poi-jatinangor.json di daftar)", () => {
+    for (const rel of [
+      "../src/components/kos/kos-detail-panel.tsx",
+      "../src/components/hasil/hasil-desktop.tsx",
+      "../src/components/hasil/hasil-mobile.tsx",
+    ]) {
+      const src = baca(rel);
+      expect(src, rel).not.toMatch(/components\/peta|peta-sekitar|peta-maplibre|maplibre-gl|use-poi|usePoi/);
+    }
+  });
+
+  it("halaman /kos/[id] tetap memakai PetaSekitar", () => {
+    expect(baca("../src/app/kos/[id]/detail-view.tsx")).toContain("<PetaSekitar");
   });
 });

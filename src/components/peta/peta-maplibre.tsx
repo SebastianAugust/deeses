@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./peta.css";
@@ -14,9 +14,46 @@ import { buatPenandaKos, buatPenandaTempat, type Penanda } from "./penanda";
 const URL_GAYA = "https://tiles.openfreemap.org/styles/liberty";
 const ZOOM_MAKS_FIT = 17;
 const ZOOM_PUSAT = 16;
-const BATAS_WAKTU_MUAT_MS = 20_000;
+/** Tanpa event 'load' (utama) / 'idle' (cadangan) dalam waktu ini, pindah ke tahap berikutnya. */
+const BATAS_WAKTU_MUAT_MS = 8_000;
 const PADDING = { top: 62, bottom: 36, left: 40, right: 56 } as const;
 const SUMBER_PERKIRAAN = "lokasi-perkiraan";
+/** Id sumber vektor pada style Liberty (https://tiles.openfreemap.org/styles/liberty). */
+const SUMBER_UTAMA = "openmaptiles";
+const SUMBER_RASTER = "osm";
+const ATRIBUSI_OSM = "© OpenStreetMap contributors";
+const MAKS_PERINGATAN = 8;
+
+/** Style cadangan minimal: ubin raster OpenStreetMap standar. */
+const GAYA_RASTER: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    [SUMBER_RASTER]: {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: ATRIBUSI_OSM,
+    },
+  },
+  layers: [{ id: "osm", type: "raster", source: SUMBER_RASTER }],
+};
+
+/**
+ * MapLibre 6 menurunkan URL worker dari `import.meta.url` modulnya. Setelah dibundel
+ * Turbopack, URL itu menunjuk ke berkas yang salah (berkas pustaka utama, bukan
+ * maplibre-gl-worker.mjs), worker gagal jalan, dan dasar peta tidak pernah tergambar
+ * padahal marker DOM tetap tampil. Maka URL worker diberikan eksplisit: Turbopack
+ * menyalin berkas ini sebagai aset statis (/_next/static/media/...) satu origin.
+ */
+let workerSudahDiatur = false;
+function aturWorker() {
+  if (workerSudahDiatur) return;
+  workerSudahDiatur = true;
+  maplibregl.setWorkerUrl(
+    new URL("../../../node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href,
+  );
+}
 
 const TOMBOL =
   "tekan flex size-10 items-center justify-center rounded-xl border border-white/90 bg-white/95 text-ink shadow-[0_4px_14px_rgba(30,45,90,.18)] hover:bg-soft";
@@ -33,7 +70,7 @@ export type PropsPeta = {
   tempat: TempatTerdekat[];
 };
 
-/** Lingkaran geodesik sederhana (cukup akurat untuk ratusan meter) sebagai Polygon GeoJSON. */
+/** Lingkaran geodesik sederhana (cukup akurat untuk ratusan meter) sebagai cincin Polygon GeoJSON. */
 function poligonLingkaran(lat: number, lng: number, radiusM: number, langkah = 64) {
   const dLat = radiusM / 111_320;
   const dLng = radiusM / (111_320 * Math.cos((lat * Math.PI) / 180));
@@ -53,6 +90,9 @@ function kurangGerak(): boolean {
  * Peta MapLibre GL: pin kos + tempat sekitar. Hanya dimuat di klien (dynamic, ssr:false).
  * Gestur kooperatif: di layar sentuh digeser dengan dua jari (satu jari menggulir halaman),
  * di desktop roda mouse butuh Ctrl/⌘ supaya scroll halaman tidak terjebak.
+ *
+ * Rantai cadangan: style vektor OpenFreeMap Liberty → style raster OSM → pesan "Peta tidak
+ * dapat dimuat" (penanda disembunyikan). Satu ubin/sprite/glyph yang gagal TIDAK menggeser tahap.
  */
 export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, tempat }: PropsPeta) {
   const wadah = useRef<HTMLDivElement>(null);
@@ -63,19 +103,38 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
   const [gagal, setGagal] = useState(false);
   const pertama = useRef(true);
 
+  // Lingkaran perkiraan: GeoJSON + cincin (untuk fit-bounds). GeoJSON disimpan di ref supaya
+  // bisa dipasang ulang setiap kali style berganti (utama -> cadangan).
+  const lingkaran = useMemo(() => {
+    const cincin = perkiraan ? poligonLingkaran(lat, lng, RADIUS_PERKIRAAN_M) : [];
+    const data: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: perkiraan
+        ? [{ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [cincin] } }]
+        : [],
+    };
+    return { cincin, data };
+  }, [lat, lng, perkiraan]);
+  const lingkaranRef = useRef(lingkaran.data);
+  useEffect(() => {
+    lingkaranRef.current = lingkaran.data;
+    (peta.current?.getSource(SUMBER_PERKIRAAN) as maplibregl.GeoJSONSource | undefined)?.setData(lingkaran.data);
+  }, [lingkaran]);
+
   // Buat peta sekali.
   useEffect(() => {
     const el = wadah.current;
     if (!el) return;
     let map: maplibregl.Map;
     try {
+      aturWorker();
       map = new maplibregl.Map({
         container: el,
         style: URL_GAYA,
         center: [lng, lat],
         zoom: ZOOM_PUSAT,
         maxZoom: 19,
-        attributionControl: { compact: false, customAttribution: "© OpenStreetMap contributors" },
+        attributionControl: false, // dipasang manual supaya sesuai style yang aktif
         cooperativeGestures: true,
         dragRotate: false,
         pitchWithRotate: false,
@@ -88,26 +147,46 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
           "NavigationControl.ZoomOut": "Perkecil",
         },
       });
-    } catch {
+    } catch (e) {
       // WebGL tidak tersedia / gagal inisialisasi.
+      console.warn("[peta] MapLibre gagal dibuat (WebGL?):", e instanceof Error ? e.message : e);
       const t = setTimeout(() => setGagal(true), 0);
       return () => clearTimeout(t);
     }
     map.touchZoomRotate.disableRotation();
 
-    let gayaTerpasang = false;
-    let sudahMuat = false;
-    const gagalkan = () => {
-      if (!sudahMuat) setGagal(true);
+    type Tahap = "utama" | "cadangan";
+    let tahap: Tahap = "utama";
+    let gayaTerpasang = false; // 'style.load' sudah terjadi untuk style aktif
+    let sudahMuat = false; // 'load'/'idle' sudah terjadi pada tahap ini
+    let ubinBerhasil = 0; // ubin sumber dasar yang berhasil dimuat pada tahap ini
+    let ubinGalat = 0;
+    let jumlahPeringatan = 0;
+    let selesai = false; // sudah gagal total / peta dibongkar
+    let atribusi: maplibregl.AttributionControl | null = null;
+    let batasWaktu: ReturnType<typeof setTimeout> | undefined;
+
+    const gayaAktif = () => (tahap === "utama" ? URL_GAYA : "osm-raster");
+    const sumberDasar = () => (tahap === "utama" ? SUMBER_UTAMA : SUMBER_RASTER);
+    const catat = (pesan: string, rinci?: unknown) => {
+      if (jumlahPeringatan++ >= MAKS_PERINGATAN) return;
+      console.warn(`[peta] ${pesan}`, { gaya: gayaAktif(), rinci });
     };
-    // Dengarkan 'error' supaya MapLibre tidak mencetak console.error; hanya kegagalan
-    // memuat gaya (sebelum style.load) yang dianggap fatal. Tile/ikon yang hilang diabaikan.
-    map.on("error", () => {
-      if (!gayaTerpasang) gagalkan();
-    });
-    map.on("style.load", () => {
-      gayaTerpasang = true;
-      map.addSource(SUMBER_PERKIRAAN, { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+
+    const pasangAtribusi = () => {
+      if (atribusi) map.removeControl(atribusi);
+      // Style Liberty hanya menyebut "Data from OpenStreetMap": tambahkan atribusi ODbL.
+      atribusi = new maplibregl.AttributionControl({
+        compact: false,
+        customAttribution: tahap === "utama" ? ATRIBUSI_OSM : undefined,
+      });
+      map.addControl(atribusi, "bottom-right");
+    };
+    pasangAtribusi();
+
+    const pasangLingkaran = () => {
+      if (map.getSource(SUMBER_PERKIRAAN)) return;
+      map.addSource(SUMBER_PERKIRAAN, { type: "geojson", data: lingkaranRef.current });
       map.addLayer({
         id: `${SUMBER_PERKIRAAN}-isi`,
         type: "fill",
@@ -120,12 +199,76 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
         source: SUMBER_PERKIRAAN,
         paint: { "line-color": "#1d5fd1", "line-width": 1.5, "line-opacity": 0.75, "line-dasharray": [3, 2] },
       });
+    };
+
+    const gagalTotal = (alasan: string) => {
+      if (selesai) return;
+      selesai = true;
+      clearTimeout(batasWaktu);
+      catat(`peta tidak dapat dimuat (kedua style gagal): ${alasan}`);
+      setGagal(true);
+    };
+
+    const mulaiPenghitung = () => {
+      clearTimeout(batasWaktu);
+      batasWaktu = setTimeout(() => {
+        if (selesai || sudahMuat) return;
+        if (tahap === "utama") beralihKeCadangan("tidak ada event 'load' dalam 8 detik");
+        else gagalTotal("tidak ada event 'idle' dalam 8 detik");
+      }, BATAS_WAKTU_MUAT_MS);
+    };
+
+    function beralihKeCadangan(alasan: string) {
+      if (selesai || tahap === "cadangan") return;
+      catat(`style utama gagal, beralih ke raster OpenStreetMap: ${alasan}`);
+      tahap = "cadangan";
+      gayaTerpasang = false;
+      sudahMuat = false;
+      ubinBerhasil = 0;
+      ubinGalat = 0;
+      jumlahPeringatan = 0;
+      pasangAtribusi();
+      // Penanda DOM tidak ikut style; lingkaran dipasang ulang di 'style.load'.
+      map.setStyle(GAYA_RASTER, { diff: false });
+      mulaiPenghitung();
+    }
+
+    // Dengarkan SEMUA 'error' (sekaligus mencegah console.error bawaan MapLibre), tetapi hanya
+    // yang membuat style/sumber dasar tak bisa dipakai yang menggeser tahap. Satu ubin,
+    // sprite, atau glyph yang gagal cukup dicatat.
+    map.on("error", (e) => {
+      if (selesai) return;
+      const err = (e as { error?: unknown }).error;
+      const pesan = err instanceof Error ? err.message : String(err);
+      const info = e as { sourceId?: string; tile?: unknown };
+      catat(`error: ${pesan}`, { sumber: info.sourceId, ubin: Boolean(info.tile) });
+      if (info.tile && info.sourceId === sumberDasar()) ubinGalat++;
+      const gayaGagal = !gayaTerpasang; // JSON style tidak terunduh / tidak valid
+      const sumberGagal = !info.tile && info.sourceId === sumberDasar(); // TileJSON sumber dasar gagal
+      const workerGagal = /worker/i.test(pesan);
+      if (tahap === "utama" && (gayaGagal || sumberGagal || workerGagal)) beralihKeCadangan(pesan);
+      else if (tahap === "cadangan" && gayaGagal) gagalTotal(pesan);
+    });
+    map.on("style.load", () => {
+      gayaTerpasang = true;
+      pasangLingkaran();
       setSiap(true);
     });
-    map.on("load", () => {
-      sudahMuat = true;
+    map.on("data", (e) => {
+      const info = e as { tile?: unknown; sourceId?: string };
+      if (info.tile && info.sourceId === sumberDasar()) ubinBerhasil++;
     });
-    const batasWaktu = setTimeout(gagalkan, BATAS_WAKTU_MUAT_MS);
+    const saatSelesaiMuat = () => {
+      sudahMuat = true;
+      // Selesai dimuat tetapi tak satu pun ubin dasar berhasil: dasar peta kosong.
+      if (ubinGalat > 0 && ubinBerhasil === 0) {
+        if (tahap === "utama") beralihKeCadangan("semua ubin dasar gagal dimuat");
+        else gagalTotal("semua ubin raster gagal dimuat");
+      }
+    };
+    map.on("load", saatSelesaiMuat);
+    map.on("idle", saatSelesaiMuat);
+    mulaiPenghitung();
 
     popup.current = new maplibregl.Popup({
       closeButton: false,
@@ -136,6 +279,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     });
     peta.current = map;
     return () => {
+      selesai = true;
       clearTimeout(batasWaktu);
       popup.current?.remove();
       popup.current = null;
@@ -148,25 +292,15 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Gambar ulang lingkaran perkiraan, penanda, dan fit-bounds saat data atau filter berubah.
+  // Gambar ulang penanda + fit-bounds saat data atau filter berubah. Di mode gagal total
+  // penanda disembunyikan (peta kosong dengan pin hanya membingungkan).
   useEffect(() => {
     const map = peta.current;
     const pop = popup.current;
-    if (!map || !pop || !siap) return;
+    if (!map || !pop || !siap || gagal) return;
 
     const batas = new maplibregl.LngLatBounds([lng, lat], [lng, lat]);
-
-    const sumber = map.getSource(SUMBER_PERKIRAAN) as maplibregl.GeoJSONSource | undefined;
-    if (perkiraan) {
-      const cincin = poligonLingkaran(lat, lng, RADIUS_PERKIRAAN_M);
-      sumber?.setData({
-        type: "FeatureCollection",
-        features: [{ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [cincin] } }],
-      });
-      for (const p of cincin) batas.extend(p);
-    } else {
-      sumber?.setData({ type: "FeatureCollection", features: [] });
-    }
+    for (const p of lingkaran.cincin) batas.extend(p);
 
     // Kampus dan kos digambar belakangan supaya berada di atas pin tempat biasa.
     const daftar: Penanda[] = [
@@ -234,7 +368,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
       penandaAktif.current = [];
       pop.remove();
     };
-  }, [siap, nama, lat, lng, perkiraan, tempat]);
+  }, [siap, gagal, nama, lat, lng, perkiraan, tempat, lingkaran]);
 
   const pusatkan = useCallback(() => {
     const map = peta.current;

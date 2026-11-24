@@ -86,7 +86,6 @@ describe("mapper baris → Kos", () => {
       kloset_duduk: 0,
       tv: 1,
       bayar_bulanan: 1,
-      bayar_tahunan: 1,
     });
     expect(k.jarak_imputasi).toBe(false);
     expect(isKosLengkap(k)).toBe(true);
@@ -228,6 +227,12 @@ describe("mapper baris → Kos", () => {
     expect(info.listrik_termasuk).toBe(false);
     expect(info.fasilitas_kamar).toEqual(["Jendela", "Kloset jongkok", "Wi-Fi", "TV"]);
     expect(info.fasilitas_bersama).toEqual(["Penjaga kos", "Parkir motor/sepeda", "Ruang tamu", "Ruang jemur"]);
+    // "Bisa bayar per tahun" tidak ditampilkan sebagai fasilitas, walau kolomnya tetap dibaca.
+    expect(petakanBaris(ANNISA).fasilitas.pembayaran_per_tahun).not.toBeUndefined();
+    for (const baris of ASLI) {
+      const i = keKosInfo(petakanBaris({ ...baris, pembayaran_per_tahun: 1 }));
+      expect([...(i.fasilitas_kamar ?? []), ...(i.fasilitas_bersama ?? [])]).not.toContain("Bisa bayar per tahun");
+    }
     for (const f of ["deposit", "aturan", "sekitar", "foto_urls", "kontak_nama", "kontak_wa", "kontak_telp", "sumber_url", "diperbarui_at", "alamat"] as const) {
       expect(info[f]).toBeNull();
     }

@@ -7,7 +7,7 @@ export function PetaGagal({ href, className }: { href: string | null; className?
     <div
       role="status"
       className={cn(
-        "flex h-full w-full flex-col items-center justify-center gap-2.5 rounded-[inherit] bg-soft/70 px-4 text-center",
+        "flex h-full w-full flex-col items-center justify-center gap-2.5 rounded-[inherit] bg-soft px-4 text-center",
         className,
       )}
     >

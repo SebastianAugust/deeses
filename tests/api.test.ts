@@ -57,7 +57,7 @@ const CSV = bacaCsv(
 
 // ---------------------------------------------------------------------------
 describe("katalog kriteria (src/config/kriteria.ts)", () => {
-  it("memuat 25 piece usulan dengan kategori & jenis yang benar", () => {
+  it("memuat 24 piece usulan dengan kategori & jenis yang benar", () => {
     const usulan: [string, string, string][] = [
       ["harga", "biaya", "cost"], ["deposit", "biaya", "cost"], ["listrik", "biaya", "benefit"],
       ["jarak_unpad", "lokasi", "cost"], ["jarak_itb", "lokasi", "cost"], ["minimarket", "lokasi", "cost"],
@@ -67,7 +67,7 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
       ["parkir_mobil", "bersama", "benefit"], ["dapur", "bersama", "benefit"], ["wifi", "bersama", "benefit"],
       ["jam_malam", "aturan", "cost"], ["tamu", "aturan", "cost"],
       ["tv", "kamar", "benefit"], ["shower", "kamar", "benefit"], ["kloset_duduk", "kamar", "benefit"],
-      ["bayar_bulanan", "biaya", "benefit"], ["bayar_tahunan", "biaya", "benefit"],
+      ["bayar_bulanan", "biaya", "benefit"],
     ];
     for (const [kode, kategori, jenis] of usulan) {
       expect(getKriteria(kode), kode).toMatchObject({ kategori, jenis });
@@ -134,14 +134,12 @@ describe("katalog kriteria (src/config/kriteria.ts)", () => {
       "harga",
       "listrik",
       "bayar_bulanan",
-      "bayar_tahunan",
     ]);
     expect(kriteriaPerKategori("biaya", { hanyaTersedia: false }).map((k) => k.kode)).toEqual([
       "harga",
       "deposit",
       "listrik",
       "bayar_bulanan",
-      "bayar_tahunan",
     ]);
     const kelompok = katalogTerkelompok();
     expect(kelompok.map((k) => k.kode)).not.toContain("aturan");
@@ -172,6 +170,7 @@ describe("validasi kriteria (zod)", () => {
     tolak(["harga", "C1"], /tidak dikenal: C1/);
     tolak(["harga", "luas", "harga"], /duplikat: harga/);
     tolak(["harga", "deposit"], /deposit belum bisa dipakai/);
+    tolak(["harga", "bayar_tahunan"], /tidak dikenal: bayar_tahunan/); // piece lama dihapus: 400 jelas, bukan crash
     tolak([1], /kriteria/);
   });
 
@@ -192,6 +191,22 @@ describe("state URL ?kriteria=", () => {
     const banyak = [...KRITERIA_TERSEDIA.map((k) => k.kode)].join(",");
     expect(parseKriteria(banyak)).toHaveLength(Math.min(MAKS_KRITERIA, KRITERIA_TERSEDIA.length));
     expect(parseFilter(new URLSearchParams("tipe=putra&kriteria=ac")).kriteria).toEqual(["ac"]);
+  });
+
+  it("piece lama bayar_tahunan (dihapus dari katalog): tidak dikenal, diabaikan, piece lain tetap terpasang", () => {
+    expect(isKodeKriteria("bayar_tahunan")).toBe(false);
+    expect(isKodeTersedia("bayar_tahunan")).toBe(false);
+    expect(getKriteria("bayar_tahunan")).toBeUndefined();
+    expect(KATALOG_KRITERIA.some((k) => k.sumber?.kolom === "pembayaran_per_tahun")).toBe(false);
+    // piece "bayar per bulan" tetap ada
+    expect(getKriteria("bayar_bulanan")?.sumber?.kolom).toBe("pembayaran_per_bulan");
+    // URL lama / dibagikan
+    expect(parseKriteria("harga,bayar_tahunan,ac")).toEqual(["harga", "ac"]);
+    expect(parseKriteria("BAYAR_TAHUNAN")).toEqual([]);
+    expect(parseFilter(new URLSearchParams("tipe=putra&kriteria=ac,bayar_tahunan,cctv")).kriteria).toEqual(["ac", "cctv"]);
+    // rakitan sesi tersimpan / riwayat
+    expect(parseFilter(new URLSearchParams("tipe=putri"), "bayar_tahunan,luas,harga").kriteria).toEqual(["luas", "harga"]);
+    expect(parseFilter(new URLSearchParams("tipe=putri"), "bayar_tahunan").kriteria).toEqual([]);
   });
 });
 

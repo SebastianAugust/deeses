@@ -47,6 +47,8 @@ export type Fasilitas = (typeof KOLOM_FASILITAS)[number];
  * Label tampilan + kelompok. "lain" = bukan fasilitas fisik (listrik, cara bayar,
  * kamar mandi dalam) — ditampilkan lewat field khusus di KosInfo.
  * Pembagian kamar/bersama adalah keputusan tim (AUDIT.md tabel kontrak).
+ * Hanya grup "kamar" dan "bersama" yang ditampilkan sebagai daftar fasilitas, jadi
+ * `pembayaran_per_tahun` (tetap dibaca, bukan lagi piece kriteria) tidak muncul di UI.
  */
 export const LABEL_FASILITAS: Record<Fasilitas, { label: string; grup: "kamar" | "bersama" | "lain" }> = {
   termasuk_listrik: { label: "Listrik termasuk", grup: "lain" },

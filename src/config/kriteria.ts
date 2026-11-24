@@ -18,6 +18,9 @@
  * - C5–C8: skor komposit rata-rata beberapa kolom fasilitas; isinya tidak sesuai
  *   label (AUDIT.md T15). Kolom fasilitas mentahnya dipakai langsung di bawah.
  * - C1: sama persis dengan kolom mentah `harga`, jadi dipakai `harga`.
+ * - `pembayaran_per_tahun` ("Bisa bayar per tahun"): hampir semua kos menerimanya, jadi tidak
+ *   membedakan kos satu dengan yang lain. Kolomnya tetap dibaca mapper (tanpa migrasi DB),
+ *   hanya tidak jadi piece dan tidak ditampilkan sebagai fasilitas.
  */
 
 export type JenisKriteria = "cost" | "benefit";
@@ -86,11 +89,6 @@ const DATA_KATALOG = [
     kode: "bayar_bulanan", nama: "Bisa bayar per bulan", singkat: "bayar per bulan", kategori: "biaya", jenis: "benefit",
     sumber: { kolom: "pembayaran_per_bulan", tipe: "biner" }, satuan: "ya/tidak",
     deskripsi: "Kos menerima pembayaran sewa per bulan. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
-  },
-  {
-    kode: "bayar_tahunan", nama: "Bisa bayar per tahun", singkat: "bayar per tahun", kategori: "biaya", jenis: "benefit",
-    sumber: { kolom: "pembayaran_per_tahun", tipe: "biner" }, satuan: "ya/tidak",
-    deskripsi: "Kos menerima pembayaran sewa per tahun. Kos yang tidak mencantumkannya dihitung 0.", tersedia: true,
   },
   // ------------------------------- lokasi ------------------------------
   // Jarak per kampus: perkiraan jarak rute (OSRM, data OpenStreetMap) dari titik lat/lng.

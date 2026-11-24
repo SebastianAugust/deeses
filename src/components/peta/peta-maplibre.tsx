@@ -95,7 +95,7 @@ function kurangGerak(): boolean {
 
 /**
  * Peta MapLibre GL: pin kos + tempat sekitar. Hanya dimuat di klien (dynamic, ssr:false).
- * Mouse/touchpad (pointer: fine): swipe dua jari = geser, pinch/Ctrl+scroll/roda mouse = zoom,
+ * Mouse/touchpad (pointer: fine): swipe dua jari / roda = geser bebas, pinch atau Ctrl+scroll = zoom,
  * tahan-geser = pan, klik dua kali = zoom in (lihat src/lib/peta-roda.ts).
  * Layar sentuh (pointer: coarse): gestur kooperatif (satu jari menggulir halaman, dua jari mengatur peta).
  *
@@ -111,7 +111,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
   const [gagal, setGagal] = useState(false);
   const [petunjukTampil, setPetunjukTampil] = useState(true);
   const pertama = useRef(true);
-  // Mouse/touchpad: zoom langsung dengan scroll. Layar sentuh: gestur kooperatif (dua jari).
+  // Mouse/touchpad: wheel ditangani sendiri (lihat efek pointer). Layar sentuh: gestur kooperatif (dua jari).
   const pointerHalus = useSyncExternalStore(langgananPointer, pointerHalusSekarang, () => false);
 
   // Lingkaran perkiraan: GeoJSON + cincin (untuk fit-bounds). GeoJSON disimpan di ref supaya
@@ -311,8 +311,8 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
 
   // Ikuti jenis pointer (bisa berubah, mis. tablet dengan keyboard/mouse dipasang-lepas).
   // - Pointer halus (mouse/touchpad): scrollZoom bawaan dan gestur kooperatif dimatikan; event
-  //   wheel ditangani sendiri: swipe dua jari = geser, pinch / Ctrl+scroll / roda mouse = zoom
-  //   di sekitar kursor, halaman tidak ikut menggulir selama kursor di atas peta.
+  //   wheel ditangani sendiri: ctrlKey (pinch / Ctrl+scroll) = zoom di sekitar kursor,
+  //   selain itu = geser bebas (deltaX/deltaY apa adanya, tanpa heuristik), halaman tidak ikut menggulir selama kursor di atas peta.
   // - Layar sentuh: perilaku bawaan (gestur kooperatif).
   // Pembersihan efek melepas listener dan mengembalikan scrollZoom, jadi tidak ada listener ganda.
   useEffect(() => {
@@ -327,7 +327,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
     map.scrollZoom.disable();
     const saatRoda = (e: WheelEvent) => {
       e.preventDefault(); // halaman tidak menggulir / browser tidak zoom selama kursor di peta
-      const aksi = aksiRoda(e);
+      const aksi = aksiRoda(e, el.clientHeight);
       if (aksi.jenis === "geser") {
         map.panBy([aksi.dx, aksi.dy], { animate: false });
         return;
@@ -459,7 +459,7 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
           {pointerHalus && petunjukTampil && siap ? (
             <p className="pointer-events-none absolute left-2 top-2 z-10 flex max-w-[min(70%,280px)] items-start gap-1.5 rounded-xl border border-white/90 bg-white/90 px-2.5 py-1.5 text-[11px] font-semibold leading-snug text-muted shadow-[0_4px_14px_rgba(30,45,90,.14)]">
               <MousePointer2 size={13} className="mt-px shrink-0" aria-hidden />
-              Geser dengan dua jari, cubit untuk zoom. Arahkan kursor ke luar peta untuk menggulir halaman.
+              Geser dengan dua jari, cubit atau Ctrl + scroll untuk zoom.
             </p>
           ) : null}
           <div className="absolute right-2 top-2 z-10 flex flex-col gap-1.5">

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { MAKS_ZOOM_PER_EVENT, aksiRoda, jenisRoda, type DataRoda } from "@/lib/peta-roda";
+import { MAKS_ZOOM_PER_EVENT, aksiRoda, kePiksel, type DataRoda } from "@/lib/peta-roda";
 
+const TINGGI = 380;
 const roda = (p: Partial<DataRoda>): DataRoda => ({
   deltaX: 0,
   deltaY: 0,
@@ -9,62 +10,57 @@ const roda = (p: Partial<DataRoda>): DataRoda => ({
   shiftKey: false,
   ...p,
 });
+const aksi = (p: Partial<DataRoda>) => aksiRoda(roda(p), TINGGI);
 
-describe("jenisRoda", () => {
-  it.each<[string, Partial<DataRoda>, string]>([
-    ["pinch touchpad Windows (ctrlKey, delta kecil)", { ctrlKey: true, deltaY: -3.5 }, "pinch"],
-    ["Ctrl + roda mouse", { ctrlKey: true, deltaY: 100 }, "pinch"],
-    ["roda mouse Chrome (100 px, bulat, deltaX 0)", { deltaY: 100 }, "roda"],
-    ["roda mouse ke atas (-120)", { deltaY: -120 }, "roda"],
-    ["roda mouse Firefox (mode baris)", { deltaMode: 1, deltaY: 3 }, "roda"],
-    ["roda mouse mode halaman", { deltaMode: 2, deltaY: 1 }, "roda"],
-    ["swipe vertikal touchpad (kecil)", { deltaY: 12 }, "touchpad"],
-    ["swipe horizontal touchpad", { deltaX: -18 }, "touchpad"],
-    ["swipe diagonal touchpad", { deltaX: 9, deltaY: 14 }, "touchpad"],
-    ["swipe cepat besar tapi pecahan (macOS)", { deltaY: 73.5 }, "touchpad"],
-    ["swipe cepat besar tapi ada deltaX", { deltaX: 4, deltaY: 90 }, "touchpad"],
-    ["tepat di bawah ambang (49) bukan roda", { deltaY: 49 }, "touchpad"],
-    ["tepat di ambang (50), bulat, deltaX 0 → roda", { deltaY: 50 }, "roda"],
-  ])("%s → %s", (_n, p, jenis) => {
-    expect(jenisRoda(roda(p))).toBe(jenis);
+describe("aksiRoda: tanpa ctrlKey → geser bebas ke segala arah", () => {
+  it.each<[string, Partial<DataRoda>, number, number]>([
+    ["vertikal kecil", { deltaY: 12 }, 0, 12],
+    ["vertikal ke atas", { deltaY: -9 }, 0, -9],
+    ["horizontal", { deltaX: -18 }, -18, 0],
+    ["diagonal", { deltaX: 9, deltaY: 14 }, 9, 14],
+    ["diagonal negatif", { deltaX: -7, deltaY: -21 }, -7, -21],
+    // Dulu pola ini (bulat, ≥ 50, deltaX 0) dibaca sebagai klik roda mouse → zoom.
+    ["vertikal besar dan bulat (swipe cepat)", { deltaY: 100 }, 0, 100],
+    ["vertikal besar bulat ke atas", { deltaY: -120 }, 0, -120],
+    ["pecahan (macOS)", { deltaX: 0.5, deltaY: 73.25 }, 0.5, 73.25],
+  ])("%s → geser tanpa diubah", (_n, p, dx, dy) => {
+    expect(aksi(p)).toEqual({ jenis: "geser", dx, dy });
+  });
+
+  it("deltaMode baris (1) dikali 16; halaman (2) dikali tinggi kontainer", () => {
+    expect(aksi({ deltaMode: 1, deltaX: 1, deltaY: 3 })).toEqual({ jenis: "geser", dx: 16, dy: 48 });
+    expect(aksi({ deltaMode: 2, deltaY: -1 })).toEqual({ jenis: "geser", dx: 0, dy: -TINGGI });
+    expect(kePiksel(5, 0, TINGGI)).toBe(5);
+  });
+
+  it("Shift menukar sumbu hanya bila deltaX = 0", () => {
+    expect(aksi({ deltaY: 15, shiftKey: true })).toEqual({ jenis: "geser", dx: 15, dy: 0 });
+    expect(aksi({ deltaX: 5, deltaY: 15, shiftKey: true })).toEqual({ jenis: "geser", dx: 5, dy: 15 });
   });
 });
 
-describe("aksiRoda", () => {
-  it("touchpad: geser sesuai deltaX/deltaY (kiri-kanan dan atas-bawah)", () => {
-    expect(aksiRoda(roda({ deltaX: 10, deltaY: -6 }))).toEqual({ jenis: "geser", dx: 10, dy: -6 });
-    expect(aksiRoda(roda({ deltaX: -22, deltaY: 0 }))).toEqual({ jenis: "geser", dx: -22, dy: 0 });
+describe("aksiRoda: ctrlKey → zoom", () => {
+  it("pinch ke luar (deltaY negatif) = zoom in, ke dalam = zoom out, 0,01 level/px", () => {
+    expect(aksi({ ctrlKey: true, deltaY: -10 })).toEqual({ jenis: "zoom", delta: 0.1 });
+    expect(aksi({ ctrlKey: true, deltaY: 25 })).toEqual({ jenis: "zoom", delta: -0.25 });
   });
 
-  it("touchpad + Shift: sumbu ditukar bila deltaX kosong; bila deltaX sudah ada, dibiarkan", () => {
-    expect(aksiRoda(roda({ deltaY: 15, shiftKey: true }))).toEqual({ jenis: "geser", dx: 15, dy: 0 });
-    expect(aksiRoda(roda({ deltaX: 5, deltaY: 15, shiftKey: true }))).toEqual({ jenis: "geser", dx: 5, dy: 15 });
+  it("deltaX diabaikan saat zoom; ctrlKey menang atas shiftKey", () => {
+    expect(aksi({ ctrlKey: true, shiftKey: true, deltaX: 40, deltaY: -10 })).toEqual({ jenis: "zoom", delta: 0.1 });
   });
 
-  it("pinch: ke luar (deltaY negatif) = zoom in, ke dalam = zoom out, faktor 0,01/px", () => {
-    expect(aksiRoda(roda({ ctrlKey: true, deltaY: -10 }))).toEqual({ jenis: "zoom", delta: 0.1 });
-    expect(aksiRoda(roda({ ctrlKey: true, deltaY: 25 }))).toEqual({ jenis: "zoom", delta: -0.25 });
+  it("deltaMode baris dikonversi (Ctrl + roda Firefox: 3 baris = 48 px)", () => {
+    const a = aksi({ ctrlKey: true, deltaMode: 1, deltaY: 3 });
+    expect(a.jenis).toBe("zoom");
+    expect((a as { delta: number }).delta).toBeCloseTo(-0.48, 10);
   });
 
-  it("roda mouse: langkah per klik lebih kecil dari pinch (0,5 level untuk 100 px); scroll ke bawah = zoom out", () => {
-    expect(aksiRoda(roda({ deltaY: 100 }))).toEqual({ jenis: "zoom", delta: -0.5 });
-    expect(aksiRoda(roda({ deltaY: -100 }))).toEqual({ jenis: "zoom", delta: 0.5 });
-  });
-
-  it("mode baris/halaman dikonversi ke piksel (Firefox: 3 baris ≈ 120 px)", () => {
-    const a = aksiRoda(roda({ deltaMode: 1, deltaY: 3 }));
-    expect(a).toEqual({ jenis: "zoom", delta: -0.6 });
-  });
-
-  it("perubahan zoom per event dibatasi", () => {
-    const a = aksiRoda(roda({ ctrlKey: true, deltaY: 5000 }));
-    expect(a).toEqual({ jenis: "zoom", delta: -MAKS_ZOOM_PER_EVENT });
-    const b = aksiRoda(roda({ deltaMode: 2, deltaY: -3 }));
-    expect(b).toEqual({ jenis: "zoom", delta: MAKS_ZOOM_PER_EVENT });
+  it("perubahan zoom per event dibatasi ±1 level", () => {
+    expect(aksi({ ctrlKey: true, deltaY: 5000 })).toEqual({ jenis: "zoom", delta: -MAKS_ZOOM_PER_EVENT });
+    expect(aksi({ ctrlKey: true, deltaY: -5000 })).toEqual({ jenis: "zoom", delta: MAKS_ZOOM_PER_EVENT });
   });
 
   it("delta 0 tidak menghasilkan -0", () => {
-    const a = aksiRoda(roda({ ctrlKey: true, deltaY: 0 }));
-    expect(Object.is((a as { delta: number }).delta, 0)).toBe(true);
+    expect(Object.is((aksi({ ctrlKey: true, deltaY: 0 }) as { delta: number }).delta, 0)).toBe(true);
   });
 });

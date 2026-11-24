@@ -8,7 +8,7 @@ import { LocateFixed, Minus, MousePointer2, Plus } from "lucide-react";
 import { RADIUS_PERKIRAAN_M, type TempatTerdekat } from "@/lib/poi";
 import { LABEL_LOKASI_PERKIRAAN } from "@/lib/format";
 import { cincinLingkaran, keLngLat } from "@/lib/peta-geo";
-import { aksiRoda } from "@/lib/peta-roda";
+import { pasangRoda } from "@/lib/pasang-roda-peta";
 import { PetaGagal } from "./peta-gagal";
 import { buatPenandaKos, buatPenandaTempat, type Penanda } from "./penanda";
 
@@ -103,6 +103,7 @@ function kurangGerak(): boolean {
  * dapat dimuat" (penanda disembunyikan). Satu ubin/sprite/glyph yang gagal TIDAK menggeser tahap.
  */
 export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, tempat }: PropsPeta) {
+  const pembungkusRef = useRef<HTMLDivElement>(null);
   const wadah = useRef<HTMLDivElement>(null);
   const peta = useRef<maplibregl.Map | null>(null);
   const popup = useRef<maplibregl.Popup | null>(null);
@@ -310,38 +311,22 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
   }, []);
 
   // Ikuti jenis pointer (bisa berubah, mis. tablet dengan keyboard/mouse dipasang-lepas).
-  // - Pointer halus (mouse/touchpad): scrollZoom bawaan dan gestur kooperatif dimatikan; event
-  //   wheel ditangani sendiri: ctrlKey (pinch / Ctrl+scroll) = zoom di sekitar kursor,
-  //   selain itu = geser bebas (deltaX/deltaY apa adanya, tanpa heuristik), halaman tidak ikut menggulir selama kursor di atas peta.
+  // - Pointer halus (mouse/touchpad): gestur kooperatif dan scrollZoom bawaan dimatikan; wheel
+  //   ditangani sendiri (src/lib/pasang-roda-peta.ts) pada PEMBUNGKUS, sehingga overlay (tombol,
+  //   petunjuk) ikut tercakup. Dipasang sekali per pembungkus dan tidak bergantung pada event
+  //   'load'/'style.load', jadi tetap benar setelah setStyle, filter, dan StrictMode.
   // - Layar sentuh: perilaku bawaan (gestur kooperatif).
-  // Pembersihan efek melepas listener dan mengembalikan scrollZoom, jadi tidak ada listener ganda.
   useEffect(() => {
     const map = peta.current;
-    const el = wadah.current;
-    if (!map || !el) return;
+    const pembungkus = pembungkusRef.current;
+    if (!map || !pembungkus) return;
     if (!pointerHalus) {
       map.cooperativeGestures.enable();
       return;
     }
     map.cooperativeGestures.disable();
-    map.scrollZoom.disable();
-    const saatRoda = (e: WheelEvent) => {
-      e.preventDefault(); // halaman tidak menggulir / browser tidak zoom selama kursor di peta
-      const aksi = aksiRoda(e, el.clientHeight);
-      if (aksi.jenis === "geser") {
-        map.panBy([aksi.dx, aksi.dy], { animate: false });
-        return;
-      }
-      const kotak = el.getBoundingClientRect();
-      const titik: [number, number] = [e.clientX - kotak.left, e.clientY - kotak.top];
-      map.zoomTo(map.getZoom() + aksi.delta, { around: map.unproject(titik), duration: 0 });
-    };
-    el.addEventListener("wheel", saatRoda, { passive: false });
-    return () => {
-      el.removeEventListener("wheel", saatRoda);
-      if (peta.current === map) map.scrollZoom.enable(); // peta yang sudah dibongkar dilewati
-    };
-  }, [pointerHalus, siap]);
+    return pasangRoda(pembungkus, map);
+  }, [pointerHalus]);
 
   // Petunjuk desktop hilang saat peta pertama kali disentuh (klik/seret atau scroll di atasnya).
   useEffect(() => {
@@ -445,7 +430,10 @@ export default function PetaMaplibre({ nama, lat, lng, perkiraan, urlCadangan, t
   }, [lat, lng]);
 
   return (
-    <div className="peta-wadah relative h-full w-full">
+    <div
+      ref={pembungkusRef}
+      className="peta-wadah relative h-full w-full [@media(pointer:fine)]:touch-none [@media(pointer:fine)]:overscroll-contain"
+    >
       <div
         ref={wadah}
         role="application"
